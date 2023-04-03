@@ -1,0 +1,6 @@
+Name,Type,X,Y,diameter,scale,colour,sample_name,mount_name,material,notes
+1,RefMark,472,336,10,1,#ffff00,sample_x83,mount_x81,rock,
+2,RefMark,394,318,10,1,#ffff00,sample_x83,mount_x81,rock,
+3,RefMark,469,268,10,1,#ffff00,sample_x83,mount_x81,rock,point3
+4,Spot,527,340,10,1,#204a87,sample_x67,mount_x15,duck,"point4 with whitespace, and comma"
+5,Spot,362,380,15,1,#204a87,sample_x67,mount_x15,duck,point5 with whitespace
