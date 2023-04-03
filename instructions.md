@@ -1,4 +1,4 @@
-## Tool Bar - File
+## Toolbar - File
 
 To access file functionality, press the _File_ button in the toolbar, located at the top left of the application.
 
