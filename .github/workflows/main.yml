@@ -1,0 +1,41 @@
+name: Create executable using PyInstaller
+
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Create Anaconda Environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: tactool
+        environment-file: environment.yml
+        python-version: 3.11
+        auto-activate-base: false
+
+    - name: Build with PyInstaller
+      shell: bash -l {0}
+      run: pyinstaller --name="TACtool" --windowed --paths=. --onefile tactool/main.py
+
+    - name: Get Latest Release Info
+      id: latest_release_info
+      uses: jossef/action-latest-release-info@v1.2.1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Add Asset to Latest Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.latest_release_info.outputs.upload_url }}
+        asset_path: dist/TACtool.exe
+        asset_name: TACtool_${{ steps.latest_release_info.outputs.tag_name }}.exe
+        asset_content_type: application
+
