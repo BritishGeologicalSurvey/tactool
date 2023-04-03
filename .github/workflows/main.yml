@@ -36,6 +36,6 @@ jobs:
       with:
         upload_url: ${{ steps.latest_release_info.outputs.upload_url }}
         asset_path: dist/TACtool.exe
-        asset_name: TACtool_${{ steps.latest_release_info.outputs.tag_name }}.exe
+        asset_name: TACtool.exe
         asset_content_type: application
 
