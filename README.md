@@ -6,6 +6,7 @@
 
 - Download latest Windows build by clicking [here](https://github.com/BritishGeologicalSurvey/tactool/releases/latest/download/TACtool.exe).
 - Double click to run. On first run it takes a while to load.
+- Instructions for using the application can be found [here](https://github.com/BritishGeologicalSurvey/tactool/blob/main/instructions.md).
 
 
 ## Class Relationship Diagram
