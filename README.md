@@ -272,3 +272,8 @@ pytest -vv test/
 pyinstaller --name="TACtool" --windowed --paths=. --onefile tactool/main.py
 ```
 Run the above code and a .spec file and dist/ build/ directories will be created.
+
+### Licence
+
+TACtool is distributed under the [GPL v3.0 licence](LICENSE).
+Copyright: © BGS / UKRI 2019
