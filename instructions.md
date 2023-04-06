@@ -58,13 +58,13 @@ _Reset the current analysis point settings to default._
 - _diameter = 10_
 - _scale = 1.0_
 
-## Analysis Point Settings
+## Analysis Point Metadata and Settings
 
-Analysis point settings should be selected before an analysis point is created.
+When creating a new analysis point, any current metadata field values and analysis point settings will be applied to that new analysis point. Therefore analysis point metadata fields and settings should be selected before an analysis point is created.
 
 ### Metadata Fields
 
-To change a metadata field value, _Left Click_ twice on the cell containing the value you would like to modify. Once you have inputted your new value, press _Enter_ to confirm the change.
+To change a metadata field, _Left Click_ on the input box of the metadata field you would like to change and type in your value.
 
 ### Label
 
