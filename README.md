@@ -279,5 +279,7 @@ TACtool is distributed under the [GPL v3.0 licence](LICENSE).
 
 Copyright: © BGS / UKRI 2023
 
-It was initially developed within the British Geological Survey by Connor Newstead, Dan Sutton, Declan Valters, Leo Rudczenko and John A Stevenson.
+## Original Contributors
+
+TACTool was initially developed within the British Geological Survey by Connor Newstead, Dan Sutton, Declan Valters, Leo Rudczenko and John A Stevenson.
 The original idea was by Matt Horstwood.
