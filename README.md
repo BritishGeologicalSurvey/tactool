@@ -273,7 +273,11 @@ pyinstaller --name="TACtool" --windowed --paths=. --onefile tactool/main.py
 ```
 Run the above code and a .spec file and dist/ build/ directories will be created.
 
-### Licence
+## Licence
 
 TACtool is distributed under the [GPL v3.0 licence](LICENSE).
-Copyright: © BGS / UKRI 2019
+
+Copyright: © BGS / UKRI 2023
+
+It was initially developed within the British Geological Survey by Connor Newstead, Dan Sutton, Declan Valters, Leo Rudczenko and John A Stevenson.
+The original idea was by Matt Horstwood.
