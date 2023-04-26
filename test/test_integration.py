@@ -365,11 +365,11 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
 
     csv_path = tmp_path / "test.csv"
     expected_headers = ["Name", "Type", "X", "Y", "Z", "diameter", "scale", "colour",
-                        "sample_name", "mount_name", "material", "notes"]
+                        "mount_name", "material", "notes"]
     expected_data = [
-        [1, "RefMark", 101, 101, 0, 10, 1.0, "#ffff00", "", "", "", ""],
-        [2, "RefMark", 202, 202, 0, 10, 1.0, "#ffff00", "", "", "", ""],
-        [3, "Spot", 303, 303, 0, 100, 1.5, "#444444", "sample_x83", "mount_x81", "duck", ""],
+        ["_#1", "RefMark", 101, 101, 0, 10, 1.0, "#ffff00", "", "", ""],
+        ["_#2", "RefMark", 202, 202, 0, 10, 1.0, "#ffff00", "", "", ""],
+        ["sample_x83_#3", "Spot", 303, 303, 0, 100, 1.5, "#444444", "mount_x81", "duck", ""],
     ]
 
     # Add 2 Analysis Points

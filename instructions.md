@@ -38,6 +38,8 @@ _Export the current analysis point data to a TACtool CSV file._
 
 By default, the exported file will be a CSV file. However, you can add your own file extension to the filename if you wish to create a different file type, though this is not recommended.
 
+Upon export, the **sample_name** and **id** columns will be concatenated into a single column labeled **Name**, using the character pattern **_#** to join them.
+
 ## User Interface Buttons
 
 ### Clear Points

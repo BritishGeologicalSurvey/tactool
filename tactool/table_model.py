@@ -292,6 +292,8 @@ class TableModel(QAbstractTableModel):
         headers = self.headers[:len(self.headers) - 3]
         for old_header, new_header in zip(header_conversions, header_conversions.values()):
             headers[headers.index(old_header)] = new_header
+        # Remove the sample_name field
+        headers.pop(headers.index("sample_name"))
 
         # Insert a new Z column after the Y column for the laser formatting
         z_index = headers.index("Y") + 1
@@ -303,7 +305,15 @@ class TableModel(QAbstractTableModel):
         """
         Function to convert an Analysis Point formatting for a CSV export.
         """
+        headers = self.headers[:len(self.headers) - 3]
+        id_idx, sample_name_idx = headers.index("id"), headers.index("sample_name")
         analysis_point_row = analysis_point.aslist()[:len(self.headers) - 3]
-        z_index = self.headers.index("y") + 1
+
+        # Concat the sample_name and id into 1 column
+        analysis_point_row[id_idx] = f"{analysis_point.sample_name}_#{analysis_point.id}"
+        analysis_point_row.pop(sample_name_idx)
+
+        # Insert a new Z column after the Y column for the laser formatting
+        z_index = headers.index("y") + 1
         analysis_point_row.insert(z_index, 0)
         return analysis_point_row

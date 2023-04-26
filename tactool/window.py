@@ -9,9 +9,7 @@ from csv import DictReader
 from textwrap import dedent
 from typing import Optional
 
-from PyQt5.QtCore import (
-    QModelIndex,
-)
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QColorDialog,
@@ -394,6 +392,11 @@ class Window(QMainWindow):
             reader = DictReader(csv_file)
             # Iterate through each line in the CSV file
             for id, item in enumerate(reader):
+
+                # Split the id and sample_name value from the Name column
+                if "_#" in item["Name"]:
+                    item["sample_name"], item["Name"] = item["Name"].rsplit("_#", maxsplit=1)
+
                 # The default ID value is incremented with the row number
                 default_values["Name"] = id + 1
                 # If there is a Z column which is requried for the laser, then remove it
