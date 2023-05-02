@@ -1,5 +1,5 @@
 Name,Type,X,Y,diameter,scale,colour,mount_name,material,notes
-sample_x83_#1,RefMark,472,336,10,1,#ffff00,mount_x81,rock,
+sample_x83_#001,RefMark,472,336,10,1,#ffff00,mount_x81,rock,this point has padded zeros in the id column
 sample_x83_#2,RefMark,394,318,10,1,#ffff00,mount_x81,rock,
 sample_x83_#3,RefMark,469,268,10,1,#ffff00,mount_x81,rock,point3
 sample_x67_#4,Spot,527,340,10,1,#204a87,mount_x15,duck,"point4 with whitespace, and comma"

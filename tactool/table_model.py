@@ -310,7 +310,8 @@ class TableModel(QAbstractTableModel):
         analysis_point_row = analysis_point.aslist()[:len(self.headers) - 3]
 
         # Concat the sample_name and id into 1 column
-        analysis_point_row[id_idx] = f"{analysis_point.sample_name}_#{analysis_point.id}"
+        # Also pads zeros on id column value
+        analysis_point_row[id_idx] = f"{analysis_point.sample_name}_#{analysis_point.id:03d}"
         analysis_point_row.pop(sample_name_idx)
 
         # Insert a new Z column after the Y column for the laser formatting

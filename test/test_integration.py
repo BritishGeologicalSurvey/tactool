@@ -294,8 +294,8 @@ def test_export_image(tactool: TACtool, tmp_path: WindowsPath) -> None:
 
 @pytest.mark.parametrize("filepath, expected_points", [
     ("test/data/analysis_points_complete.csv", [
-        AnalysisPoint(1, "RefMark", 472, 336, 10, 1.0, "#ffff00", "sample_x83", "mount_x81",
-                      "rock", "", None, None, None),
+        AnalysisPoint(1, "RefMark", 472, 336, 10, 1.0, "#ffff00", "sample_x83", "mount_x81", "rock",
+                      "this point has padded zeros in the id column", None, None, None),
         AnalysisPoint(2, "RefMark", 394, 318, 10, 1.0, "#ffff00", "sample_x83", "mount_x81",
                       "rock", "", None, None, None),
         AnalysisPoint(3, "RefMark", 469, 268, 10, 1.0, "#ffff00", "sample_x83", "mount_x81",
@@ -367,9 +367,9 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
     expected_headers = ["Name", "Type", "X", "Y", "Z", "diameter", "scale", "colour",
                         "mount_name", "material", "notes"]
     expected_data = [
-        ["_#1", "RefMark", 101, 101, 0, 10, 1.0, "#ffff00", "", "", ""],
-        ["_#2", "RefMark", 202, 202, 0, 10, 1.0, "#ffff00", "", "", ""],
-        ["sample_x83_#3", "Spot", 303, 303, 0, 100, 1.5, "#444444", "mount_x81", "duck", ""],
+        ["_#001", "RefMark", 101, 101, 0, 10, 1.0, "#ffff00", "", "", ""],
+        ["_#002", "RefMark", 202, 202, 0, 10, 1.0, "#ffff00", "", "", ""],
+        ["sample_x83_#003", "Spot", 303, 303, 0, 100, 1.5, "#444444", "mount_x81", "duck", ""],
     ]
 
     # Add 2 Analysis Points
