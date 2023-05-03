@@ -211,6 +211,9 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # on the PyQt Graphics Scene do not exist
     assert tactool.window.set_scale_dialog is None
     assert tactool.window.graphics_scene.scaling_rect is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
 
     # Start the scaling mode
     tactool.window.toggle_scaling_mode()
@@ -219,6 +222,9 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # on the PyQt Graphics Scene exist and are the correct type
     assert tactool.window.set_scale_dialog is not None
     assert tactool.window.graphics_scene.scaling_rect is not None
+    # Check that the main input widgets are disabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is False
 
     # Set the scale, following the same steps as the user would
     tactool.window.set_scale_dialog.scale_value.setText(str(2.0))
@@ -228,6 +234,9 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # on the PyQt Graphics Scene do not exist
     assert tactool.window.set_scale_dialog is None
     assert tactool.window.graphics_scene.scaling_rect is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
 
 
 def test_set_scale(tactool: TACtool) -> None:

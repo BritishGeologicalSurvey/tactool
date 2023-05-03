@@ -39,7 +39,7 @@ class SetScaleDialog(QDialog):
 
         # Setting the Dialog Box settings
         self.setWindowTitle("Set Scale")
-        self.setGeometry(0, 50, 100, 200)
+        self.setMinimumSize(100, 200)
         self.setWindowFlags(
             Qt.Window | Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint
         )
