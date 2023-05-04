@@ -86,18 +86,12 @@ _Note: The **Diameter** is measured in **µm**_
 
 ### Scale
 
-The scale can be set in 1 of 2 ways.
-
-**Set Scale Dialog**
+To set the scale, complete the following steps:
 
 - Press the _Set Scale_ button. A _Set Scale_ window will then open.
 - The image on the main window will become slightly grey. This means you can now draw a line across the image. Start by clicking once to create the start of the line and clicking again to create the end of the line. Pressing the _Clear_ button will remove any current lines.
 - Now you change the estimated distance in microns. To do this, either use the up/down arrows next to the _Distance_ input box, or type in your own value. It must be a whole number.
 - Pressing _OK_ will confirm the new scale and close the _Set Scale_ window.
-
-**Directly Setting the Scale Value**
-
-Alternatively, if you already know the scale value you would like to use, you can input this by typing it into the _Scale_ input box on the main window, next to the _Set Scale_ button.
 
 _Note: The **Scale** is measured in **Pixels per µm**_
 
