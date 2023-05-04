@@ -9,7 +9,10 @@ import dataclasses
 from csv import writer
 from pathlib import Path
 from textwrap import dedent
-from typing import Optional
+from typing import (
+    Any,
+    Optional,
+)
 
 from PyQt5.QtCore import (
     pyqtSignal,
@@ -105,7 +108,7 @@ class TableModel(QAbstractTableModel):
         super().__init__()
         # Set the headers of the table to be the names of the Analysis Point attributes
         self.headers = AnalysisPoint.field_names()
-        self._data = []
+        self._data: list[list[Any]] = []
         self.editable_columns = [
             self.headers.index("label"),
             self.headers.index("sample_name"),
