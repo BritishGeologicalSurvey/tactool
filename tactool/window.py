@@ -87,7 +87,6 @@ class Window(QMainWindow):
             self.label_input,
             self.colour_button,
             self.diameter_input,
-            self.scale_value_input,
             self.reset_ids_button,
             self.reset_settings_button,
             self.clear_points_button,
@@ -143,8 +142,7 @@ class Window(QMainWindow):
         scale_label = QLabel("Scale (Pixels per µm):")
         self.scale_value_input = QLineEdit()
         self.scale_value_input.setText(self.default_settings["scale"])
-        self.scale_value_input.setReadOnly(True)
-        self.scale_value_input.setStyleSheet("color: rgb(84, 84, 84); background-color: rgb(240, 240, 240)")
+        self.scale_value_input.setDisabled(True)
         self.set_scale_button = QPushButton("Set Scale", self)
 
         # Main buttons
