@@ -33,16 +33,17 @@
             User Interface with data preprocessing and data flow
             ---
             +testing_mode: bool
-            +default_settings: dict
+            +default_settings: dict[str, Any]
             +image_filepath: str
             +csv_filepath: str
             +point_colour: str
-            +status_bar_messages: dict
+            +status_bar_messages: dict[str, dict[str, Any]]
             +graphics_view: GraphicsView
             +graphics_scene: GraphicsScene
             +table_model: TableModel
             +table_view: TableView
             +set_scale_dialog: SetScaleDialog
+            +main_input_widgets: list[QWidget]
 
             +setup_ui_elements()
             +set_colour_button_style()
@@ -65,6 +66,7 @@
             +update_analysis_points()
             +set_point_colour()
             +toggle_scaling_mode()
+            +toggle_main_input_widgets(enable)
             +clear_scale_clicked()
             +set_scale(scale)
             +get_point_settings(analysis_point, clicked_column_index)
@@ -155,9 +157,9 @@
             QAbstractTableModel
             Manage AnalysisPoint data
             ---
-            +headers: list
-            +_data: list
-            +editable_columns: list
+            +headers: list[str]
+            +_data: list[list[Any]]
+            +editable_columns: list[int]
 
             +headerData(section, orientation, role)
             +columnCount(*args)

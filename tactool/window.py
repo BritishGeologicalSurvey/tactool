@@ -9,9 +9,7 @@ from csv import DictReader
 from textwrap import dedent
 from typing import Optional
 
-from PyQt5.QtCore import (
-    QModelIndex,
-)
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QColorDialog,
@@ -72,6 +70,7 @@ class Window(QMainWindow):
 
         # Setup the User Interface
         self.setWindowTitle("TACtool")
+        self.setMinimumSize(750, 650)
         self.graphics_view = GraphicsView()
         self.graphics_scene = self.graphics_view.graphics_scene
         self.table_model = self.graphics_view.graphics_scene.table_model
@@ -80,6 +79,19 @@ class Window(QMainWindow):
         self.setup_ui_elements()
         self.connect_signals_and_slots()
         self.toggle_status_bar_messages()
+        self.main_input_widgets = [
+            self.menu_bar_file,
+            self.sample_name_input,
+            self.mount_name_input,
+            self.material_input,
+            self.label_input,
+            self.colour_button,
+            self.diameter_input,
+            self.reset_ids_button,
+            self.reset_settings_button,
+            self.clear_points_button,
+            self.table_view,
+        ]
 
 
     def setup_ui_elements(self) -> None:
@@ -122,14 +134,15 @@ class Window(QMainWindow):
 
         # Input for point diameter
         diameter_label = QLabel("Diameter (μm):")
-        self.diameter_box = QSpinBox()
-        self.diameter_box.setValue(self.default_settings["diameter"])
-        self.diameter_box.setMaximum(100000)
+        self.diameter_input = QSpinBox()
+        self.diameter_input.setValue(self.default_settings["diameter"])
+        self.diameter_input.setMaximum(100000)
 
         # Input for scaling
         scale_label = QLabel("Scale (Pixels per µm):")
-        self.scale_value = QLineEdit()
-        self.scale_value.setText(self.default_settings["scale"])
+        self.scale_value_input = QLineEdit()
+        self.scale_value_input.setText(self.default_settings["scale"])
+        self.scale_value_input.setDisabled(True)
         self.set_scale_button = QPushButton("Set Scale", self)
 
         # Main buttons
@@ -165,9 +178,9 @@ class Window(QMainWindow):
 
         # Scaling widgets
         sidebar.addWidget(diameter_label)
-        sidebar.addWidget(self.diameter_box)
+        sidebar.addWidget(self.diameter_input)
         sidebar.addWidget(scale_label)
-        sidebar.addWidget(self.scale_value)
+        sidebar.addWidget(self.scale_value_input)
         sidebar.addWidget(self.set_scale_button)
         sidebar.addStretch(stretch=6)
 
@@ -246,7 +259,7 @@ class Window(QMainWindow):
             return condition, message
 
         def set_scale(self: Window):
-            condition_1 = self.scale_value.text() == self.default_settings["scale"]
+            condition_1 = self.scale_value_input.text() == self.default_settings["scale"]
             condition_2 = len(self.table_model.reference_points) >= 3
             condition = condition_1 and condition_2
             message = "Have you set a scale?"
@@ -394,6 +407,11 @@ class Window(QMainWindow):
             reader = DictReader(csv_file)
             # Iterate through each line in the CSV file
             for id, item in enumerate(reader):
+
+                # Split the id and sample_name value from the Name column
+                if "_#" in item["Name"]:
+                    item["sample_name"], item["Name"] = item["Name"].rsplit("_#", maxsplit=1)
+
                 # The default ID value is incremented with the row number
                 default_values["Name"] = id + 1
                 # If there is a Z column which is requried for the laser, then remove it
@@ -498,7 +516,7 @@ class Window(QMainWindow):
                 return False
 
         # If the scale value has not been changed
-        if self.scale_value.text() == self.default_settings["scale"]:
+        if self.scale_value_input.text() == self.default_settings["scale"]:
             message = dedent("""
                 A scale value has not been set.
 
@@ -538,9 +556,9 @@ class Window(QMainWindow):
             # Get the required input values from the window input settings
             # Coordinates and the Point ID are taken from the arguments, notes defaults to None
             label = self.label_input.currentText()
-            diameter = self.diameter_box.value()
+            diameter = self.diameter_input.value()
             colour = self.point_colour
-            scale = float(self.scale_value.text())
+            scale = float(self.scale_value_input.text())
             sample_name = self.sample_name_input.text()
             mount_name = self.mount_name_input.text()
             material = self.material_input.text()
@@ -681,6 +699,11 @@ class Window(QMainWindow):
         if self.set_scale_dialog is None:
             # Create the Set Scale Dialog box
             self.set_scale_dialog = SetScaleDialog(self.testing_mode)
+            # Disable main window input widgets
+            self.toggle_main_input_widgets(False)
+            # Move the Set Scale Dialog box to be at the top left corner of the main window
+            main_window_pos = self.pos()
+            self.set_scale_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
 
             # Connect the Set Scale dialog buttons
             self.set_scale_dialog.set_scale_clicked.connect(self.set_scale)
@@ -691,6 +714,16 @@ class Window(QMainWindow):
         # Else when the program is in scaling mode, reset the Set Scaling Dialog value
         else:
             self.set_scale_dialog = None
+            # Enable main window widgets
+            self.toggle_main_input_widgets(True)
+
+
+    def toggle_main_input_widgets(self, enable: bool) -> None:
+        """
+        Toggle each of the input widgets in the main window to be enabled or disabled.
+        """
+        for widget in self.main_input_widgets:
+            widget.setEnabled(enable)
 
 
     def clear_scale_clicked(self) -> None:
@@ -707,7 +740,7 @@ class Window(QMainWindow):
         """
         Function to set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
         """
-        self.scale_value.setText(str(scale))
+        self.scale_value_input.setText(str(scale))
         self.toggle_status_bar_messages()
 
 
@@ -775,10 +808,10 @@ class Window(QMainWindow):
             self.label_input.setCurrentText(label)
 
         if diameter is not None:
-            self.diameter_box.setValue(diameter)
+            self.diameter_input.setValue(diameter)
 
         if scale is not None:
-            self.scale_value.setText(str(scale))
+            self.scale_value_input.setText(str(scale))
             self.toggle_status_bar_messages()
 
         if colour is not None:

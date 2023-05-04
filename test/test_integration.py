@@ -211,6 +211,9 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # on the PyQt Graphics Scene do not exist
     assert tactool.window.set_scale_dialog is None
     assert tactool.window.graphics_scene.scaling_rect is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
 
     # Start the scaling mode
     tactool.window.toggle_scaling_mode()
@@ -219,6 +222,9 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # on the PyQt Graphics Scene exist and are the correct type
     assert tactool.window.set_scale_dialog is not None
     assert tactool.window.graphics_scene.scaling_rect is not None
+    # Check that the main input widgets are disabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is False
 
     # Set the scale, following the same steps as the user would
     tactool.window.set_scale_dialog.scale_value.setText(str(2.0))
@@ -228,6 +234,9 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # on the PyQt Graphics Scene do not exist
     assert tactool.window.set_scale_dialog is None
     assert tactool.window.graphics_scene.scaling_rect is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
 
 
 def test_set_scale(tactool: TACtool) -> None:
@@ -294,8 +303,8 @@ def test_export_image(tactool: TACtool, tmp_path: WindowsPath) -> None:
 
 @pytest.mark.parametrize("filepath, expected_points", [
     ("test/data/analysis_points_complete.csv", [
-        AnalysisPoint(1, "RefMark", 472, 336, 10, 1.0, "#ffff00", "sample_x83", "mount_x81",
-                      "rock", "", None, None, None),
+        AnalysisPoint(1, "RefMark", 472, 336, 10, 1.0, "#ffff00", "sample_x83", "mount_x81", "rock",
+                      "this point has padded zeros in the id column", None, None, None),
         AnalysisPoint(2, "RefMark", 394, 318, 10, 1.0, "#ffff00", "sample_x83", "mount_x81",
                       "rock", "", None, None, None),
         AnalysisPoint(3, "RefMark", 469, 268, 10, 1.0, "#ffff00", "sample_x83", "mount_x81",
@@ -365,11 +374,11 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
 
     csv_path = tmp_path / "test.csv"
     expected_headers = ["Name", "Type", "X", "Y", "Z", "diameter", "scale", "colour",
-                        "sample_name", "mount_name", "material", "notes"]
+                        "mount_name", "material", "notes"]
     expected_data = [
-        [1, "RefMark", 101, 101, 0, 10, 1.0, "#ffff00", "", "", "", ""],
-        [2, "RefMark", 202, 202, 0, 10, 1.0, "#ffff00", "", "", "", ""],
-        [3, "Spot", 303, 303, 0, 100, 1.5, "#444444", "sample_x83", "mount_x81", "duck", ""],
+        ["_#001", "RefMark", 101, 101, 0, 10, 1.0, "#ffff00", "", "", ""],
+        ["_#002", "RefMark", 202, 202, 0, 10, 1.0, "#ffff00", "", "", ""],
+        ["sample_x83_#003", "Spot", 303, 303, 0, 100, 1.5, "#444444", "mount_x81", "duck", ""],
     ]
 
     # Add 2 Analysis Points

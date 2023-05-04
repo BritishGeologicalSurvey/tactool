@@ -39,7 +39,7 @@ class SetScaleDialog(QDialog):
 
         # Setting the Dialog Box settings
         self.setWindowTitle("Set Scale")
-        self.setGeometry(0, 50, 100, 200)
+        self.setMinimumSize(100, 200)
         self.setWindowFlags(
             Qt.Window | Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint
         )
@@ -60,19 +60,19 @@ class SetScaleDialog(QDialog):
         self.clear_scale_button = QPushButton("Clear", self)
         self.cancel_button = QPushButton("Cancel", self)
 
+        # Distance label and input
+        distance_label = QLabel("Distance (µm):")
+        self.distance_input = QSpinBox()
+        self.distance_input.setMaximum(100000)
+
         # Pixels label and input
         pixels_label = QLabel("Pixels:")
         self.pixel_input = QLineEdit()
         self.pixel_input.setText(self.pixel_input_default)
         self.pixel_input.setEnabled(False)
 
-        # Distance label and input
-        distance_label = QLabel("Distance (µm):")
-        self.distance_input = QSpinBox()
-        self.distance_input.setMaximum(100000)
-
         # Scale label and input
-        scale_label = QLabel("Scale:")
+        scale_label = QLabel("Scale (Pixels per µm):")
         self.scale_value = QLineEdit()
         self.scale_value.setValidator(QDoubleValidator())
         self.scale_value.setEnabled(False)
@@ -86,10 +86,10 @@ class SetScaleDialog(QDialog):
 
         # Arrange label and input boxes layout
         settings_widgets_layout = QVBoxLayout()
-        settings_widgets_layout.addWidget(pixels_label)
-        settings_widgets_layout.addWidget(self.pixel_input)
         settings_widgets_layout.addWidget(distance_label)
         settings_widgets_layout.addWidget(self.distance_input)
+        settings_widgets_layout.addWidget(pixels_label)
+        settings_widgets_layout.addWidget(self.pixel_input)
         settings_widgets_layout.addWidget(scale_label)
         settings_widgets_layout.addWidget(self.scale_value)
 
