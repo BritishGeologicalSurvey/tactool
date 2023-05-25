@@ -194,13 +194,14 @@ class Window(QMainWindow):
         main_view.addWidget(self.graphics_view, stretch=4)
         main_view.addWidget(self.table_view, stretch=1)
 
-        # Define the central widget of the window
-        self.centralWidget = QWidget()
-        self.setCentralWidget(self.centralWidget)
-        self.layout = QHBoxLayout()
-        self.centralWidget.setLayout(self.layout)
-        self.layout.addLayout(sidebar)
-        self.layout.addLayout(main_view, stretch=4)
+        # Set the central widget of the main window
+        layout = QHBoxLayout()
+        layout.addLayout(sidebar)
+        layout.addLayout(main_view, stretch=4)
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+        assert self.centralWidget() is central_widget
 
 
     def set_colour_button_style(self) -> None:
@@ -531,19 +532,19 @@ class Window(QMainWindow):
 
 
     def add_analysis_point(
-            self,
-            x: int,
-            y: int,
-            label: str = None,
-            diameter: int = None,
-            scale: float = None,
-            colour: str = None,
-            notes: str = "",
-            apid: int = None,
-            sample_name: str = "",
-            mount_name: str = "",
-            material: str = "",
-            from_click: bool = True,
+        self,
+        x: int,
+        y: int,
+        label: str = None,
+        diameter: int = None,
+        scale: float = None,
+        colour: str = None,
+        notes: str = "",
+        apid: int = None,
+        sample_name: str = "",
+        mount_name: str = "",
+        material: str = "",
+        from_click: bool = True,
     ) -> None:
         """
         Add an Analysis Point to the PyQt Graphics Scene.
@@ -780,14 +781,14 @@ class Window(QMainWindow):
 
 
     def update_point_settings(
-            self,
-            sample_name: str = None,
-            mount_name: str = None,
-            material: str = None,
-            label: str = None,
-            diameter: int = None,
-            scale: str | float = None,
-            colour: str = None,
+        self,
+        sample_name: str = None,
+        mount_name: str = None,
+        material: str = None,
+        label: str = None,
+        diameter: int = None,
+        scale: str | float = None,
+        colour: str = None,
     ) -> None:
         """
         Function to update the Analysis Point settings to be the given settings.
