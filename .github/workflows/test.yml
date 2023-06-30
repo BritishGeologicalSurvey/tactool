@@ -1,13 +1,9 @@
-name: Test
+name: Lint and Test
 
-# on:
-#   push:
-#     paths:
-#       - '**.py'
 on:
   push:
     paths:
-      - ".github/workflows/test.yml"
+      - '**.py'
 
 jobs:
   test:
