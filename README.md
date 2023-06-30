@@ -2,12 +2,14 @@
 
 > A graphical tool for selecting points for analysis on an SEM image
 
-### To use on Windows:
+### Download
 
-- Download latest Windows build by clicking [here](https://github.com/BritishGeologicalSurvey/tactool/releases/latest/download/TACtool.exe).
-- Double click to run. On first run it takes a while to load.
-- Instructions for using the application can be found [here](https://github.com/BritishGeologicalSurvey/tactool/blob/main/instructions.md).
+You can download the **TACtool** application here:
 
+- [Windows](https://github.com/BritishGeologicalSurvey/tactool/releases/latest/download/windows-tactool.exe)
+- [MacOS](https://github.com/BritishGeologicalSurvey/tactool/releases/latest/download/macos-tactool.zip)
+
+Instructions for using the application can be found [here](https://github.com/BritishGeologicalSurvey/tactool/blob/main/instructions.md).
 
 ## Class Relationship Diagram
 
@@ -224,16 +226,37 @@
 
 ## Installation
 
-Check out the repository and install dependencies
+Check out the repository and install dependencies using Anaconda.
 
+### Windows
 ```bash
-pip install -r requirements.txt
+conda env create -f environments/windows-environment.yml
+conda activate tactool-windows
 ```
 
-Run the tool with:
+### MacOS
+```bash
+conda env create -f environments/macos-environment.yml
+conda activate tactool-macos
+```
 
+## Running the Program
+
+To run the program, first you need to setup your Python path.
+
+#### Windows
+```bash
+$env:PYTHONPATH="."
+```
+
+#### MacOS
 ```bash
 export PYTHONPATH=.
+```
+
+Then you can run the program with:
+
+```bash
 python tactool/main.py --dev
 ```
 
@@ -242,10 +265,9 @@ pre-loaded into the GraphicsView.
 
 ## Running tests
 
-Run the tests with:
+Ensure you have setup your Python path. Then you can run the tests with:
 
 ```bash
-export PYTHONPATH=.
 pytest -vv test/
 ```
 
