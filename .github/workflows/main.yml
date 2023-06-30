@@ -1,41 +1,64 @@
-name: Create executable using PyInstaller
+name: Create Distributable Files
 
+# on:
+#   release:
+#     types:
+#       - released
 on:
-  release:
-    types:
-      - released
+  push:
+    paths:
+      - ".github/workflows/main.yml"
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows
+            app_file_ext: "exe"
+            asset_file_ext: "exe"
+          - os: macos
+            app_file_ext: "app"
+            asset_file_ext: "zip"
+    runs-on: ${{ matrix.os }}-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: Create Anaconda Environment
+    - name: Activate Anaconda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: tactool
-        environment-file: environment.yml
+        environment-file: environments/${{ matrix.os }}-environment.yml
         python-version: 3.11
         auto-activate-base: false
 
     - name: Build with PyInstaller
       shell: bash -l {0}
-      run: pyinstaller --name="TACtool" --windowed --paths=. --onefile tactool/main.py
+      run: pyinstaller --name="tactool" --windowed --paths=. --onefile tactool/main.py
 
-    - name: Get Latest Release Info
-      id: latest_release_info
-      uses: jossef/action-latest-release-info@v1.2.1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: ZIP Application
+      if: matrix.os == 'macos'
+      run: |
+        cd dist
+        zip -r tactool.${{ matrix.asset_file_ext }} tactool.${{ matrix.app_file_ext }}
 
-    - name: Add Asset to Latest Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
       with:
-        upload_url: ${{ steps.latest_release_info.outputs.upload_url }}
-        asset_path: dist/TACtool.exe
-        asset_name: TACtool.exe
-        asset_content_type: application
+        path: dist/tactool.${{ matrix.asset_file_ext }}
+        name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
 
+    # - name: Get Release Info
+    #   id: get_release
+    #   uses: bruceadams/get-release@v1.3.2
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }}
+
+    # - name: Add Asset to Release
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }}
+    #   with:
+    #     upload_url: ${{ steps.get_release.outputs.upload_url }}
+    #     asset_path: dist/tactool.${{ matrix.asset_file_ext }}
+    #     asset_name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
+    #     asset_content_type: application
