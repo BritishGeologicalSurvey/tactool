@@ -201,7 +201,6 @@ class Window(QMainWindow):
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
-        assert self.centralWidget() is central_widget
 
 
     def set_colour_button_style(self) -> None:
