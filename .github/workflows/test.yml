@@ -1,4 +1,4 @@
-name: Lint and run tests
+name: Lint and Test
 
 on:
   push:
@@ -6,16 +6,18 @@ on:
       - '**.py'
 
 jobs:
-  lint-and-test:
-    runs-on: windows-latest
+  test:
+    strategy:
+      matrix:
+        os: [windows, macos]
+    runs-on: ${{ matrix.os }}-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: Create Anaconda Environment
+    - name: Activate Anaconda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: tactool
-        environment-file: environment.yml
+        environment-file: environments/${{ matrix.os }}-environment.yml
         python-version: 3.11
         auto-activate-base: false
 
@@ -27,6 +29,4 @@ jobs:
       shell: bash -l {0}
       run: |
         export PYTHONPATH=.
-        pytest -vv test/
-
-
+        pytest -vs test/
