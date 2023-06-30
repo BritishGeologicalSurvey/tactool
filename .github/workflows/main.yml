@@ -1,13 +1,9 @@
 name: Create Distributable Files
 
-# on:
-#   release:
-#     types:
-#       - released
 on:
-  push:
-    paths:
-      - ".github/workflows/main.yml"
+  release:
+    types:
+      - released
 
 jobs:
   build:
@@ -41,24 +37,18 @@ jobs:
         cd dist
         zip -r tactool.${{ matrix.asset_file_ext }} tactool.${{ matrix.app_file_ext }}
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+    - name: Get Release Info
+      id: get_release
+      uses: bruceadams/get-release@v1.3.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Add Asset to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-        path: dist/tactool.${{ matrix.asset_file_ext }}
-        name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
-
-    # - name: Get Release Info
-    #   id: get_release
-    #   uses: bruceadams/get-release@v1.3.2
-    #   env:
-    #     GITHUB_TOKEN: ${{ github.token }}
-
-    # - name: Add Asset to Release
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ github.token }}
-    #   with:
-    #     upload_url: ${{ steps.get_release.outputs.upload_url }}
-    #     asset_path: dist/tactool.${{ matrix.asset_file_ext }}
-    #     asset_name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
-    #     asset_content_type: application
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: dist/tactool.${{ matrix.asset_file_ext }}
+        asset_name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
+        asset_content_type: application
