@@ -14,6 +14,10 @@ Y_PLUS_10 = np.array([[1, 0, 0],
                       [0, 1, 10],
                       [0, 0, 1]])
 
+SCALE_BY_2ish = np.array([[2.1, 0, 0],
+                          [0, 2.1, 0],
+                          [0, 0, 1]])
+
 
 @pytest.mark.parametrize('matrix, src, expected', [
     (X_PLUS_10, (1, 1), (11, 1)),
@@ -22,6 +26,8 @@ Y_PLUS_10 = np.array([[1, 0, 0],
     (Y_PLUS_10, (1, 1), (1, 11)),
     (Y_PLUS_10, (1, 0), (1, 10)),
     (Y_PLUS_10, (0, 1), (0, 11)),
+    (SCALE_BY_2ish, (1, 1), (2, 2)),  # should round to nearest int
+    (SCALE_BY_2ish, (10, 10), (21, 21)),  # no rounding required
 ])
 def test_affine_transform_point(matrix, src, expected):
     # Act
