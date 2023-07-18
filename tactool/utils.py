@@ -53,7 +53,7 @@ def affine_transform_matrix(source: list[tuple[float, float]],
 
 
 def affine_transform_point(matrix: np.ndarray,
-                           point: tuple[float, float]) -> tuple[float, float]:
+                           point: tuple[float, float]) -> tuple[int, int]:
     """Apply an affine transformation to a 2D point"""
     # Convert the source point to 3D NumPy array
     # Adding z=1 makes point "homogeneous"
