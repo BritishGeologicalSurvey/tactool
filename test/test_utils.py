@@ -4,7 +4,7 @@ Tests for functions in the utils module
 import numpy as np
 import pytest
 
-from tactool.utils import affine_transform_point
+from tactool.utils import affine_transform_point, affine_transform_matrix
 
 X_PLUS_10 = np.array([[1, 0, 10],
                       [0, 1, 0],
@@ -35,3 +35,20 @@ def test_affine_transform_point(matrix, src, expected):
 
     # Assert
     assert transformed == expected
+
+
+def test_affine_transform_matrix():
+    # Arrange
+    src = [(0, 0), (1, 0), (1, 1), (0, 1)]
+    dest = [(2, 2), (3, 2), (3, 3), (2, 3)]
+    expected = np.array([
+        [1, 0, 2],
+        [0, 1, 2],
+        [0, 0, 1]
+    ])
+
+    # Act
+    matrix = affine_transform_matrix(src, dest)
+
+    # Assert
+    np.testing.assert_array_almost_equal(matrix, expected, decimal=10)
