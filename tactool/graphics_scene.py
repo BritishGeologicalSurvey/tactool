@@ -34,8 +34,6 @@ class GraphicsScene(QGraphicsScene):
     """
     def __init__(self) -> None:
         super().__init__()
-        # _maximum_point_id is used to track the next incremental ID value available
-        self._maximum_point_id = 0
 
         # Defining variables used in the Graphics Scene for scaling mode
         self.scaling_rect: Optional[QGraphicsRectItem] = None
@@ -181,8 +179,14 @@ class GraphicsScene(QGraphicsScene):
         """
         Function to iterate and return the maximum Analysis Point ID value.
         """
-        self._maximum_point_id += 1
-        return self._maximum_point_id
+        ids = [
+            analysis_point.id
+            for analysis_point in self.table_model.analysis_points
+        ]
+        if len(ids) == 0:
+            return 1
+        else:
+            return max(ids) + 1
 
 
     def toggle_transparent_window(self, graphics_view_image: QGraphicsPixmapItem) -> None:
