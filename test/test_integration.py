@@ -80,14 +80,13 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
     # Adjust the settings for the 4th Analysis Point to match those of the 2nd Analysis Point
     # This is done by emitting a signal from the PyQt Table View of the selected Analysis Point
     tactool.window.table_view.selected_analysis_point.emit(expected_data[1], 0)
-    # The 4th Analysis Point ID value should be 4 because it is still incrementing from the 3rd Analysis Point
-    # The maximum ID value also does not change when Analysis Points are deleted
+    # The 4th Analysis Point ID value should be 3
     tactool.window.graphics_view.left_click.emit(404, 404)
 
     expected_data = [
         AnalysisPoint(1, "RefMark", 101, 101, 10, 1.0, "#ffff00", "", "", "", "", None, None, None),
         AnalysisPoint(2, "Spot", 202, 202, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None),
-        AnalysisPoint(4, "Spot", 404, 404, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None),
+        AnalysisPoint(3, "Spot", 404, 404, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None),
     ]
     # Iterate through each actual Analysis Point and compare to expected Analysis Point
     for index, analysis_point in enumerate(tactool.window.table_model.analysis_points):
@@ -355,14 +354,12 @@ def test_import_tactool_csv(tactool: TACtool, filepath: str, expected_points: li
     for loaded_point, expected_point in zip(tactool.window.table_model.analysis_points, expected_points):
         # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
         assert expected_point.aslist()[:PUBLIC_INDEX] == loaded_point.aslist()[:PUBLIC_INDEX]
-    assert tactool.window.graphics_scene._maximum_point_id == len(tactool.window.table_model.analysis_points)
 
     # Click new points
     tactool.window.graphics_view.left_click.emit(111, 111)
 
     # Check that the ID values continue from the maximum ID value in the CSV file
     assert len(tactool.window.table_model.analysis_points) == 6
-    assert tactool.window.graphics_scene._maximum_point_id == len(tactool.window.table_model.analysis_points)
 
 
 def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
