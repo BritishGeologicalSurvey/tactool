@@ -28,6 +28,7 @@ from PyQt5.QtWidgets import (
 )
 
 from tactool.graphics_view import GraphicsView
+from tactool.recoordinate_dialog import RecoordinateDialog
 from tactool.set_scale_dialog import SetScaleDialog
 from tactool.table_model import AnalysisPoint
 from tactool.table_view import TableView
@@ -76,6 +77,7 @@ class Window(QMainWindow):
         self.table_model = self.graphics_view.graphics_scene.table_model
         self.table_view = TableView(self.table_model)
         self.set_scale_dialog: Optional[SetScaleDialog] = None
+        self.recoordinate_dialog: Optional[RecoordinateDialog] = None
         self.setup_ui_elements()
         self.connect_signals_and_slots()
         self.toggle_status_bar_messages()
@@ -108,6 +110,8 @@ class Window(QMainWindow):
         self.menu_bar_file.addSeparator()
         self.file_menu_bar_import_tactool_csv = self.menu_bar_file.addAction("Import TACtool CSV")
         self.file_menu_bar_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
+        self.menu_bar_file.addSeparator()
+        self.menu_bar_recoordinate_csv = self.menu_bar_file.addAction("Recoordinate <TACtool> CSV")
 
         # Create the status bar
         self.status_bar = QStatusBar(self)
@@ -228,6 +232,7 @@ class Window(QMainWindow):
         self.menu_bar_file_export_image.triggered.connect(self.export_image_get_path)
         self.file_menu_bar_import_tactool_csv.triggered.connect(self.import_tactool_csv_get_path)
         self.file_menu_bar_export_tactool_csv.triggered.connect(self.export_tactool_csv_get_path)
+        self.menu_bar_recoordinate_csv.triggered.connect(self.toggle_recoordinate_dialog)
 
         # Connect button clicks to handlers
         self.clear_points_button.clicked.connect(self.clear_analysis_points)
@@ -236,7 +241,7 @@ class Window(QMainWindow):
         self.colour_button.clicked.connect(self.set_point_colour)
         self.set_scale_button.clicked.connect(self.toggle_scaling_mode)
 
-        # Connect Graphics View interactinos to handlers
+        # Connect Graphics View interactions to handlers
         self.graphics_view.left_click.connect(self.add_analysis_point)
         self.graphics_view.right_click.connect(self.remove_analysis_point)
 
@@ -314,8 +319,8 @@ class Window(QMainWindow):
         Function to create a PyQt File Dialog, allowing the user to visually select an image file to import.
         """
         pyqt_open_dialog = QFileDialog.getOpenFileName(
-            self,
-            "Import Image",
+            parent=self,
+            directory="Import Image",
             filter=self.default_settings["image_format"],
         )
         path = pyqt_open_dialog[0]
@@ -335,10 +340,10 @@ class Window(QMainWindow):
         if self.validate_current_data(validate_image=True):
             filepath = self.image_filepath if self.image_filepath else ""
             pyqt_save_dialog = QFileDialog.getSaveFileName(
-                self,
-                "Export Image",
-                filepath,
-                self.default_settings["image_format"],
+                parent=self,
+                caption="Export Image",
+                directory=filepath,
+                filter=self.default_settings["image_format"],
             )
             path = pyqt_save_dialog[0]
             if path:
@@ -353,8 +358,8 @@ class Window(QMainWindow):
         Function to create a PyQt File Dialog, allowing the user to visually select a TACtool CSV file to import.
         """
         pyqt_open_dialog = QFileDialog.getOpenFileName(
-            self,
-            "Import TACtool CSV",
+            parent=self,
+            caption="Import TACtool CSV",
             filter=self.default_settings["csv_format"],
         )
         path = pyqt_open_dialog[0]
@@ -468,10 +473,10 @@ class Window(QMainWindow):
         if self.validate_current_data():
             filepath = self.csv_filepath if self.csv_filepath else ""
             pyqt_save_dialog = QFileDialog.getSaveFileName(
-                self,
-                "Export as TACtool CSV",
-                filepath,
-                self.default_settings["csv_format"],
+                parent=self,
+                caption="Export as TACtool CSV",
+                directory=filepath,
+                filter=self.default_settings["csv_format"],
             )
             path = pyqt_save_dialog[0]
             if path:
@@ -819,6 +824,38 @@ class Window(QMainWindow):
             self.set_colour_button_style()
 
 
+    def toggle_recoordinate_dialog(self) -> None:
+        """
+        Toggle the recoordination dialog window.
+        """
+        # If the program is not in recoordination mode
+        if self.recoordinate_dialog is None:
+            # Create the Set Scale Dialog box
+            self.recoordinate_dialog = RecoordinateDialog(self.testing_mode)
+            # Disable main window input widgets
+            self.toggle_main_input_widgets(False)
+            # Move the Set Scale Dialog box to be at the top left corner of the main window
+            main_window_pos = self.pos()
+            self.recoordinate_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
+
+            # Connect the Set Scale dialog buttons
+            self.recoordinate_dialog.recoordinate_clicked.connect(self.recoordinate_points)
+            self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
+            self.recoordinate_dialog.invalid_path_entry.connect(self.show_message)
+
+        # Else when the program is in recoordination mode, reset the Recoordination Dialog value
+        else:
+            self.recoordinate_dialog = None
+            # Enable main window widgets
+            self.toggle_main_input_widgets(True)
+
+
+    def recoordinate_points(self, input_csv: str, output_csv: str):
+        print("RECOORDINATE")
+        print(input_csv)
+        print(output_csv)
+
+
     def data_error_message(self, error: Exception) -> None:
         """
         Function to show an error message to the user in the event that
@@ -862,6 +899,11 @@ class Window(QMainWindow):
         """
         Function which is run by PyQt when the application is closed.
         """
-        # If the Set Scale dialog box is open then close it
-        if self.set_scale_dialog is not None:
-            self.set_scale_dialog.close()
+        # Close any open dialogs
+        dialogs = [
+            self.recoordinate_dialog,
+            self.set_scale_dialog,
+        ]
+        for dialog in dialogs:
+            if dialog is not None:
+                dialog.close()
