@@ -713,7 +713,7 @@ class Window(QMainWindow, LoggerMixin):
         if self.set_scale_dialog is None:
             self.set_scale_dialog = SetScaleDialog(self.testing_mode)
             self.toggle_main_input_widgets(False)
-            # Move the Set Scale Dialog box to be at the top left corner of the main window
+            # Move the Dialog box to be at the top left corner of the main window
             main_window_pos = self.pos()
             self.set_scale_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
 
@@ -736,16 +736,15 @@ class Window(QMainWindow, LoggerMixin):
         """
         # If the program is not in recoordination mode
         if self.recoordinate_dialog is None:
-            # Create the Set Scale Dialog box
+            # Create the Recoordinate Dialog box
             self.recoordinate_dialog = RecoordinateDialog(self.testing_mode)
             # Disable main window input widgets
             self.toggle_main_input_widgets(False)
-            # Move the Set Scale Dialog box to be at the top left corner of the main window
+            # Move the Dialog box to be at the top left corner of the main window
             main_window_pos = self.pos()
             self.recoordinate_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
 
-            # Connect the Set Scale dialog buttons
-            self.recoordinate_dialog.recoordinate_clicked.connect(self.recoordinate_points)
+            # Connect the Recoordinate dialog buttons
             self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
             self.recoordinate_dialog.invalid_path_entry.connect(self.show_message)
 
@@ -754,12 +753,6 @@ class Window(QMainWindow, LoggerMixin):
             self.recoordinate_dialog = None
             # Enable main window widgets
             self.toggle_main_input_widgets(True)
-
-
-    def recoordinate_points(self, input_csv: str, output_csv: str):
-        print("RECOORDINATE")
-        print(input_csv)
-        print(output_csv)
 
 
     def data_error_message(self, error: Exception) -> None:

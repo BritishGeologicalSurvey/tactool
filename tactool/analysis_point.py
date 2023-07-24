@@ -254,7 +254,7 @@ def convert_export_point(analysis_point: AnalysisPoint, headers: list[str]) -> l
 
 def reset_id(analysis_point: AnalysisPoint) -> AnalysisPoint:
     """
-    Resed the ID value of a given Analysis Point.
+    Reset the ID value of a given Analysis Point.
     """
     analysis_point.id = None
     return analysis_point

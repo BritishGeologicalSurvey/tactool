@@ -22,8 +22,6 @@ class RecoordinateDialog(QDialog, LoggerMixin):
     """
     PyQt QDialog class for creating the recoordination dialog box.
     """
-    # Tracks when the recoordinate button is clicked
-    recoordinate_clicked = pyqtSignal(str, str)
     # Tracks when the Recoordinate Dialog Box is closed
     closed_recoordinate_dialog = pyqtSignal()
     # Tracks when invalid input is supplied
@@ -121,7 +119,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         input_csv = self.input_csv_filepath_label.text()
         output_csv = self.output_csv_filepath_label.text()
         if input_csv != "" and output_csv != "":
-            self.recoordinate_clicked.emit(input_csv, output_csv)
+            self.recoordinate_points(input_csv, output_csv)
             self.closeEvent()
         else:
             # Create a message informing the user that their input value is invalid
@@ -130,6 +128,12 @@ class RecoordinateDialog(QDialog, LoggerMixin):
                 "Please select an input and output CSV first.",
                 "warning",
             )
+
+
+    def recoordinate_points(self, input_csv: str, output_csv: str):
+        print("RECOORDINATE")
+        print(input_csv)
+        print(output_csv)
 
 
     def closeEvent(self, event=None) -> None:
