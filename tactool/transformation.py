@@ -8,7 +8,7 @@ from typing import Any
 from tactool.table_model import AnalysisPoint
 
 
-def parse_tactool_csv(filepath: str, default_settings = dict[str, Any]) -> list[dict[str, Any]]:
+def parse_tactool_csv(filepath: str, default_settings: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Parse the data in a given TACtool CSV file.
     """
@@ -50,7 +50,7 @@ def parse_tactool_csv(filepath: str, default_settings = dict[str, Any]) -> list[
             }
             for old_header, new_header in zip(header_changes, list(header_changes.values())):
                 item[new_header] = item.pop(old_header)
-            
+
             analysis_point_rows.append(item)
     return analysis_point_rows
 

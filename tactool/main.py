@@ -73,7 +73,7 @@ class TACtool(QApplication):
     @property
     def set_scale_dialog(self) -> SetScaleDialog:
         return self.window.set_scale_dialog
-    
+
     @property
     def recoordinate_dialog(self) -> RecoordinateDialog:
         return self.window.recoordinate_dialog

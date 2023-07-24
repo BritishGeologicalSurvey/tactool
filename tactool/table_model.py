@@ -283,7 +283,7 @@ class TableModel(QAbstractTableModel):
         """
         # Do not save the last 3 columns as they contain PyQt graphics data
         with open(filepath, "w", newline="") as csvfile:
-            csvwriter = writer(csvfile) 
+            csvwriter = writer(csvfile)
             # Modify and write the header data
             new_headers = self.convert_export_headers()
             csvwriter.writerow(new_headers)
