@@ -347,7 +347,7 @@ def test_import_tactool_csv(tactool: TACtool, filepath: str, expected_points: li
     )
 
     # Import the data from the given TACtool CSV file
-    tactool.window.process_tactool_csv(filepath)
+    tactool.window.load_tactool_csv_data(filepath)
 
     # Iterate through the actual Analysis Points created from the CSV file
     # and the calculated Analysis Points in this test
