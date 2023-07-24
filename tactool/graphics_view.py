@@ -22,9 +22,10 @@ from PyQt5.QtWidgets import (
 )
 
 from tactool.graphics_scene import GraphicsScene
+from tactool.utils import LoggerMixin
 
 
-class GraphicsView(QGraphicsView):
+class GraphicsView(QGraphicsView, LoggerMixin):
     """
     PyQt QGraphicsView with convenience functions for modifications.
     Also includes functions for user interaction with the Graphics View.
@@ -208,6 +209,7 @@ class GraphicsView(QGraphicsView):
         """
         Load an image from a given path into the Graphics View as a PyQt Pixmap.
         """
+        self.logger.info("Loading image: %s", filepath)
         # Load the image into a PyQt Pixmap
         pixmap = QPixmap(filepath)
         # Reset the zoom value
@@ -229,6 +231,7 @@ class GraphicsView(QGraphicsView):
         """
         Get the current Graphics Scene state and save it to a given file.
         """
+        self.logger.info("Saving current graphics state to: %s", filepath)
         # If you get the size of the Graphics Scene rather than the Graphics View,
         # then the saved image includes points which go over the border of the imported image
         rect = self.sceneRect().toRect()
@@ -282,9 +285,11 @@ class GraphicsView(QGraphicsView):
         self.graphics_scene.toggle_transparent_window(self._image)
 
         if self.scaling_mode:
+            self.logger.debug("Activating scaling mode")
             # Set the Graphics View cursor to a crosshair
             self.setCursor(Qt.CrossCursor)
         else:
+            self.logger.debug("Deactivating scaling mode")
             self.reset_scaling_elements()
             self.setCursor(Qt.ArrowCursor)
 
@@ -293,6 +298,7 @@ class GraphicsView(QGraphicsView):
         """
         Reset the scaling elements back to their default values.
         """
+        self.logger.debug("Reset scaling elements")
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
         self.graphics_scene.remove_scale_items()

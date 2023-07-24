@@ -13,7 +13,7 @@ def tactool():
     running QApplication instance to allow Qt commands to work.
     """
     # Create an instance of the application in developer mode and testing mode
-    tactool_application = TACtool([], developer_mode=True, testing_mode=True)
+    tactool_application = TACtool([], developer_mode=True, debug_mode=False, testing_mode=True)
 
     yield tactool_application
     # Delete the application instance before restarting a new one
