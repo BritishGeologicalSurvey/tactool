@@ -7,7 +7,10 @@ import logging
 
 from csv import DictReader
 from textwrap import dedent
-from typing import Optional
+from typing import (
+    Callable,
+    Optional,
+)
 
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QFont
@@ -32,6 +35,9 @@ from tactool.recoordinate_dialog import RecoordinateDialog
 from tactool.set_scale_dialog import SetScaleDialog
 from tactool.table_model import AnalysisPoint
 from tactool.table_view import TableView
+from tactool.transform import (
+    reset_id,
+)
 
 logger = logging.getLogger("tactool")
 logger.setLevel(logging.DEBUG)
@@ -236,7 +242,7 @@ class Window(QMainWindow):
 
         # Connect button clicks to handlers
         self.clear_points_button.clicked.connect(self.clear_analysis_points)
-        self.reset_ids_button.clicked.connect(self.reset_analysis_points)
+        self.reset_ids_button.clicked.connect(lambda: self.reload_analysis_points(transform=reset_id))
         self.reset_settings_button.clicked.connect(self.reset_settings)
         self.colour_button.clicked.connect(self.set_point_colour)
         self.set_scale_button.clicked.connect(self.toggle_scaling_mode)
@@ -248,7 +254,7 @@ class Window(QMainWindow):
         # Connect Table interaction clicks to handlers
         self.table_view.selected_analysis_point.connect(self.get_point_settings)
         self.table_model.invalid_label_entry.connect(self.show_message)
-        self.table_model.updated_analysis_points.connect(self.update_analysis_points)
+        self.table_model.updated_analysis_points.connect(self.reload_analysis_points)
 
 
     def create_status_bar_messages(self):
@@ -603,15 +609,22 @@ class Window(QMainWindow):
         self.table_view.model().layoutChanged.emit()
 
 
-    def reload_analysis_points(self) -> None:
+    def reload_analysis_points(
+        self,
+        index: Optional[QModelIndex] = None,
+        transform: Optional[Callable[[AnalysisPoint], AnalysisPoint]] = None,
+    ) -> None:
         """
         Function to reload all of the existing Analysis Points.
+        Takes an index which indicates if the TableView should be automatically scrolled to a specific point.
+        Also takes a transform function to transform the existing Analysis Points before replacing them.
         """
         # Save the existing Points before clearing them
         current_analysis_points = self.table_model.analysis_points
         self.clear_analysis_points()
         # Iterate through each previously existing Point and recreate it
         for analysis_point in current_analysis_points:
+            analysis_point = transform(analysis_point)
             self.add_analysis_point(
                 apid=analysis_point.id,
                 x=analysis_point.x,
@@ -627,31 +640,12 @@ class Window(QMainWindow):
                 from_click=False
             )
 
-
-    def reset_analysis_points(self) -> None:
-        """
-        Function to reset the ID values of all existing Analysis Points.
-        """
-        # Save the existing Points before clearing them
-        current_analysis_points = self.table_model.analysis_points
-        self.clear_analysis_points()
-        self.graphics_scene._maximum_point_id = 0
-        # Iterate through each previously existing Point and recreate it without the existing ID
-        # This forces it to automatically increment from 0
-        for analysis_point in current_analysis_points:
-            self.add_analysis_point(
-                x=analysis_point.x,
-                y=analysis_point.y,
-                label=analysis_point.label,
-                diameter=analysis_point.diameter,
-                scale=analysis_point.scale,
-                colour=analysis_point.colour,
-                sample_name=analysis_point.sample_name,
-                mount_name=analysis_point.mount_name,
-                material=analysis_point.material,
-                notes=analysis_point.notes,
-                from_click=False
-            )
+        # Index is given when the user edits a cell in the PyQt Table View
+        # It represents the index of the modified cell
+        if index is not None:
+            # When the Analysis Points are reloaded, the scroll position in the PyQt Table View resets
+            # Therefore, we scroll back to where the user was previously scrolled
+            self.table_view.scrollTo(index)
 
 
     def clear_analysis_points(self) -> None:
@@ -661,22 +655,6 @@ class Window(QMainWindow):
         # Iterate through existing Analysis Points and delete them
         for point in self.table_model.analysis_points:
             self.remove_analysis_point(apid=point.id)
-
-        # Reset the maximum Analysis Point ID value
-        self.graphics_scene._maximum_point_id = 0
-
-
-    def update_analysis_points(self, index: QModelIndex = None) -> None:
-        """
-        Function to reload the Analysis Points currently in the application and optionally scroll to a given index.
-        """
-        self.reload_analysis_points()
-        # Index is given when the user edits a cell in the PyQt Table View
-        # It represents the index of the modified cell
-        if index:
-            # When the Analysis Points are reloaded, the scroll position in the PyQt Table View resets
-            # Therefore, we scroll back to where the user was previously scrolled
-            self.table_view.scrollTo(index)
 
 
     def set_point_colour(self) -> None:
