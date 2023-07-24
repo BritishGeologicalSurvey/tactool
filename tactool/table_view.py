@@ -29,18 +29,26 @@ class TableView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().setVisible(False)
         self.setAlternatingRowColors(True)
-        self.set_column_sizes()
+        self.format_columns()
 
 
-    def set_column_sizes(self) -> None:
+    def format_columns(self) -> None:
         """
-        Function to set the sizing of specific columns in the Table View.
+        Format the columns in the TableView.
+        This includes sizing specific columns and hiding private fields.
         """
-        headers = TableModel().headers
-        resize_columns = ["id", "x", "y", "label", "diameter", "scale", "colour"]
+        headers: list[str] = self.model().headers
+
         # Resize the first 7 columns to be smaller
+        resize_columns = ["id", "x", "y", "label", "diameter", "scale", "colour"]
         for column_name in resize_columns:
             self.setColumnWidth(headers.index(column_name), 100)
+
+        # Hide private fields
+        for idx, column in enumerate(headers):
+            # Columns beginning with an _ store the PyQt Graphics elements corresponding to the Analysis Points
+            if column.startswith("_"):
+                self.hideColumn(idx)
 
 
     def mousePressEvent(self, event: QMouseEvent) -> None:

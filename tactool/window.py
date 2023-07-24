@@ -160,13 +160,6 @@ class Window(QMainWindow):
         self.reset_ids_button = QPushButton("Reset IDs", self)
         self.reset_settings_button = QPushButton("Reset Settings", self)
 
-        # Iterate through each header in the PyQt Table Model
-        for idx, column in enumerate(self.graphics_view.graphics_scene.table_model.headers):
-            # Hide any columns which start with an "_" in the PyQt Table View
-            # These columns store the PyQt Graphics elements corresponding to the Analysis Points
-            if column.startswith("_"):
-                self.table_view.hideColumn(idx)
-
         # Arrange the layout of the user interface
         sidebar = QVBoxLayout()
 
