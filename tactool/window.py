@@ -29,7 +29,8 @@ from tactool.recoordinate_dialog import RecoordinateDialog
 from tactool.set_scale_dialog import SetScaleDialog
 from tactool.table_model import AnalysisPoint
 from tactool.table_view import TableView
-from tactool.transformation import (
+from tactool.analysis_point import (
+    export_tactool_csv,
     parse_tactool_csv,
     reset_id,
 )
@@ -382,12 +383,10 @@ class Window(QMainWindow, LoggerMixin):
         # A KeyError and UnicodeError usually occur with an incorrectly formatted CSV file
         except (KeyError, UnicodeError):
             # Show a message to the user informing them of which headers should be in the CSV file
-            public_headers = [header for header in self.table_model.headers
-                              if not header.startswith("_")]
             message = dedent(f"""
                 There was an error when loading data from CSV file: {filepath.split("/")[-1]}.
 
-                Must use csv with header {public_headers}.
+                Must use csv with header {self.table_model.public_headers}.
             """)
             self.show_message("Error loading data", message, "warning")
 
@@ -408,7 +407,11 @@ class Window(QMainWindow, LoggerMixin):
             path = pyqt_save_dialog[0]
             if path:
                 try:
-                    self.table_model.export_csv(path)
+                    export_tactool_csv(
+                        filepath=filepath,
+                        headers=self.table_model.public_headers,
+                        analysis_points=self.table_model.analysis_points,
+                    )
                 except Exception as error:
                     self.data_error_message(error)
 

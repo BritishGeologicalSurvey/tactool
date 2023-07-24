@@ -11,7 +11,10 @@ from pathlib import WindowsPath
 import pytest
 from PyQt5.QtGui import QPixmap
 from tactool.main import TACtool
-from tactool.table_model import AnalysisPoint
+from tactool.analysis_point import (
+    AnalysisPoint,
+    export_tactool_csv,
+)
 
 
 PUBLIC_INDEX = len(TACtool([], testing_mode=True).window.table_model.headers) - 3
@@ -398,7 +401,11 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
     tactool.graphics_view.left_click.emit(303, 303)
 
     # Save the data to the given CSV file path
-    tactool.table_model.export_csv(csv_path)
+    export_tactool_csv(
+        filepath=csv_path,
+        headers=tactool.table_model.public_headers,
+        analysis_points=tactool.table_model.analysis_points,
+    )
     assert_csv_data(csv_path, expected_headers, expected_data)
 
 

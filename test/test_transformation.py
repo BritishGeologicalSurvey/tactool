@@ -4,7 +4,7 @@ Tests for functions in the transformation module
 import numpy as np
 import pytest
 
-from tactool.transformation import (
+from tactool.analysis_point import (
     affine_transform_point,
     affine_transform_matrix,
 )

@@ -1,6 +1,3 @@
-import dataclasses
-from csv import writer
-from pathlib import Path
 from textwrap import dedent
 from typing import (
     Any,
@@ -13,80 +10,10 @@ from PyQt5.QtCore import (
     QModelIndex,
     Qt,
 )
-from PyQt5.QtWidgets import (
-    QGraphicsEllipseItem,
-    QGraphicsTextItem,
-)
+from PyQt5.QtWidgets import QGraphicsEllipseItem
 
+from tactool.analysis_point import AnalysisPoint
 from tactool.utils import LoggerMixin
-
-
-@dataclasses.dataclass
-class AnalysisPoint:
-    """
-    Container class for encapsulating Analysis point data.
-    """
-    # Define the class variables for the Analysis Points
-    id: int
-    label: str
-    x: int
-    y: int
-    diameter: int
-    scale: float
-    colour: str
-    sample_name: str
-    mount_name: str
-    material: str
-    notes: str
-    _outer_ellipse: QGraphicsEllipseItem
-    _inner_ellipse: QGraphicsEllipseItem
-    _label_text_item: QGraphicsTextItem
-
-
-    @classmethod
-    def field_names(cls) -> list[str]:
-        """
-        Get the field names of the class object.
-        """
-        return [field.name for field in dataclasses.fields(cls)]
-
-
-    def aslist(self) -> list[
-        int,
-        int,
-        int,
-        str,
-        int,
-        float,
-        str,
-        str,
-        str,
-        str,
-        str,
-        QGraphicsEllipseItem,
-        QGraphicsEllipseItem,
-        QGraphicsTextItem,
-    ]:
-        """
-        Get the attributes of an Analysis Point object as a list.
-        """
-        attributes_list = [
-            self.id,
-            self.label,
-            self.x,
-            self.y,
-            self.diameter,
-            self.scale,
-            self.colour,
-            self.sample_name,
-            self.mount_name,
-            self.material,
-            self.notes,
-            self._outer_ellipse,
-            self._inner_ellipse,
-            self._label_text_item
-        ]
-        return attributes_list
 
 
 class TableModel(QAbstractTableModel, LoggerMixin):
@@ -248,6 +175,14 @@ class TableModel(QAbstractTableModel, LoggerMixin):
 
 
     @property
+    def public_headers(self) -> list[str]:
+        """
+        Return just the public headers.
+        """
+        return [header for header in self.headers if not header.startswith("_")]
+
+
+    @property
     def analysis_points(self) -> list[AnalysisPoint]:
         """
         Return all of the Analysis Points.
@@ -277,63 +212,3 @@ class TableModel(QAbstractTableModel, LoggerMixin):
             return 1
         else:
             return max(ids) + 1
-
-
-    def export_csv(self, filepath: Path) -> None:
-        """
-        Get all the existing Analysis Points and write them to as a CSV file.
-        """
-        self.logger.info("Exporting TACtool CSV: %s", filepath)
-        # Do not save the last 3 columns as they contain PyQt graphics data
-        with open(filepath, "w", newline="") as csvfile:
-            csvwriter = writer(csvfile)
-            self.logger.debug("Converting data for CSV export")
-            # Modify and write the header data
-            new_headers = self.convert_export_headers()
-            csvwriter.writerow(new_headers)
-
-            for analysis_point in self.analysis_points:
-                csv_row = self.convert_export_point(analysis_point)
-                csvwriter.writerow(csv_row)
-
-
-    def convert_export_headers(self) -> list[str]:
-        """
-        Convert the header data for a CSV export.
-        This will rename some headers, remove sample_name, and add a Z field.
-        """
-        header_conversions = {
-            "id": "Name",
-            "label": "Type",
-            "x": "X",
-            "y": "Y",
-        }
-        headers = self.headers[:len(self.headers) - 3]
-        for old_header, new_header in zip(header_conversions, header_conversions.values()):
-            headers[headers.index(old_header)] = new_header
-        # Remove the sample_name field, it is concatenated with ID
-        headers.pop(headers.index("sample_name"))
-
-        # Insert a new Z column after the Y column for the laser formatting
-        z_index = headers.index("Y") + 1
-        headers.insert(z_index, "Z")
-        return headers
-
-
-    def convert_export_point(self, analysis_point: AnalysisPoint) -> list:
-        """
-        Convert an Analysis Point for a CSV export.
-        This will concatenate the ID and sample_name into a single field,
-        and add a Z field.
-        """
-        headers = self.headers[:len(self.headers) - 3]
-        analysis_point_row = analysis_point.aslist()[:len(self.headers) - 3]
-
-        # Concat the sample_name and id into 1 column
-        # Also pads zeros on id column value
-        analysis_point_row[headers.index("id")] = f"{analysis_point.sample_name}_#{analysis_point.id:03d}"
-        analysis_point_row.pop(headers.index("sample_name"))
-
-        # Insert a new Z column after the Y column for the laser formatting
-        analysis_point_row.insert(headers.index("y") + 1, 0)
-        return analysis_point_row
