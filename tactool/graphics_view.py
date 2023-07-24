@@ -1,8 +1,3 @@
-"""
-The Graphics View is the user interface element in charge of image interaction.
-It can load and save images and is responsible for capturing mouse events.
-"""
-
 import math
 
 from PyQt5.QtCore import (
@@ -52,7 +47,7 @@ class GraphicsView(QGraphicsView):
         self._image = QGraphicsPixmapItem()
         self.navigation_mode = False
         # Setting scaling variables
-        self.set_scale_mode = False
+        self.scaling_mode = False
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
 
@@ -66,7 +61,7 @@ class GraphicsView(QGraphicsView):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
-        Function to handle mouse clicking interaction events with the Graphics View.
+        Handler for mouse clicking interaction events with the Graphics View.
 
         Since we are only adding functionality to mousePressEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
@@ -76,7 +71,7 @@ class GraphicsView(QGraphicsView):
         if self._image.isUnderMouse():
             clicked_point = self.mapToScene(event.pos()).toPoint()
 
-            if self.set_scale_mode:
+            if self.scaling_mode:
                 # If there is no current start point of a scaling line
                 if self.scale_start_point.isNull():
                     # Set the start point of the scaling line to be the clicked point
@@ -104,13 +99,13 @@ class GraphicsView(QGraphicsView):
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         """
-        Function to handle mouse movement interaction events with the Graphics View.
+        Handler for mouse movement interaction events with the Graphics View.
 
         Since we are only adding functionality to mouseMoveEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
         all other event occurences.
         """
-        if self.set_scale_mode:
+        if self.scaling_mode:
             # If there is a current start point but not an end point of a scaling line
             if not self.scale_start_point.isNull() and self.scale_end_point.isNull():
                 # Emit a signal that the mouse has been moved
@@ -124,7 +119,7 @@ class GraphicsView(QGraphicsView):
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
-        Function to handle mouse scroll wheel interaction events with the Graphics View.
+        Handler for mouse scroll wheel interaction events with the Graphics View.
 
         The function does not pass the event back to the parent class PyQt QGraphicsView
         because the default wheelEvent triggers the scrolling of the Graphics View.
@@ -159,7 +154,7 @@ class GraphicsView(QGraphicsView):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """
-        Function to handle keyboard press events.
+        Handler for keyboard press events.
 
         Since we are only adding functionality to keyPressEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
@@ -177,7 +172,7 @@ class GraphicsView(QGraphicsView):
 
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
         """
-        Function to handle keyboard release events.
+        Handler for keyboard release events.
 
         Since we are only adding functionality to keyReleaseEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
@@ -193,7 +188,7 @@ class GraphicsView(QGraphicsView):
 
     def configure_frame(self) -> None:
         """
-        Function to configure the settings of the Graphics View.
+        Configure the settings of the Graphics View.
         """
         # Sets the Graphics View to anchor it's centre to the current position of the mouse
         # This applies when zooming into the image
@@ -210,7 +205,7 @@ class GraphicsView(QGraphicsView):
 
     def load_image(self, filepath: str) -> None:
         """
-        Fuction to load an image from a given path into the Graphics View as a PyQt Pixmap.
+        Load an image from a given path into the Graphics View as a PyQt Pixmap.
         """
         # Load the image into a PyQt Pixmap
         pixmap = QPixmap(filepath)
@@ -231,7 +226,7 @@ class GraphicsView(QGraphicsView):
 
     def save_image(self, filepath: str) -> None:
         """
-        Function to get the current Graphics Scene state and save it to a given file.
+        Get the current Graphics Scene state and save it to a given file.
         """
         # If you get the size of the Graphics Scene rather than the Graphics View,
         # then the saved image includes points which go over the border of the imported image
@@ -252,9 +247,9 @@ class GraphicsView(QGraphicsView):
 
     def show_entire_image(self) -> None:
         """
-        Function to show the entirety of the current image in the Graphics View.
+        Show the entirety of the current image in the Graphics View.
         """
-        # Get a rectf of the current image
+        # Get a QRectF of the current image
         rect = QRectF(self._image.pixmap().rect())
         # If a rectf object was successfully created
         if not rect.isNull():
@@ -280,16 +275,14 @@ class GraphicsView(QGraphicsView):
 
     def toggle_scaling_mode(self) -> None:
         """
-        Function to toggle the scaling mode Graphics Scene settings.
+        Toggle the scaling mode Graphics Scene settings.
         """
-        self.set_scale_mode = not self.set_scale_mode
+        self.scaling_mode = not self.scaling_mode
         self.graphics_scene.toggle_transparent_window(self._image)
 
-        # If the program is currently in Scaling mode
-        if self.set_scale_mode:
+        if self.scaling_mode:
             # Set the Graphics View cursor to a crosshair
             self.setCursor(Qt.CrossCursor)
-        # Else when the program is not currently in Scaling mode
         else:
             self.reset_scaling_elements()
             self.setCursor(Qt.ArrowCursor)
