@@ -42,6 +42,7 @@ class GraphicsScene(QGraphicsScene):
 
     def add_analysis_point(
             self,
+            apid: int,
             x: int,
             y: int,
             label: str,
@@ -49,7 +50,6 @@ class GraphicsScene(QGraphicsScene):
             colour: str,
             scale: float,
             notes: str = "",
-            apid: int = None,
             sample_name: str = "",
             mount_name: str = "",
             material: str = "",
@@ -84,10 +84,6 @@ class GraphicsScene(QGraphicsScene):
             ellipse_diameter,
             pen,
         )
-
-        # If no analysis point ID is given, assign it the next ID available
-        if not apid:
-            apid = self.next_point_id
 
         # Set the label text of the point
         # Use the given label if there is one, else use the point ID
@@ -167,21 +163,6 @@ class GraphicsScene(QGraphicsScene):
 
         # If there are items in the list, return the first as it will be the target ellipse
         return ellipse_items[0] if ellipse_items else None
-
-
-    @property
-    def next_point_id(self) -> int:
-        """
-        Return the current maximum Analysis Point ID value + 1.
-        """
-        ids = [
-            analysis_point.id
-            for analysis_point in self.table_model.analysis_points
-        ]
-        if len(ids) == 0:
-            return 1
-        else:
-            return max(ids) + 1
 
 
     def toggle_transparent_window(self, graphics_view_image: QGraphicsPixmapItem) -> None:

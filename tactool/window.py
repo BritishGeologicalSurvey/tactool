@@ -468,12 +468,12 @@ class Window(QMainWindow):
         self,
         x: int,
         y: int,
-        label: str = None,
-        diameter: int = None,
-        scale: float = None,
-        colour: str = None,
+        label: Optional[str] = None,
+        diameter: Optional[int] = None,
+        scale: Optional[float] = None,
+        colour: Optional[str] = None,
         notes: str = "",
-        apid: int = None,
+        apid: Optional[int] = None,
         sample_name: str = "",
         mount_name: str = "",
         material: str = "",
@@ -497,7 +497,12 @@ class Window(QMainWindow):
             mount_name = self.mount_name_input.text()
             material = self.material_input.text()
 
+        # If no analysis point ID is given, assign it the next ID available
+        if not apid:
+            apid = self.table_model.next_point_id
+
         analysis_point = self.graphics_scene.add_analysis_point(
+            apid=apid,
             x=x,
             y=y,
             label=label,
@@ -505,7 +510,6 @@ class Window(QMainWindow):
             scale=scale,
             colour=colour,
             notes=notes,
-            apid=apid,
             sample_name=sample_name,
             mount_name=mount_name,
             material=material,
