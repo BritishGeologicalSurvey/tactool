@@ -213,6 +213,7 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # Check that the main input widgets are enabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
+    assert tactool.window.graphics_view.disable_analysis_points is False
 
     # Start the scaling mode
     tactool.window.toggle_scaling_mode()
@@ -224,6 +225,7 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # Check that the main input widgets are disabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is False
+    assert tactool.window.graphics_view.disable_analysis_points is True
 
     # Set the scale, following the same steps as the user would
     tactool.window.set_scale_dialog.scale_value.setText(str(2.0))
@@ -236,6 +238,7 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # Check that the main input widgets are enabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
+    assert tactool.window.graphics_view.disable_analysis_points is False
 
 
 def test_set_scale(tactool: TACtool) -> None:

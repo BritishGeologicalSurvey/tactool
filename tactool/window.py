@@ -1,8 +1,3 @@
-"""
-The Window manages the user interface layout and interaction with
-buttons and input boxes.
-"""
-
 import logging
 from textwrap import dedent
 from typing import (
@@ -15,6 +10,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QColorDialog,
     QComboBox,
+    QDialog,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -72,7 +68,6 @@ class Window(QMainWindow):
         # point_colour is stored as a class vairable because it requires formatting
         # this variable is the formatted version ready to use for other functions
         self.point_colour: str = self.default_settings["colour"]
-        self.status_bar_messages = self.create_status_bar_messages()
 
         # Setup the User Interface
         self.setWindowTitle("TACtool")
@@ -85,8 +80,9 @@ class Window(QMainWindow):
         self.recoordinate_dialog: Optional[RecoordinateDialog] = None
         self.setup_ui_elements()
         self.connect_signals_and_slots()
+        self.status_bar_messages = self.create_status_bar_messages()
         self.toggle_status_bar_messages()
-        self.main_input_widgets = [
+        self.main_input_widgets: list[QWidget] = [
             self.menu_bar_file,
             self.sample_name_input,
             self.mount_name_input,
@@ -94,16 +90,21 @@ class Window(QMainWindow):
             self.label_input,
             self.colour_button,
             self.diameter_input,
+            self.set_scale_button,
             self.reset_ids_button,
             self.reset_settings_button,
             self.clear_points_button,
             self.table_view,
         ]
+        self.dialogs: list[QDialog] = [
+            self.set_scale_dialog,
+            self.recoordinate_dialog,
+        ]
 
 
     def setup_ui_elements(self) -> None:
         """
-        Function to setup the User Interface elements.
+        Setup the User Interface elements.
         """
         # Create the menu bar
         self.menu_bar = self.menuBar()
@@ -207,7 +208,7 @@ class Window(QMainWindow):
 
     def set_colour_button_style(self) -> None:
         """
-        Function to set the CSS stylesheet of the Colour Button in the User Interface.
+        Set the CSS stylesheet of the Colour Button in the User Interface.
         """
         colour_button_stylesheet = """
             QToolTip {
@@ -223,7 +224,7 @@ class Window(QMainWindow):
 
     def connect_signals_and_slots(self) -> None:
         """
-        Function for connecting signals and slots of User Interface interactions.
+        Connect signals and slots to User Interface interactions.
         """
         # Connect menu bar clicks to handlers
         self.menu_bar_file_import_image.triggered.connect(self.import_image_get_path)
@@ -251,7 +252,7 @@ class Window(QMainWindow):
 
     def create_status_bar_messages(self):
         """
-        Function to create the status bar message functions.
+        Create the status bar message functions.
         """
         # Each of these functions contains the condition for the status message and the message itself
         # These must be functions so that the conditional statement is dynamic
@@ -285,7 +286,7 @@ class Window(QMainWindow):
 
     def toggle_status_bar_messages(self) -> None:
         """
-        Function to toggle all of the status bar messages.
+        Toggle all of the status bar messages.
         """
         for status_name in self.status_bar_messages:
             # Get the status, condition result and message from the dictionary
@@ -436,7 +437,7 @@ class Window(QMainWindow):
                     return False
 
         # If there are less than 3 reference points
-        if self.status_bar_messages["ref_points"]["status"]:
+        if len(self.table_model.reference_points) < 3:
             default_label = self.default_settings["label"]
             message = dedent(f"""
                 Missing reference points.
@@ -597,45 +598,9 @@ class Window(QMainWindow):
             self.set_colour_button_style()
 
 
-    def toggle_scaling_mode(self) -> None:
-        """
-        Function to toggle the program's scaling mode functionality.
-        """
-        # Toggle the scaling mode for the Graphics View
-        self.graphics_view.toggle_scaling_mode()
-
-        # If the program is not in scaling mode
-        if self.set_scale_dialog is None:
-            self.set_scale_dialog = SetScaleDialog(self.testing_mode)
-            self.toggle_main_input_widgets(False)
-            # Move the Set Scale Dialog box to be at the top left corner of the main window
-            main_window_pos = self.pos()
-            self.set_scale_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
-
-            # Connect the Set Scale dialog buttons
-            self.set_scale_dialog.set_scale_clicked.connect(self.set_scale)
-            self.set_scale_dialog.clear_scale_clicked.connect(self.graphics_view.reset_scaling_elements)
-            self.set_scale_dialog.closed_set_scale_dialog.connect(self.toggle_scaling_mode)
-            self.graphics_view.scale_move_event.connect(self.set_scale_dialog.scale_move_event_handler)
-
-        # Else when the program is in scaling mode, reset the Set Scaling Dialog value
-        else:
-            self.set_scale_dialog = None
-            # Enable main window widgets
-            self.toggle_main_input_widgets(True)
-
-
-    def toggle_main_input_widgets(self, enable: bool) -> None:
-        """
-        Toggle each of the input widgets in the main window to be enabled or disabled.
-        """
-        for widget in self.main_input_widgets:
-            widget.setEnabled(enable)
-
-
     def set_scale(self, scale: float) -> None:
         """
-        Function to set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
+        Set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
         """
         self.scale_value_input.setText(str(scale))
         self.toggle_status_bar_messages()
@@ -643,7 +608,7 @@ class Window(QMainWindow):
 
     def get_point_settings(self, analysis_point: AnalysisPoint, clicked_column_index: int) -> None:
         """
-        Function to get the settings of an Analysis Point which has been selected in the PyQt Table View.
+        Get the settings of an Analysis Point which has been selected in the PyQt Table View.
         These settings are then updated to be the current settings.
         """
         logger.debug("Selected Analysis Point: %s", analysis_point)
@@ -663,7 +628,7 @@ class Window(QMainWindow):
 
     def reset_settings(self) -> None:
         """
-        Function to reset input fields and general Analysis Point settings to default.
+        Reset input fields and general Analysis Point settings to default.
         """
         self.update_point_settings(
             sample_name=self.default_settings["metadata"],
@@ -678,16 +643,16 @@ class Window(QMainWindow):
 
     def update_point_settings(
         self,
-        sample_name: str = None,
-        mount_name: str = None,
-        material: str = None,
-        label: str = None,
-        diameter: int = None,
-        scale: str | float = None,
-        colour: str = None,
+        sample_name: Optional[str] = None,
+        mount_name: Optional[str] = None,
+        material: Optional[str] = None,
+        label: Optional[str] = None,
+        diameter: Optional[int] = None,
+        scale: Optional[str | float] = None,
+        colour: Optional[str] = None,
     ) -> None:
         """
-        Function to update the Analysis Point settings to be the given settings.
+        Update the Analysis Point settings to be the given settings.
         If a value is given for a field, then the value and any corresponding
         User Interface elements are updated.
         """
@@ -714,6 +679,43 @@ class Window(QMainWindow):
         if colour is not None:
             self.point_colour = colour
             self.set_colour_button_style()
+
+
+    def toggle_main_input_widgets(self, enable: bool) -> None:
+        """
+        Toggle each of the input widgets in the main window to be enabled or disabled.
+        """
+        for widget in self.main_input_widgets:
+            widget.setEnabled(enable)
+        self.graphics_view.disable_analysis_points = not enable
+
+
+    def toggle_scaling_mode(self) -> None:
+        """
+        Function to toggle the program's scaling mode functionality.
+        """
+        # Toggle the scaling mode for the Graphics View
+        self.graphics_view.toggle_scaling_mode()
+
+        # If the program is not in scaling mode
+        if self.set_scale_dialog is None:
+            self.set_scale_dialog = SetScaleDialog(self.testing_mode)
+            self.toggle_main_input_widgets(False)
+            # Move the Set Scale Dialog box to be at the top left corner of the main window
+            main_window_pos = self.pos()
+            self.set_scale_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
+
+            # Connect the Set Scale dialog buttons
+            self.set_scale_dialog.set_scale_clicked.connect(self.set_scale)
+            self.set_scale_dialog.clear_scale_clicked.connect(self.graphics_view.reset_scaling_elements)
+            self.set_scale_dialog.closed_set_scale_dialog.connect(self.toggle_scaling_mode)
+            self.graphics_view.scale_move_event.connect(self.set_scale_dialog.scale_move_event_handler)
+
+        # Else when the program is in scaling mode, reset the Set Scaling Dialog value
+        else:
+            self.set_scale_dialog = None
+            # Enable main window widgets
+            self.toggle_main_input_widgets(True)
 
 
     def toggle_recoordinate_dialog(self) -> None:
@@ -750,7 +752,7 @@ class Window(QMainWindow):
 
     def data_error_message(self, error: Exception) -> None:
         """
-        Function to show an error message to the user in the event that
+        Show an error message to the user in the event that
         an error occurs when loading in data.
         """
         self.show_message(
@@ -762,7 +764,7 @@ class Window(QMainWindow):
 
     def show_message(self, title: str, message: str, type: str) -> bool:
         """
-        Function to show a given message to the user in a PyQt QMessageBox.
+        Show a given message to the user in a PyQt QMessageBox.
         """
         # Creating the PyQt Message box and formatting it
         widget = QMessageBox()
@@ -792,10 +794,6 @@ class Window(QMainWindow):
         Function which is run by PyQt when the application is closed.
         """
         # Close any open dialogs
-        dialogs = [
-            self.recoordinate_dialog,
-            self.set_scale_dialog,
-        ]
-        for dialog in dialogs:
+        for dialog in self.dialogs:
             if dialog is not None:
                 dialog.close()

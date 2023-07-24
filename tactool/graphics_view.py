@@ -45,6 +45,7 @@ class GraphicsView(QGraphicsView):
         self._empty = True
         # This stores the current image of the PyQt Graphics View as a PyQt Pixmap Item
         self._image = QGraphicsPixmapItem()
+        self.disable_analysis_points = False
         self.navigation_mode = False
         # Setting scaling variables
         self.scaling_mode = False
@@ -86,7 +87,7 @@ class GraphicsView(QGraphicsView):
                     # Call the Graphics Scene function to draw the point
                     self.graphics_scene.draw_scale_point(clicked_point.x(), clicked_point.y())
 
-            elif not self.navigation_mode:
+            elif not self.navigation_mode and not self.disable_analysis_points:
                 clicked_button = event.button()
 
                 if clicked_button == Qt.LeftButton:
