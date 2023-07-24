@@ -1,10 +1,3 @@
-"""
-The Analysis Point class stores Analysis Point data.
-
-The Table Model acts as a central storage for Analysis Points
-and Graphics Scene items.
-"""
-
 import dataclasses
 from csv import writer
 from pathlib import Path
@@ -51,7 +44,7 @@ class AnalysisPoint:
     @classmethod
     def field_names(cls) -> list[str]:
         """
-        Function to get the field names of the class object.
+        Get the field names of the class object.
         """
         return [field.name for field in dataclasses.fields(cls)]
 
@@ -73,7 +66,7 @@ class AnalysisPoint:
         QGraphicsTextItem,
     ]:
         """
-        Function to get the attributes of an Analysis Point object as a list.
+        Get the attributes of an Analysis Point object as a list.
         """
         attributes_list = [
             self.id,
@@ -120,7 +113,7 @@ class TableModel(QAbstractTableModel):
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int) -> str:
         """
-        Function to set and return the header values from the QAbstractTableModel.
+        Set and return the header values from the QAbstractTableModel.
         """
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
@@ -131,22 +124,25 @@ class TableModel(QAbstractTableModel):
 
     def columnCount(self, *args) -> int:
         """
-        Function to return the number of columns in the QAbstractTableModel.
+        Return the number of columns in the QAbstractTableModel.
+        Internal method for PyQt.
         """
         return len(self.headers)
 
 
     def rowCount(self, *args) -> int:
         """
-        Function to return the number of rows in the QAbstractTableModel.
+        Return the number of rows in the QAbstractTableModel.
+        Internal method for PyQt.
         """
         return len(self._data)
 
 
     def data(self, index: QModelIndex, role: int) -> Optional[str]:
         """
-        Function to format the data to be displayed in the QAbstractTableModel.
+        Format the data to be displayed in the QAbstractTableModel.
         It is called when displaying values in the cells, also called when editing (doubleclick).
+        Internal method for PyQt.
         """
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
@@ -161,8 +157,9 @@ class TableModel(QAbstractTableModel):
 
     def setData(self, index: QModelIndex, value: str, role: Qt.ItemDataRole = Qt.EditRole) -> bool:
         """
-        Function to update the value in a cell of the QAbstractTableModel.
+        Update the value in a cell of the QAbstractTableModel.
         It is called when editing a value in an editable cell.
+        Internal method for PyQt.
         """
         if index.isValid():
             row = index.row()
@@ -201,46 +198,47 @@ class TableModel(QAbstractTableModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         """
-        Function to set the flags of the cells within the QAbstractTableModel.
+        Set the flags of the cells within the QAbstractTableModel.
+        Internal method for PyQt.
         """
-        # If the given column should be an editable column, set it to be editable
         # Set all columns to be selectable and enabled
+        default_flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        # If the given column should be an editable column, set it to be editable
         if index.column() in self.editable_columns:
-            return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+            return default_flags | Qt.ItemIsEditable
         else:
-            return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+            return default_flags
 
 
     def add_point(self, analysis_point: AnalysisPoint) -> None:
         """
-        Function to add an Analysis Point object as a row.
+        Add an Analysis Point object as a row.
         """
         self._data.append(analysis_point.aslist())
 
 
     def remove_point(self, target_id: int) -> None:
         """
-        Function to remove an Analysis Point object using it's ID value.
+        Remove an Analysis Point object using it's ID value.
         """
         for index, analysis_point in enumerate(self.analysis_points):
-            # If the target ID is equal to the current ID, remove it from the table
             if target_id == analysis_point.id:
                 self._data.pop(index)
+                break
 
 
     def get_point_by_ellipse(self, target_ellipse: QGraphicsEllipseItem) -> AnalysisPoint:
         """
-        Function to get the data of an Analysis Point object.
+        Get the data of an Analysis Point object using its ellipse object.
         """
         for analysis_point in self.analysis_points:
-            # If the target ellipse is equal to either the current outer or inner ellipse
             if target_ellipse in [analysis_point._outer_ellipse, analysis_point._inner_ellipse]:
                 return analysis_point
 
 
     def get_point_by_apid(self, target_id: int) -> AnalysisPoint:
         """
-        Function to get an Analysis Point using its ID value.
+        Get an Analysis Point using its ID value.
         """
         for analysis_point in self.analysis_points:
             if int(target_id) == analysis_point.id:
@@ -248,22 +246,20 @@ class TableModel(QAbstractTableModel):
 
 
     @property
-    def reference_points(self) -> list[AnalysisPoint]:
+    def analysis_points(self) -> list[AnalysisPoint]:
         """
-        Function to return Analysis Points which are a RefMark point.
+        Return all of the Analysis Points.
         """
-        # Using list comprehension to get Analysis Points if their label attribute is equal to RefMark
-        label_index = AnalysisPoint.field_names().index("label")
-        return [AnalysisPoint(*item) for item in self._data if item[label_index] == "RefMark"]
+        return [AnalysisPoint(*item) for item in self._data]
 
 
     @property
-    def analysis_points(self) -> list[AnalysisPoint]:
+    def reference_points(self) -> list[AnalysisPoint]:
         """
-        Function to return all of the Analysis Points.
+        Return Analysis Points which are RefMarks point.
         """
-        # Using list comprehension to get all Analysis Points and unpack their values into Analysis Point objects
-        return [AnalysisPoint(*item) for item in self._data]
+        label_index = AnalysisPoint.field_names().index("label")
+        return [AnalysisPoint(*item) for item in self._data if item[label_index] == "RefMark"]
 
 
     def export_csv(self, filepath: Path) -> None:
@@ -272,11 +268,11 @@ class TableModel(QAbstractTableModel):
         """
         # Do not save the last 3 columns as they contain PyQt graphics data
         with open(filepath, "w", newline="") as csvfile:
-            csvwriter = writer(csvfile)
+            csvwriter = writer(csvfile) 
             # Modify and write the header data
             new_headers = self.convert_export_headers()
             csvwriter.writerow(new_headers)
-            # Iterate through each existing analysis point and write it's data
+
             for analysis_point in self.analysis_points:
                 csv_row = self.convert_export_point(analysis_point)
                 csvwriter.writerow(csv_row)
@@ -284,7 +280,8 @@ class TableModel(QAbstractTableModel):
 
     def convert_export_headers(self) -> list[str]:
         """
-        Function to convert the header data formatting for a CSV export.
+        Convert the header data for a CSV export.
+        This will rename some headers, remove sample_name, and add a Z field.
         """
         header_conversions = {
             "id": "Name",
@@ -295,7 +292,7 @@ class TableModel(QAbstractTableModel):
         headers = self.headers[:len(self.headers) - 3]
         for old_header, new_header in zip(header_conversions, header_conversions.values()):
             headers[headers.index(old_header)] = new_header
-        # Remove the sample_name field
+        # Remove the sample_name field, it is concatenated with ID
         headers.pop(headers.index("sample_name"))
 
         # Insert a new Z column after the Y column for the laser formatting
@@ -306,18 +303,18 @@ class TableModel(QAbstractTableModel):
 
     def convert_export_point(self, analysis_point: AnalysisPoint) -> list:
         """
-        Function to convert an Analysis Point formatting for a CSV export.
+        Convert an Analysis Point for a CSV export.
+        This will concatenate the ID and sample_name into a single field,
+        and add a Z field.
         """
         headers = self.headers[:len(self.headers) - 3]
-        id_idx, sample_name_idx = headers.index("id"), headers.index("sample_name")
         analysis_point_row = analysis_point.aslist()[:len(self.headers) - 3]
 
         # Concat the sample_name and id into 1 column
         # Also pads zeros on id column value
-        analysis_point_row[id_idx] = f"{analysis_point.sample_name}_#{analysis_point.id:03d}"
-        analysis_point_row.pop(sample_name_idx)
+        analysis_point_row[headers.index("id")] = f"{analysis_point.sample_name}_#{analysis_point.id:03d}"
+        analysis_point_row.pop(headers.index("sample_name"))
 
         # Insert a new Z column after the Y column for the laser formatting
-        z_index = headers.index("y") + 1
-        analysis_point_row.insert(z_index, 0)
+        analysis_point_row.insert(headers.index("y") + 1, 0)
         return analysis_point_row
