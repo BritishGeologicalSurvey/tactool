@@ -13,8 +13,10 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
+from tactool.utils import LoggerMixin
 
-class SetScaleDialog(QDialog):
+
+class SetScaleDialog(QDialog, LoggerMixin):
     """
     PyQt QDialog class for creating the set scale dialog box when in scaling mode.
     This dialog allows the user to set the scale values visually.
@@ -50,6 +52,7 @@ class SetScaleDialog(QDialog):
         Create the elements of the Set Scale dialog box User Interface.
         Also sets the layout for the dialog box.
         """
+        self.logger.debug("Setting up UI elements")
         # Main buttons
         self.set_scale_button = QPushButton("OK", self)
         self.clear_scale_button = QPushButton("Clear", self)
@@ -99,6 +102,7 @@ class SetScaleDialog(QDialog):
         """
         Connecting signals and slots of buttons and input boxes.
         """
+        self.logger.debug("Connecting signals and slots")
         # Connect signals and slots for buttons
         self.set_scale_button.clicked.connect(self.set_scale)
         self.clear_scale_button.clicked.connect(self.clear_scale)
@@ -139,6 +143,7 @@ class SetScaleDialog(QDialog):
         """
         # If a scale value has been entered
         if self.scale_value.text():
+            self.logger.info("Set scale: %s", self.scale_value.text())
             # Emit a signal that the set scale button has been clicked
             # passing the input value as a float
             self.set_scale_clicked.emit(float(self.scale_value.text()))
@@ -149,6 +154,7 @@ class SetScaleDialog(QDialog):
         """
         Clear the current scaling values and elements.
         """
+        self.logger.debug("Cleared current scale")
         self.distance_input.setValue(0)
         self.pixel_input.setText(self.pixel_input_default)
         self.scale_value.setText("")

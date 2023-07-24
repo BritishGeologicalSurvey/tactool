@@ -18,6 +18,8 @@ from PyQt5.QtWidgets import (
     QGraphicsTextItem,
 )
 
+from tactool.utils import LoggerMixin
+
 
 @dataclasses.dataclass
 class AnalysisPoint:
@@ -87,7 +89,7 @@ class AnalysisPoint:
         return attributes_list
 
 
-class TableModel(QAbstractTableModel):
+class TableModel(QAbstractTableModel, LoggerMixin):
     """
     PyQt QAbstractTableModel for storing AnalysisPoints.
     """
@@ -281,9 +283,11 @@ class TableModel(QAbstractTableModel):
         """
         Get all the existing Analysis Points and write them to as a CSV file.
         """
+        self.logger.info("Exporting TACtool CSV: %s", filepath)
         # Do not save the last 3 columns as they contain PyQt graphics data
         with open(filepath, "w", newline="") as csvfile:
             csvwriter = writer(csvfile)
+            self.logger.debug("Converting data for CSV export")
             # Modify and write the header data
             new_headers = self.convert_export_headers()
             csvwriter.writerow(new_headers)

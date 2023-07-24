@@ -22,9 +22,10 @@ from PyQt5.QtWidgets import (
 )
 
 from tactool.table_model import AnalysisPoint, TableModel
+from tactool.utils import LoggerMixin
 
 
-class GraphicsScene(QGraphicsScene):
+class GraphicsScene(QGraphicsScene, LoggerMixin):
     """
     PyQt QGraphicsScene with convenience functions for Analysis Point data.
     Manages elements which are painted onto images.
@@ -41,23 +42,24 @@ class GraphicsScene(QGraphicsScene):
 
 
     def add_analysis_point(
-            self,
-            apid: int,
-            x: int,
-            y: int,
-            label: str,
-            diameter: int,
-            colour: str,
-            scale: float,
-            notes: str = "",
-            sample_name: str = "",
-            mount_name: str = "",
-            material: str = "",
+        self,
+        apid: int,
+        x: int,
+        y: int,
+        label: str,
+        diameter: int,
+        colour: str,
+        scale: float,
+        notes: str = "",
+        sample_name: str = "",
+        mount_name: str = "",
+        material: str = "",
     ) -> AnalysisPoint:
         """
         Draw an Analysis Point onto the Graphics Scene and
         add it's data to the Table Model.
         """
+        self.logger.debug("Adding new Analysis Point")
         # Set the drawing colours to use the given colour
         # pen just provides an outline of an object
         # brush also fills the object
@@ -122,6 +124,7 @@ class GraphicsScene(QGraphicsScene):
         Remove an Analysis Point from the Graphics Scene,
         using either it's coordinates or it's ID value.
         """
+        self.logger.debug("Removing existing Analysis Point")
         analysis_point = None
         # If a target ID is provided, get the Analysis Point using it's ID
         if apid:
@@ -170,10 +173,12 @@ class GraphicsScene(QGraphicsScene):
         Toggle a transparent grey overlay ontop of the image for scaling mode.
         """
         if self.scaling_rect is not None:
+            self.logger.debug("Removing transparent window")
             # Remove the PyQt Rect from the PyQt Item Group and reset the scaling_rect variable
             self.removeItem(self.scaling_rect)
             self.scaling_rect = None
         else:
+            self.logger.debug("Adding transparent window")
             # Convert the current image to a pixmap
             image_pixmap = graphics_view_image.pixmap()
             image_width, image_height = image_pixmap.width(), image_pixmap.height()
@@ -229,6 +234,7 @@ class GraphicsScene(QGraphicsScene):
         """
         Remove all items from the Graphics Scene associated with the scaling mode.
         """
+        self.logger.debug("Removing scaling items")
         # If there are items in the PyQt Item Group for scaling items
         if self.scaling_group:
             # Iterate through the items and remove them if they are not

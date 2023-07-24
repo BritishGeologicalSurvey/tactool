@@ -33,23 +33,16 @@ from tactool.transformation import (
     parse_tactool_csv,
     reset_id,
 )
-
-logger = logging.getLogger("tactool")
-logger.setLevel(logging.DEBUG)
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)s %(message)s",
-)
+from tactool.utils import LoggerMixin
 
 
-class Window(QMainWindow):
+class Window(QMainWindow, LoggerMixin):
     """
     PyQt QMainWindow class which displays the application's interface and
     manages user interaction with it.
     """
     def __init__(self, testing_mode: bool) -> None:
         super().__init__()
-        logger.info("Initialising TACtool application")
         self.testing_mode = testing_mode
 
         self.default_settings = {
@@ -106,6 +99,7 @@ class Window(QMainWindow):
         """
         Setup the User Interface elements.
         """
+        self.logger.debug("Setting up UI elements")
         # Create the menu bar
         self.menu_bar = self.menuBar()
         # Create the file drop down
@@ -226,6 +220,7 @@ class Window(QMainWindow):
         """
         Connect signals and slots to User Interface interactions.
         """
+        self.logger.debug("Connecting signals and slots")
         # Connect menu bar clicks to handlers
         self.menu_bar_file_import_image.triggered.connect(self.import_image_get_path)
         self.menu_bar_file_export_image.triggered.connect(self.export_image_get_path)
@@ -288,6 +283,7 @@ class Window(QMainWindow):
         """
         Toggle all of the status bar messages.
         """
+        self.logger.debug("Toggling %s status bar messages", len(self.status_bar_messages))
         for status_name in self.status_bar_messages:
             # Get the status, condition result and message from the dictionary
             status = self.status_bar_messages[status_name]["status"]
@@ -375,6 +371,7 @@ class Window(QMainWindow):
         Load the Analysis Point data from a given CSV file and add it into the program.
         """
         try:
+            self.logger.info("Loading TACtool CSV file: %s", filepath)
             analysis_points = parse_tactool_csv(filepath, self.default_settings)
             self.clear_analysis_points()
             self.reset_settings()
@@ -515,7 +512,10 @@ class Window(QMainWindow):
             mount_name=mount_name,
             material=material,
         )
-        logger.debug("Created Analysis Point: %s", analysis_point)
+        if self.logger.level == logging.DEBUG:
+            self.logger.debug("Created Analysis Point: %s", analysis_point)
+        else:
+            self.logger.info("Creating Analyss Point with ID: %s", analysis_point.id)
 
         # Update the status bar messages and PyQt Table View
         self.toggle_status_bar_messages()
@@ -532,6 +532,7 @@ class Window(QMainWindow):
         Takes an index which indicates if the TableView should be automatically scrolled to a specific point.
         Also takes a transform function to transform the existing Analysis Points before replacing them.
         """
+        self.logger.debug("Reloading Analysis Points with transform: %s", transform)
         # Save the existing Points before clearing them
         current_analysis_points = self.table_model.analysis_points
         self.clear_analysis_points()
@@ -577,7 +578,7 @@ class Window(QMainWindow):
         deletion_result = self.graphics_scene.remove_analysis_point(x=x, y=y, apid=apid)
         # If the deletion returned a value, it is the Analysis Point ID and so is outputted
         if deletion_result:
-            logger.debug("Deleted Analysis Point: %s", deletion_result)
+            self.logger.info("Deleted Analysis Point: %s", deletion_result)
 
         # Update the status bar messages and PyQt TableView
         self.toggle_status_bar_messages()
@@ -611,7 +612,7 @@ class Window(QMainWindow):
         Get the settings of an Analysis Point which has been selected in the PyQt Table View.
         These settings are then updated to be the current settings.
         """
-        logger.debug("Selected Analysis Point: %s", analysis_point)
+        self.logger.info("Selected Analysis Point with ID: %s", analysis_point.id)
         # If the column of the cell the user clicked is the id
         if clicked_column_index == self.table_model.headers.index("id"):
             # Update the Analysis Point settings to be the same as the Point settings of the Point selected in the table
@@ -656,6 +657,13 @@ class Window(QMainWindow):
         If a value is given for a field, then the value and any corresponding
         User Interface elements are updated.
         """
+        self.logger.debug(
+            (
+                "Updating Analysis Point settings: sample_name='%s', mount_name='%s', "
+                "material='%s', label='%s' diamter='%s', scale='%s', colour='%s'"
+            ),
+            sample_name, mount_name, material, label, diameter, scale, colour,
+        )
 
         if sample_name is not None:
             self.sample_name_input.setText(sample_name)
@@ -685,6 +693,7 @@ class Window(QMainWindow):
         """
         Toggle each of the input widgets in the main window to be enabled or disabled.
         """
+        self.logger.debug("Toggling main widgets to state: %s", enable)
         for widget in self.main_input_widgets:
             widget.setEnabled(enable)
         self.graphics_view.disable_analysis_points = not enable
