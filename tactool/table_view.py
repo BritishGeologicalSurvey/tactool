@@ -1,7 +1,3 @@
-"""
-The Table View manages how the data which is stored in the Table Model is displayed in the User Interface.
-"""
-
 from PyQt5.QtCore import (
     pyqtSignal,
     Qt,
@@ -53,7 +49,7 @@ class TableView(QTableView):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
-        Function to handle mouse clicks on the Table View.
+        Handler for mouse clicks on the Table View.
 
         Since we are only adding functionality to mousePressEvent, we pass the event to the
         parent PyQt class, QTableView, at the end of the function to handle
