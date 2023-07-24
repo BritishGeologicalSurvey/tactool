@@ -291,15 +291,14 @@ class GraphicsView(QGraphicsView):
             self.setCursor(Qt.CrossCursor)
         # Else when the program is not currently in Scaling mode
         else:
-            # Reset the scaling mode attributes to normal
-            self.graphics_scene.remove_scale_items()
-            self.reset_scale_line_points()
+            self.reset_scaling_elements()
             self.setCursor(Qt.ArrowCursor)
 
 
-    def reset_scale_line_points(self) -> None:
+    def reset_scaling_elements(self) -> None:
         """
-        Function to reset the scaling line points to be blank QPointF objects.
+        Reset the scaling elements back to their default values.
         """
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
+        self.graphics_scene.remove_scale_items()

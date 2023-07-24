@@ -673,9 +673,7 @@ class Window(QMainWindow):
 
         # If the program is not in scaling mode
         if self.set_scale_dialog is None:
-            # Create the Set Scale Dialog box
             self.set_scale_dialog = SetScaleDialog(self.testing_mode)
-            # Disable main window input widgets
             self.toggle_main_input_widgets(False)
             # Move the Set Scale Dialog box to be at the top left corner of the main window
             main_window_pos = self.pos()
@@ -683,7 +681,7 @@ class Window(QMainWindow):
 
             # Connect the Set Scale dialog buttons
             self.set_scale_dialog.set_scale_clicked.connect(self.set_scale)
-            self.set_scale_dialog.clear_scale.connect(self.clear_scale_clicked)
+            self.set_scale_dialog.clear_scale_clicked.connect(self.graphics_view.reset_scaling_elements)
             self.set_scale_dialog.closed_set_scale_dialog.connect(self.toggle_scaling_mode)
             self.graphics_view.scale_move_event.connect(self.set_scale_dialog.scale_move_event_handler)
 
@@ -700,16 +698,6 @@ class Window(QMainWindow):
         """
         for widget in self.main_input_widgets:
             widget.setEnabled(enable)
-
-
-    def clear_scale_clicked(self) -> None:
-        """
-        Function to clear the scaling mode when the Clear button is clicked in the Set Scale dialog box.
-        """
-        self.graphics_scene.remove_scale_items()
-        self.graphics_view.reset_scale_line_points()
-        self.set_scale_dialog.pixel_input.setText(self.set_scale_dialog.pixel_input_default)
-        self.set_scale_dialog.distance_input.setValue(0)
 
 
     def set_scale(self, scale: float) -> None:
