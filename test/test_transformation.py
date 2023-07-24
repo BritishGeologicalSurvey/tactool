@@ -1,5 +1,5 @@
 """
-Tests for functions in the utils module
+Tests for functions in the transformation module
 """
 import numpy as np
 import pytest
