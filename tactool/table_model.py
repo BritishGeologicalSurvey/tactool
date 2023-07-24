@@ -262,6 +262,21 @@ class TableModel(QAbstractTableModel):
         return [AnalysisPoint(*item) for item in self._data if item[label_index] == "RefMark"]
 
 
+    @property
+    def next_point_id(self) -> int:
+        """
+        Return the current maximum Analysis Point ID value + 1.
+        """
+        ids = [
+            analysis_point.id
+            for analysis_point in self.analysis_points
+        ]
+        if len(ids) == 0:
+            return 1
+        else:
+            return max(ids) + 1
+
+
     def export_csv(self, filepath: Path) -> None:
         """
         Get all the existing Analysis Points and write them to as a CSV file.
