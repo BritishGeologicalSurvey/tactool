@@ -1,7 +1,3 @@
-"""
-The Graphics Scene manages elements which are painted onto images.
-"""
-
 from typing import Optional
 
 from PyQt5.QtCore import (
@@ -31,6 +27,7 @@ from tactool.table_model import AnalysisPoint, TableModel
 class GraphicsScene(QGraphicsScene):
     """
     PyQt QGraphicsScene with convenience functions for Analysis Point data.
+    Manages elements which are painted onto images.
     """
     def __init__(self) -> None:
         super().__init__()
@@ -58,7 +55,7 @@ class GraphicsScene(QGraphicsScene):
             material: str = "",
     ) -> AnalysisPoint:
         """
-        Function to draw an Analysis Point onto the Graphics Scene and
+        Draw an Analysis Point onto the Graphics Scene and
         add it's data to the Table Model.
         """
         # Set the drawing colours to use the given colour
@@ -89,12 +86,8 @@ class GraphicsScene(QGraphicsScene):
         )
 
         # If no analysis point ID is given, assign it the next ID available
-        # Else, the next available ID requires incrementing anyway due to
-        # the additional point being added
         if not apid:
             apid = self.next_point_id
-        else:
-            _ = self.next_point_id
 
         # Set the label text of the point
         # Use the given label if there is one, else use the point ID
@@ -109,29 +102,29 @@ class GraphicsScene(QGraphicsScene):
 
         # Place the new point data into an Analysis Point object
         point_data = AnalysisPoint(
-            apid,
-            label,
-            x,
-            y,
-            diameter,
-            scale,
-            colour,
-            sample_name,
-            mount_name,
-            material,
-            notes,
-            outer_ellipse,
-            inner_ellipse,
-            label_text_item,
+            id=apid,
+            label=label,
+            x=x,
+            y=y,
+            diameter=diameter,
+            scale=scale,
+            colour=colour,
+            sample_name=sample_name,
+            mount_name=mount_name,
+            material=material,
+            notes=notes,
+            _outer_ellipse=outer_ellipse,
+            _inner_ellipse=inner_ellipse,
+            _label_text_item=label_text_item,
         )
-        # Add the Analysis Point to the Table Model
         self.table_model.add_point(point_data)
         return point_data
 
 
     def remove_analysis_point(self, x: int, y: int, apid: int) -> Optional[int]:
         """
-        Function to remove an Analysis Point from the Graphics Scene based on it's coordinates.
+        Remove an Analysis Point from the Graphics Scene,
+        using either it's coordinates or it's ID value.
         """
         analysis_point = None
         # If a target ID is provided, get the Analysis Point using it's ID
@@ -158,16 +151,18 @@ class GraphicsScene(QGraphicsScene):
 
     def get_ellipse_at(self, x: int, y: int) -> Optional[QGraphicsEllipseItem]:
         """
-        Function to get an Ellipse Item from the Graphics Scene at the given coordinates.
+        Get an Ellipse Item from the Graphics Scene at the given coordinates.
         """
-        # Using list comprehension to iterate through the existing Analysis Points
         # Using PyQt QGraphicsScene selection functions to find the Analysis Points at the given coordinates
         # Only adding it to the list if it is an Ellipse item
         ellipse_items = [
-            item for item in self.items(QRectF(x, y, 2, 2),
-                                        Qt.ItemSelectionMode(Qt.IntersectsItemShape),
-                                        Qt.SortOrder(Qt.DescendingOrder))
-            if type(item) is QGraphicsEllipseItem
+            item
+            for item in self.items(
+                QRectF(x, y, 2, 2),
+                Qt.ItemSelectionMode(Qt.IntersectsItemShape),
+                Qt.SortOrder(Qt.DescendingOrder),
+            )
+            if isinstance(item, QGraphicsEllipseItem)
         ]
 
         # If there are items in the list, return the first as it will be the target ellipse
@@ -177,7 +172,7 @@ class GraphicsScene(QGraphicsScene):
     @property
     def next_point_id(self) -> int:
         """
-        Function to iterate and return the maximum Analysis Point ID value.
+        Return the current maximum Analysis Point ID value + 1.
         """
         ids = [
             analysis_point.id
@@ -191,9 +186,13 @@ class GraphicsScene(QGraphicsScene):
 
     def toggle_transparent_window(self, graphics_view_image: QGraphicsPixmapItem) -> None:
         """
-        Function to toggle a transparent grey overlay ontop of the image when entering scaling mode.
+        Toggle a transparent grey overlay ontop of the image for scaling mode.
         """
-        if not self.scaling_rect:
+        if self.scaling_rect is not None:
+            # Remove the PyQt Rect from the PyQt Item Group and reset the scaling_rect variable
+            self.removeItem(self.scaling_rect)
+            self.scaling_rect = None
+        else:
             # Convert the current image to a pixmap
             image_pixmap = graphics_view_image.pixmap()
             image_width, image_height = image_pixmap.width(), image_pixmap.height()
@@ -206,16 +205,11 @@ class GraphicsScene(QGraphicsScene):
             # Creating a PyQt Item Group to store all Graphics Scene scaling items within one variable
             self.scaling_group = self.createItemGroup([])
             self.scaling_group.addToGroup(self.scaling_rect)
-        # Else there is currently a transparent PyQt Rect
-        else:
-            # Remove the PyQt Rect from the PyQt Item Group and reset the scaling_rect variable
-            self.removeItem(self.scaling_rect)
-            self.scaling_rect = None
 
 
     def draw_scale_line(self, start_point: float, end_point: float) -> None:
         """
-        Function to draw or redraw the scale line when in scaling mode.
+        Draw or redraw the scale line when in scaling mode.
         """
         # If there is current a line, then remove it from the PyQt Item Group and
         # reset the scaling_line variable
@@ -238,7 +232,7 @@ class GraphicsScene(QGraphicsScene):
 
     def draw_scale_point(self, x: int, y: int) -> None:
         """
-        Function to draw an ellipse at the given coordinates.
+        Draw an ellipse at the given coordinates.
         Used for drawing small ellipse' at both ends of the scaling line.
         """
         # Set the drawing mode to use a PyQt Pen in red
@@ -252,7 +246,7 @@ class GraphicsScene(QGraphicsScene):
 
     def remove_scale_items(self) -> None:
         """
-        Function to remove all items from the Graphics Scene associated with the scaling mode.
+        Remove all items from the Graphics Scene associated with the scaling mode.
         """
         # If there are items in the PyQt Item Group for scaling items
         if self.scaling_group:
