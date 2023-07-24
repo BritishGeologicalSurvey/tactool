@@ -22,14 +22,14 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
     Function to test the functionality of adding and removing Analysis Points via mouse clicks.
     """
     # Test for empty model (ensures no leakage between apc fixtures)
-    assert tactool.window.table_model.analysis_points == []
+    assert tactool.table_model.analysis_points == []
 
     # This is the width of the pen used to create the _outer_ellipse item to be added to the
     # diameter to assert if the ellipse was created to the correct size as the bounding box includes pen width
     offset = 4
 
     # The 1st Analysis Point has default settings
-    tactool.window.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(101, 101)
 
     # Adjust the settings for the 2nd Analysis Point
     tactool.window.update_point_settings(
@@ -41,7 +41,7 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
         scale=2.0,
         colour="#222222",
     )
-    tactool.window.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(202, 202)
 
     # Adjust the settings for the 3rd Analysis Point
     # Purposefully making it overlap the 2nd Analysis Point
@@ -52,7 +52,7 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
         label="RefMark",
         colour="#333333",
     )
-    tactool.window.graphics_view.left_click.emit(240, 240)
+    tactool.graphics_view.left_click.emit(240, 240)
 
     expected_data = [
         AnalysisPoint(1, "RefMark", 101, 101, 10, 1.0, "#ffff00", "", "", "", "", None, None, None),
@@ -61,7 +61,7 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
                       "duck", "", None, None, None),
     ]
     # Iterate through each actual Analysis Point and compare to expected Analysis Point
-    for index, analysis_point in enumerate(tactool.window.table_model.analysis_points):
+    for index, analysis_point in enumerate(tactool.table_model.analysis_points):
         # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
         assert analysis_point.aslist()[:PUBLIC_INDEX] == expected_data[index].aslist()[:PUBLIC_INDEX]
         # Compare the size of the actual ellipse to the mathematically expected size
@@ -71,17 +71,17 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
     # Remove the Analysis Point with an ID value of 3
     # Purposefully clicking between the 2nd and 3rd point to ensure the 3rd one is still deleted
     # It should work like a stack when deleting overlapping points
-    tactool.window.graphics_view.right_click.emit(221, 221)
+    tactool.graphics_view.right_click.emit(221, 221)
 
     # Right click on an empty part of the PyQt Graphics View
     # Nothing should change
-    tactool.window.graphics_view.right_click.emit(0, 0)
+    tactool.graphics_view.right_click.emit(0, 0)
 
     # Adjust the settings for the 4th Analysis Point to match those of the 2nd Analysis Point
     # This is done by emitting a signal from the PyQt Table View of the selected Analysis Point
-    tactool.window.table_view.selected_analysis_point.emit(expected_data[1], 0)
+    tactool.table_view.selected_analysis_point.emit(expected_data[1], 0)
     # The 4th Analysis Point ID value should be 3
-    tactool.window.graphics_view.left_click.emit(404, 404)
+    tactool.graphics_view.left_click.emit(404, 404)
 
     expected_data = [
         AnalysisPoint(1, "RefMark", 101, 101, 10, 1.0, "#ffff00", "", "", "", "", None, None, None),
@@ -89,7 +89,7 @@ def test_add_and_remove_points(tactool: TACtool) -> None:
         AnalysisPoint(3, "Spot", 404, 404, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None),
     ]
     # Iterate through each actual Analysis Point and compare to expected Analysis Point
-    for index, analysis_point in enumerate(tactool.window.table_model.analysis_points):
+    for index, analysis_point in enumerate(tactool.table_model.analysis_points):
         # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
         assert analysis_point.aslist()[:PUBLIC_INDEX] == expected_data[index].aslist()[:PUBLIC_INDEX]
         # Compare the size of the actual ellipse to the mathematically expected size
@@ -103,12 +103,12 @@ def test_clear_points(tactool: TACtool) -> None:
     Some points are purposefully overlapping for the test.
     """
     # Check that the PyQt Table Model data is empty
-    assert tactool.window.table_model.analysis_points == []
+    assert tactool.table_model.analysis_points == []
 
     # Add some Analysis Points
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
-    tactool.window.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(303, 303)
     # The 5th point partially overlaps the 4th point
     # This is intentional as this used to cause issues
     tactool.window.update_point_settings(
@@ -119,14 +119,14 @@ def test_clear_points(tactool: TACtool) -> None:
         diameter=100,
         colour="#ff0000",
     )
-    tactool.window.graphics_view.left_click.emit(404, 404)
-    tactool.window.graphics_view.left_click.emit(440, 440)
+    tactool.graphics_view.left_click.emit(404, 404)
+    tactool.graphics_view.left_click.emit(440, 440)
 
     # Simulate a button click of the Clear Points button
     tactool.window.clear_points_button.click()
 
     # Check that all Analysis Points have been removed
-    assert tactool.window.table_model.analysis_points == []
+    assert tactool.table_model.analysis_points == []
 
 
 def test_reset_id_values(tactool: TACtool) -> None:
@@ -134,22 +134,22 @@ def test_reset_id_values(tactool: TACtool) -> None:
     Function to test the functionality of the Reset IDs button.
     """
     # Add some Analysis Points
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
-    tactool.window.graphics_view.left_click.emit(303, 303)
-    tactool.window.graphics_view.left_click.emit(404, 404)
-    tactool.window.graphics_view.left_click.emit(505, 505)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(404, 404)
+    tactool.graphics_view.left_click.emit(505, 505)
 
     # Remove the 1st and 4th Analysis Points
     # This will make the ID values go 2, 3, 5
-    tactool.window.graphics_view.right_click.emit(101, 101)
-    tactool.window.graphics_view.right_click.emit(404, 404)
+    tactool.graphics_view.right_click.emit(101, 101)
+    tactool.graphics_view.right_click.emit(404, 404)
 
     # Simulate a button click of the Reset IDs button
     tactool.window.reset_ids_button.click()
 
     # Iterate through each actual Analysis Point
-    for current_id, analysis_point in enumerate(tactool.window.table_model.analysis_points):
+    for current_id, analysis_point in enumerate(tactool.table_model.analysis_points):
         # Check that the ID value is equal to expected
         # We calculate expected ID value using the index of the Analysis Point in the Table Model
         assert analysis_point.id == current_id + 1
@@ -174,9 +174,9 @@ def test_reset_settings(tactool: TACtool) -> None:
     tactool.window.reset_settings_button.click()
 
     # Add some points, these should now have the default settings and metadata
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
-    tactool.window.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(303, 303)
 
     expected_settings = [
         tactool.window.default_settings["label"],
@@ -189,7 +189,7 @@ def test_reset_settings(tactool: TACtool) -> None:
     ]
 
     # Iterate through each actual Analysis Point
-    for analysis_point in tactool.window.table_model.analysis_points:
+    for analysis_point in tactool.table_model.analysis_points:
         actual_settings = [
             analysis_point.label,
             analysis_point.diameter,
@@ -209,11 +209,11 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # Check that the SetScaleDialog and the transparent rectangle
     # on the PyQt Graphics Scene do not exist
     assert tactool.window.set_scale_dialog is None
-    assert tactool.window.graphics_scene.scaling_rect is None
+    assert tactool.graphics_scene.scaling_rect is None
     # Check that the main input widgets are enabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
-    assert tactool.window.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_view.disable_analysis_points is False
 
     # Start the scaling mode
     tactool.window.toggle_scaling_mode()
@@ -221,11 +221,11 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # Check that the SetScaleDialog and the transparent rectangle
     # on the PyQt Graphics Scene exist and are the correct type
     assert tactool.window.set_scale_dialog is not None
-    assert tactool.window.graphics_scene.scaling_rect is not None
+    assert tactool.graphics_scene.scaling_rect is not None
     # Check that the main input widgets are disabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is False
-    assert tactool.window.graphics_view.disable_analysis_points is True
+    assert tactool.graphics_view.disable_analysis_points is True
 
     # Set the scale, following the same steps as the user would
     tactool.window.set_scale_dialog.scale_value.setText(str(2.0))
@@ -234,11 +234,11 @@ def test_toggle_scaling_mode(tactool: TACtool) -> None:
     # Check that the SetScaleDialog and the transparent rectangle
     # on the PyQt Graphics Scene do not exist
     assert tactool.window.set_scale_dialog is None
-    assert tactool.window.graphics_scene.scaling_rect is None
+    assert tactool.graphics_scene.scaling_rect is None
     # Check that the main input widgets are enabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
-    assert tactool.window.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_view.disable_analysis_points is False
 
 
 def test_set_scale(tactool: TACtool) -> None:
@@ -248,16 +248,16 @@ def test_set_scale(tactool: TACtool) -> None:
     # Set the scale, following the same steps as the user would
     scale = 2.0
     tactool.window.toggle_scaling_mode()
-    tactool.window.set_scale_dialog.scale_value.setText(str(scale))
-    tactool.window.set_scale_dialog.set_scale()
+    tactool.set_scale_dialog.scale_value.setText(str(scale))
+    tactool.set_scale_dialog.set_scale()
 
     # Add some points, these should now have the new scale
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
-    tactool.window.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(303, 303)
 
     # Iterate through each actual Analysis Point
-    for analysis_point in tactool.window.table_model.analysis_points:
+    for analysis_point in tactool.table_model.analysis_points:
         # Check that the scale value is equal to expected
         assert analysis_point.scale == scale
 
@@ -269,9 +269,9 @@ def test_export_image(tactool: TACtool, tmp_path: WindowsPath) -> None:
     tmp_image_path = tmp_path / "exported_image.png"
 
     # Add some Analysis Points
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
-    tactool.window.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(303, 303)
     tactool.window.update_point_settings(
         sample_name="sample_x83",
         mount_name="mount_x81",
@@ -280,17 +280,17 @@ def test_export_image(tactool: TACtool, tmp_path: WindowsPath) -> None:
         diameter=100,
         colour="#ff0000",
     )
-    tactool.window.graphics_view.left_click.emit(404, 404)
+    tactool.graphics_view.left_click.emit(404, 404)
     # The 5th point purposefully goes over the imported image border
-    tactool.window.graphics_view.left_click.emit(555, 555)
+    tactool.graphics_view.left_click.emit(555, 555)
 
     # Zoom in on the PyQt Graphics View
     factor = 1.25
-    tactool.window.graphics_view._zoom += 1
-    tactool.window.graphics_view.scale(factor, factor)
+    tactool.graphics_view._zoom += 1
+    tactool.graphics_view.scale(factor, factor)
 
     # Save the image to the given filepath
-    tactool.window.graphics_view.save_image(str(tmp_image_path))
+    tactool.graphics_view.save_image(str(tmp_image_path))
 
     # Check that the filepath and the newly saved file exist
     assert tmp_image_path.exists()
@@ -336,7 +336,7 @@ def test_import_tactool_csv(tactool: TACtool, filepath: str, expected_points: li
     Function to test the functionality of importing a TACtool CSV file.
     """
     # Check that the PyQt Table Model data is empty
-    assert tactool.window.table_model.analysis_points == []
+    assert tactool.table_model.analysis_points == []
 
     # Set Analysis Point settings that are used where data is missing
     tactool.window.update_point_settings(
@@ -354,15 +354,15 @@ def test_import_tactool_csv(tactool: TACtool, filepath: str, expected_points: li
 
     # Iterate through the actual Analysis Points created from the CSV file
     # and the calculated Analysis Points in this test
-    for loaded_point, expected_point in zip(tactool.window.table_model.analysis_points, expected_points):
+    for loaded_point, expected_point in zip(tactool.table_model.analysis_points, expected_points):
         # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
         assert expected_point.aslist()[:PUBLIC_INDEX] == loaded_point.aslist()[:PUBLIC_INDEX]
 
     # Click new points
-    tactool.window.graphics_view.left_click.emit(111, 111)
+    tactool.graphics_view.left_click.emit(111, 111)
 
     # Check that the ID values continue from the maximum ID value in the CSV file
-    assert len(tactool.window.table_model.analysis_points) == 6
+    assert len(tactool.table_model.analysis_points) == 6
 
 
 def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
@@ -370,7 +370,7 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
     Function to test the functionality of exporting a TACtool CSV file.
     """
     # Check that the PyQt Table Model data is empty
-    assert tactool.window.table_model.analysis_points == []
+    assert tactool.table_model.analysis_points == []
 
     csv_path = tmp_path / "test.csv"
     expected_headers = ["Name", "Type", "X", "Y", "Z", "diameter", "scale", "colour",
@@ -382,8 +382,8 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
     ]
 
     # Add 2 Analysis Points
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
 
     # Adjust the settings for the 3rd Analysis Point
     tactool.window.update_point_settings(
@@ -395,10 +395,10 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
         scale=1.5,
         colour="#444444",
     )
-    tactool.window.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(303, 303)
 
     # Save the data to the given CSV file path
-    tactool.window.table_model.export_csv(csv_path)
+    tactool.table_model.export_csv(csv_path)
     assert_csv_data(csv_path, expected_headers, expected_data)
 
 
@@ -437,9 +437,9 @@ def test_reference_point_hint(tactool: TACtool) -> None:
 
     # Add 3 analysis points with the label 'RefMark'
     tactool.window.label_input.setCurrentText("RefMark")
-    tactool.window.graphics_view.left_click.emit(100, 100)
-    tactool.window.graphics_view.left_click.emit(150, 150)
-    tactool.window.graphics_view.left_click.emit(200, 200)
+    tactool.graphics_view.left_click.emit(100, 100)
+    tactool.graphics_view.left_click.emit(150, 150)
+    tactool.graphics_view.left_click.emit(200, 200)
 
     # Check reference Points hint not is visible
     ref_points_status = tactool.window.status_bar_messages["ref_points"]["status"]
@@ -447,7 +447,7 @@ def test_reference_point_hint(tactool: TACtool) -> None:
     assert ref_points_status not in tactool.window.status_bar.children()
 
     # Remove 1 Analysis Point with label 'RefMark', bringing the total to 2 reference Points
-    tactool.window.graphics_view.right_click.emit(100, 100)
+    tactool.graphics_view.right_click.emit(100, 100)
 
     # Check reference Points hint is visible
     ref_points_status = tactool.window.status_bar_messages["ref_points"]["status"]
@@ -456,7 +456,7 @@ def test_reference_point_hint(tactool: TACtool) -> None:
 
     # Add 1 Analysis Point with label 'Spot', keeping the total at 2 reference Points
     tactool.window.label_input.setCurrentText("Spot")
-    tactool.window.graphics_view.left_click.emit(100, 100)
+    tactool.graphics_view.left_click.emit(100, 100)
 
     # Check reference Points hint is visible
     ref_points_status = tactool.window.status_bar_messages["ref_points"]["status"]
@@ -474,9 +474,9 @@ def test_scale_hint(tactool: TACtool) -> None:
     assert set_scale_status not in tactool.window.status_bar.children()
 
     # Add some points by clicking
-    tactool.window.graphics_view.left_click.emit(101, 101)
-    tactool.window.graphics_view.left_click.emit(202, 202)
-    tactool.window.graphics_view.left_click.emit(303, 303)
+    tactool.graphics_view.left_click.emit(101, 101)
+    tactool.graphics_view.left_click.emit(202, 202)
+    tactool.graphics_view.left_click.emit(303, 303)
 
     # Check Set Scale hint is visible
     set_scale_status = tactool.window.status_bar_messages["set_scale"]["status"]
@@ -485,8 +485,8 @@ def test_scale_hint(tactool: TACtool) -> None:
 
     # Set the scale, following the same steps as the user would
     tactool.window.toggle_scaling_mode()
-    tactool.window.set_scale_dialog.scale_value.setText(str(2.0))
-    tactool.window.set_scale_dialog.set_scale()
+    tactool.set_scale_dialog.scale_value.setText(str(2.0))
+    tactool.set_scale_dialog.set_scale()
 
     # Check Set Scale hint is not visible
     set_scale_status = tactool.window.status_bar_messages["set_scale"]["status"]
