@@ -515,7 +515,7 @@ class Window(QMainWindow, LoggerMixin):
         if self.logger.level == logging.DEBUG:
             self.logger.debug("Created Analysis Point: %s", analysis_point)
         else:
-            self.logger.info("Creating Analyss Point with ID: %s", analysis_point.id)
+            self.logger.info("Creating Analysis Point with ID: %s", analysis_point.id)
 
         # Update the status bar messages and PyQt Table View
         self.toggle_status_bar_messages()
