@@ -4,8 +4,6 @@ buttons and input boxes.
 """
 
 import logging
-
-from csv import DictReader
 from textwrap import dedent
 from typing import (
     Callable,
@@ -35,7 +33,8 @@ from tactool.recoordinate_dialog import RecoordinateDialog
 from tactool.set_scale_dialog import SetScaleDialog
 from tactool.table_model import AnalysisPoint
 from tactool.table_view import TableView
-from tactool.transform import (
+from tactool.transformation import (
+    parse_tactool_csv,
     reset_id,
 )
 
@@ -372,10 +371,16 @@ class Window(QMainWindow):
 
     def load_tactool_csv_data(self, filepath: str) -> None:
         """
-        Get all the analysis points from a csv and display them in model and scene.
+        Load the Analysis Point data from a given CSV file and add it into the program.
         """
         try:
-            self.process_tactool_csv(filepath)
+            analysis_points = parse_tactool_csv(filepath, self.default_settings)
+            self.clear_analysis_points()
+            self.reset_settings()
+            for analysis_point in analysis_points:
+                self.add_analysis_point(**analysis_point, from_click=False)
+            self.table_view.scrollToTop()
+
         # A KeyError and UnicodeError usually occur with an incorrectly formatted CSV file
         except (KeyError, UnicodeError):
             # Show a message to the user informing them of which headers should be in the CSV file
@@ -387,81 +392,6 @@ class Window(QMainWindow):
                 Must use csv with header {public_headers}.
             """)
             self.show_message("Error loading data", message, "warning")
-
-
-    def process_tactool_csv(self, filepath: str) -> None:
-        """
-        Function to process the data in a given TACtool CSV file
-        and create the required Analysis Points.
-        """
-        # Clear existing points and settings first
-        self.clear_analysis_points()
-        self.reset_settings()
-
-        default_values = {
-            "Name": 0,
-            "X": 0,
-            "Y": 0,
-            "diameter": self.default_settings["diameter"],
-            "scale": float(self.default_settings["scale"]),
-            "colour": self.default_settings["colour"],
-        }
-
-        with open(filepath) as csv_file:
-            reader = DictReader(csv_file)
-            # Iterate through each line in the CSV file
-            for id, item in enumerate(reader):
-
-                # Split the id and sample_name value from the Name column
-                if "_#" in item["Name"]:
-                    item["sample_name"], item["Name"] = item["Name"].rsplit("_#", maxsplit=1)
-
-                # The default ID value is incremented with the row number
-                default_values["Name"] = id + 1
-                # If there is a Z column which is requried for the laser, then remove it
-                try:
-                    item.pop("Z")
-                except KeyError:
-                    pass
-
-                item = self.parse_row_data(item, default_values)
-
-                # Rename specific fields to match function arguments
-                header_changes = {
-                    "Name": "apid",
-                    "X": "x",
-                    "Y": "y",
-                    "Type": "label",
-                }
-                for old_header, new_header in zip(header_changes, list(header_changes.values())):
-                    item[new_header] = item.pop(old_header)
-                self.add_analysis_point(**item, from_click=False)
-        self.table_view.scrollToTop()
-
-
-    def parse_row_data(self, item: dict, default_values: dict) -> dict:
-        """
-        Function to parse the data of an Analysis Point row item in a CSV file.
-        """
-        # Define the field names and their type conversions in Python
-        fields = ["Name", "X", "Y", "diameter", "scale", "colour"]
-        pre_processes = [int, int, int, int, float, None]
-
-        # Iterate through each field, it's type conversion and it's default value
-        for field, pre_process in zip(fields, pre_processes):
-            try:
-                # If a value has been given
-                if item[field]:
-                    # If the value requires preprocessing
-                    if pre_process:
-                        item[field] = pre_process(item[field])
-                # Else when no value is given
-                else:
-                    item[field] = default_values[field]
-            # In the event of a KeyError, throw away the value which caused the error
-            except KeyError:
-                item[field] = default_values[field]
-        return item
 
 
     def export_tactool_csv_get_path(self) -> None:
@@ -487,7 +417,7 @@ class Window(QMainWindow):
 
     def validate_current_data(self, validate_image: bool = False) -> bool:
         """
-        Function to check if the current data of the Analysis Points is valid.
+        Check if the current data of the Analysis Points is valid.
         Used when exporting data to a file.
         Each validation step contains a return statement which is used
         when the validation fails, thus preventing the remaining validation.
@@ -587,21 +517,6 @@ class Window(QMainWindow):
         self.table_view.model().layoutChanged.emit()
 
 
-    def remove_analysis_point(self, x: int = None, y: int = None, apid: int = None) -> None:
-        """
-        Function to remove an Analysis Point from the PyQt Graphics Scene.
-        The Point is specified using it's coordinates or it's ID value.
-        """
-        deletion_result = self.graphics_scene.remove_analysis_point(x=x, y=y, apid=apid)
-        # If the deletion returned a value, it is the Analysis Point ID and so is outputted
-        if deletion_result:
-            logger.debug("Deleted Analysis Point: %s", deletion_result)
-
-        # Update the status bar messages and PyQt Table View
-        self.toggle_status_bar_messages()
-        self.table_view.model().layoutChanged.emit()
-
-
     def reload_analysis_points(
         self,
         index: Optional[QModelIndex] = None,
@@ -643,11 +558,25 @@ class Window(QMainWindow):
 
     def clear_analysis_points(self) -> None:
         """
-        Function to delete all existing Analysis Points.
+        Clear all existing Analysis Points.
         """
-        # Iterate through existing Analysis Points and delete them
         for point in self.table_model.analysis_points:
             self.remove_analysis_point(apid=point.id)
+
+
+    def remove_analysis_point(self, x: int = None, y: int = None, apid: int = None) -> None:
+        """
+        Remove an Analysis Point from the PyQt Graphics Scene.
+        The Point is specified using it's coordinates or it's ID value.
+        """
+        deletion_result = self.graphics_scene.remove_analysis_point(x=x, y=y, apid=apid)
+        # If the deletion returned a value, it is the Analysis Point ID and so is outputted
+        if deletion_result:
+            logger.debug("Deleted Analysis Point: %s", deletion_result)
+
+        # Update the status bar messages and PyQt TableView
+        self.toggle_status_bar_messages()
+        self.table_view.model().layoutChanged.emit()
 
 
     def set_point_colour(self) -> None:
