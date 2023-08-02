@@ -15,6 +15,13 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
+from tactool.analysis_point import (
+    AnalysisPoint,
+    affine_transform_matrix,
+    affine_transform_point,
+    parse_sem_csv,
+    export_sem_csv,
+)
 from tactool.utils import LoggerMixin
 
 
@@ -24,12 +31,13 @@ class RecoordinateDialog(QDialog, LoggerMixin):
     """
     # Tracks when the Recoordinate Dialog Box is closed
     closed_recoordinate_dialog = pyqtSignal()
-    # Tracks when invalid input is supplied
-    invalid_path_entry = pyqtSignal(str, str, str)
+    # Used for showing messages with methods from the main window
+    show_message = pyqtSignal(str, str, str)
 
-    def __init__(self, testing_mode: bool) -> None:
+    def __init__(self, testing_mode: bool, ref_points: list[AnalysisPoint]) -> None:
         super().__init__()
         self.testing_mode = testing_mode
+        self.ref_points = ref_points
 
         # Setting the Dialog Box settings
         self.setWindowTitle("Recoordination")
@@ -119,21 +127,59 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         input_csv = self.input_csv_filepath_label.text()
         output_csv = self.output_csv_filepath_label.text()
         if input_csv != "" and output_csv != "":
-            self.recoordinate_points(input_csv, output_csv)
+            self.recoordinate_sem_points(input_csv, output_csv)
             self.closeEvent()
         else:
             # Create a message informing the user that their input value is invalid
-            self.invalid_path_entry.emit(
+            self.show_message.emit(
                 "Invalid Paths",
                 "Please select an input and output CSV first.",
                 "warning",
             )
 
 
-    def recoordinate_points(self, input_csv: str, output_csv: str):
-        print("RECOORDINATE")
-        print(input_csv)
-        print(output_csv)
+    def recoordinate_sem_points(self, input_csv: str, output_csv: str) -> None:
+        """
+        Recoordinate the given input SEM CSV file points using the current Analysis Points as reference points.
+        Saves the resulting SEM data to the given output CSV file.
+        """
+        # Parse the SEM CSV data
+        required_sem_headers = [
+            "Laser Ablation Centre X",
+            "Laser Ablation Centre Y",
+        ]
+        try:
+            self.logger.info("Loading SEM CSV: %s", input_csv)
+            point_dicts, csv_headers = parse_sem_csv(filepath=input_csv, required_headers=required_sem_headers)
+        except KeyError:
+            self.show_message.emit(
+                "Invalid CSV File",
+                "\n".join(["The given file does not contain the required headers:"] + required_sem_headers),
+                "warning",
+            )
+        
+        # Calculate the matrix
+        self.logger.debug("Calculating recoordination matrix")
+        # Format the source and dest points into lists of tuples of x and y values
+        source = [
+            (item["Laser Ablation Centre X"], item["Laser Ablation Centre Y"])
+            for item in point_dicts
+            if item["Mineral Classification"] == "Fiducial"
+        ]
+        dest = [(point.x, point.y) for point in self.ref_points]
+        matrix = affine_transform_matrix(source=source, dest=dest)
+
+        # Apply the matrix
+        for idx, item in enumerate(point_dicts):
+            point = (item["Laser Ablation Centre X"], item["Laser Ablation Centre Y"])
+            new_point = affine_transform_point(matrix=matrix, point=point)
+            point_dicts[idx]["Laser Ablation Centre X"], point_dicts[idx]["Laser Ablation Centre Y"] = new_point
+            self.logger.debug("Transformed point %s to %s", point, new_point)
+        self.logger.info("Transformed %s points", len(point_dicts))
+
+        # Export the new points to the output CSV
+        self.logger.info("Saving recoordination results to: %s", output_csv)
+        export_sem_csv(filepath=output_csv, headers=csv_headers, points=point_dicts)
 
 
     def closeEvent(self, event=None) -> None:
