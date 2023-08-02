@@ -72,13 +72,7 @@ def test_recoordinate_sem_points(tmp_path: Path, tactool: TACtool):
     tactool.graphics_view.left_click.emit(268, 469)
     # Toggle recoordinate dialog so that the recoordinate_dialog is callable
     tactool.window.toggle_recoordinate_dialog()
-    expected_coordinates = [
-        (336, 472),
-        (318, 394),
-        (268, 469),
-        (340, 527),
-        (380, 362),
-    ]
+    expected_coordinates = [(336, 472), (318, 394), (268, 469), (340, 527), (380, 362)]
 
     # Act
     tactool.recoordinate_dialog.recoordinate_sem_points(
