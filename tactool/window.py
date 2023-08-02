@@ -772,6 +772,7 @@ class Window(QMainWindow, LoggerMixin):
                 self.toggle_main_input_widgets(True)
                 self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
         else:
+            self.logger.error("Missing 3 references points for recoordination")
             self.show_message(
                 "Reference Points",
                 "3 Reference points are required to perform recoordination.",
