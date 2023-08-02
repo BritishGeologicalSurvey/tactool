@@ -79,8 +79,8 @@ def test_affine_transform_matrix():
             [(336, 472), (318, 394), (268, 469), (271, 458), (287, 483), (309, 466), (320, 458), (332, 477)],
             {"x_header": "Laser Ablation Centre X", "y_header": "Laser Ablation Centre Y",
              "ref_col": "Mineral Classification", "ref_label": "Fiducial"},
-            ["Particle ID", "Mineral Classification", "Effective Diameter ï¿½m",
-             "Feret Max Diameter ï¿½m", "Feret Min Diameter ï¿½m", "F (N)", "Cl (N)"],
+            ["Particle ID", "Mineral Classification", "Effective Diameter m",
+             "Feret Max Diameter m", "Feret Min Diameter m", "F (N)", "Cl (N)"],
         ),
     ],
 )

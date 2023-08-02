@@ -1,4 +1,4 @@
-Particle ID,Mineral Classification,Laser Ablation Centre X,Laser Ablation Centre Y,Effective Diameter �m,Feret Max Diameter �m,Feret Min Diameter �m,F (N),Cl (N)
+Particle ID,Mineral Classification,Laser Ablation Centre X,Laser Ablation Centre Y,Effective Diameter m,Feret Max Diameter m,Feret Min Diameter m,F (N),Cl (N)
 A,Fiducial,91.576,67.762,,,,,
 B,Fiducial,86.01,55.893,,,,,
 C,Fiducial,98.138,49.417,,,,,
