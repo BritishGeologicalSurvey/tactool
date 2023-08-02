@@ -327,11 +327,11 @@ class Window(QMainWindow, LoggerMixin):
             directory="Import Image",
             filter=self.default_settings["image_format"],
         )
-        path = pyqt_open_dialog[0]
-        if path:
+        filepath = pyqt_open_dialog[0]
+        if filepath:
             try:
-                self.graphics_view.load_image(path)
-                self.image_filepath = path
+                self.graphics_view.load_image(filepath)
+                self.image_filepath = filepath
                 self.setWindowTitle(f"TACtool: {self.image_filepath}")
             except Exception as error:
                 self.data_error_message(error)
@@ -342,17 +342,17 @@ class Window(QMainWindow, LoggerMixin):
         Function to create a PyQt File Dialog, allowing the user to visually select a directory to export an image file.
         """
         if self.validate_current_data(validate_image=True):
-            filepath = self.image_filepath if self.image_filepath else ""
+            current_filepath = self.image_filepath if self.image_filepath else ""
             pyqt_save_dialog = QFileDialog.getSaveFileName(
                 parent=self,
                 caption="Export Image",
-                directory=filepath,
+                directory=current_filepath,
                 filter=self.default_settings["image_format"],
             )
-            path = pyqt_save_dialog[0]
-            if path:
+            filepath = pyqt_save_dialog[0]
+            if filepath:
                 try:
-                    self.graphics_view.save_image(path)
+                    self.graphics_view.save_image(filepath)
                 except Exception as error:
                     self.data_error_message(error)
 
@@ -366,11 +366,11 @@ class Window(QMainWindow, LoggerMixin):
             caption="Import TACtool CSV",
             filter=self.default_settings["csv_format"],
         )
-        path = pyqt_open_dialog[0]
-        if path:
+        filepath = pyqt_open_dialog[0]
+        if filepath:
             try:
-                self.load_tactool_csv_data(path)
-                self.csv_filepath = path
+                self.load_tactool_csv_data(filepath)
+                self.csv_filepath = filepath
             except Exception as error:
                 self.data_error_message(error)
 
@@ -405,16 +405,17 @@ class Window(QMainWindow, LoggerMixin):
         allowing the user to visually select a directory to save a TACtool CSV file.
         """
         if self.validate_current_data():
-            filepath = self.csv_filepath if self.csv_filepath else ""
+            current_filepath = self.csv_filepath if self.csv_filepath else ""
             pyqt_save_dialog = QFileDialog.getSaveFileName(
                 parent=self,
                 caption="Export as TACtool CSV",
-                directory=filepath,
+                directory=current_filepath,
                 filter=self.default_settings["csv_format"],
             )
-            path = pyqt_save_dialog[0]
-            if path:
+            filepath = pyqt_save_dialog[0]
+            if filepath:
                 try:
+                    self.logger.info("Exporting Analysis Points to: %s", filepath)
                     export_tactool_csv(
                         filepath=filepath,
                         headers=self.table_model.public_headers,
