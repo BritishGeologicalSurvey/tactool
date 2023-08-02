@@ -6,7 +6,7 @@ Analysis Points are added and removed by emitting corresponding click signals.
 
 tactool fixtures start a running QApplication for the context of the test.
 """
-from pathlib import WindowsPath
+from pathlib import Path
 
 import pytest
 from PyQt5.QtGui import QPixmap
@@ -265,7 +265,7 @@ def test_set_scale(tactool: TACtool) -> None:
         assert analysis_point.scale == scale
 
 
-def test_export_image(tactool: TACtool, tmp_path: WindowsPath) -> None:
+def test_export_image(tactool: TACtool, tmp_path: Path) -> None:
     """
     Function to test the functionality of exporting an image.
     """
@@ -368,7 +368,7 @@ def test_import_tactool_csv(tactool: TACtool, filepath: str, expected_points: li
     assert len(tactool.table_model.analysis_points) == 6
 
 
-def test_export_tactool_csv(tactool: TACtool, tmp_path: WindowsPath) -> None:
+def test_export_tactool_csv(tactool: TACtool, tmp_path: Path) -> None:
     """
     Function to test the functionality of exporting a TACtool CSV file.
     """
