@@ -157,7 +157,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
                 "\n".join(["The given file does not contain the required headers:"] + required_sem_headers),
                 "warning",
             )
-        
+
         # Calculate the matrix
         self.logger.debug("Calculating recoordination matrix")
         # Format the source and dest points into lists of tuples of x and y values
