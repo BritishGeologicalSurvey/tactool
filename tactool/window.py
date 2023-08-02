@@ -90,10 +90,6 @@ class Window(QMainWindow, LoggerMixin):
             self.clear_points_button,
             self.table_view,
         ]
-        self.dialogs: list[QDialog] = [
-            self.set_scale_dialog,
-            self.recoordinate_dialog,
-        ]
 
 
     def setup_ui_elements(self) -> None:
@@ -112,7 +108,7 @@ class Window(QMainWindow, LoggerMixin):
         self.file_menu_bar_import_tactool_csv = self.menu_bar_file.addAction("Import TACtool CSV")
         self.file_menu_bar_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
         self.menu_bar_file.addSeparator()
-        self.menu_bar_recoordinate_csv = self.menu_bar_file.addAction("Recoordinate <TACtool> CSV")
+        self.menu_bar_recoordinate_csv = self.menu_bar_file.addAction("Recoordinate SEM CSV")
 
         # Create the status bar
         self.status_bar = QStatusBar(self)
@@ -201,22 +197,6 @@ class Window(QMainWindow, LoggerMixin):
         self.setCentralWidget(central_widget)
 
 
-    def set_colour_button_style(self) -> None:
-        """
-        Set the CSS stylesheet of the Colour Button in the User Interface.
-        """
-        colour_button_stylesheet = """
-            QToolTip {
-                background-color: white;
-                color: black;
-                border: black solid 1px;
-            };
-            background-color: #BTN_COLOUR;
-            border: none;
-        """.replace("#BTN_COLOUR", self.point_colour)
-        self.colour_button.setStyleSheet(colour_button_stylesheet)
-
-
     def connect_signals_and_slots(self) -> None:
         """
         Connect signals and slots to User Interface interactions.
@@ -244,6 +224,34 @@ class Window(QMainWindow, LoggerMixin):
         self.table_view.selected_analysis_point.connect(self.get_point_settings)
         self.table_model.invalid_label_entry.connect(self.show_message)
         self.table_model.updated_analysis_points.connect(self.reload_analysis_points)
+
+
+    @property
+    def dialogs(self) -> list[QDialog]:
+        """
+        Return a list of the current dialog attributes.
+        """
+        dialogs = [
+            self.set_scale_dialog,
+            self.recoordinate_dialog,
+        ]
+        return dialogs
+
+
+    def set_colour_button_style(self) -> None:
+        """
+        Set the CSS stylesheet of the Colour Button in the User Interface.
+        """
+        colour_button_stylesheet = """
+            QToolTip {
+                background-color: white;
+                color: black;
+                border: black solid 1px;
+            };
+            background-color: #BTN_COLOUR;
+            border: none;
+        """.replace("#BTN_COLOUR", self.point_colour)
+        self.colour_button.setStyleSheet(colour_button_stylesheet)
 
 
     def create_status_bar_messages(self):
