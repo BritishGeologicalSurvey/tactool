@@ -391,11 +391,16 @@ class Window(QMainWindow, LoggerMixin):
         # A KeyError and UnicodeError usually occur with an incorrectly formatted CSV file
         except (KeyError, UnicodeError):
             # Show a message to the user informing them of which headers should be in the CSV file
-            message = dedent(f"""
-                There was an error when loading data from CSV file: {filepath.split("/")[-1]}.
-
-                Must use csv with header {self.table_model.public_headers}.
-            """)
+            required_headers = [
+                "    " + val
+                for val in ["Name", "Type", "X", "Y", "diameter", "scale", "colour", "mount_name", "material", "notes"]
+            ]
+            message = "\n".join([
+                "There was an error when loading data from CSV file:",
+                "   " + filepath.split('/')[-1] + "\n",
+                "Plese use a CSV file with the following headers:",
+                *required_headers,
+            ])
             self.show_message("Error loading data", message, "warning")
 
 
