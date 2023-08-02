@@ -27,16 +27,19 @@ SCALE_BY_2ish = np.array([[2.1, 0, 0],
                           [0, 0, 1]])
 
 
-@pytest.mark.parametrize('matrix, src, expected', [
-    (X_PLUS_10, (1, 1), (11, 1)),
-    (X_PLUS_10, (1, 0), (11, 0)),
-    (X_PLUS_10, (0, 1), (10, 1)),
-    (Y_PLUS_10, (1, 1), (1, 11)),
-    (Y_PLUS_10, (1, 0), (1, 10)),
-    (Y_PLUS_10, (0, 1), (0, 11)),
-    (SCALE_BY_2ish, (1, 1), (2, 2)),  # should round to nearest int
-    (SCALE_BY_2ish, (10, 10), (21, 21)),  # no rounding required
-])
+@pytest.mark.parametrize(
+    ["matrix", "src", "expected"],
+    [
+        (X_PLUS_10, (1, 1), (11, 1)),
+        (X_PLUS_10, (1, 0), (11, 0)),
+        (X_PLUS_10, (0, 1), (10, 1)),
+        (Y_PLUS_10, (1, 1), (1, 11)),
+        (Y_PLUS_10, (1, 0), (1, 10)),
+        (Y_PLUS_10, (0, 1), (0, 11)),
+        (SCALE_BY_2ish, (1, 1), (2, 2)),  # should round to nearest int
+        (SCALE_BY_2ish, (10, 10), (21, 21)),  # no rounding required
+    ]
+)
 def test_affine_transform_point(matrix, src, expected):
     # Act
     transformed = affine_transform_point(matrix, src)
@@ -72,10 +75,12 @@ def test_affine_transform_matrix():
             ["Name", "Type", "diameter", "scale", "colour", "mount_name", "material", "notes"],
         ),
         (
-            "test/data/analysis_points_complete.csv",
-            [(336, 472), (318, 394), (268, 469), (340, 527), (380, 362)],
-            {"x_header": "X", "y_header": "Y", "ref_col": "Type", "ref_label": "RefMark"},
-            ["Name", "Type", "diameter", "scale", "colour", "mount_name", "material", "notes"],
+            "test/data/SEM_co-ordinate_import_test_set.csv",
+            [(336, 472), (318, 394), (268, 469), (271, 458), (287, 483), (309, 466), (320, 458), (332, 477)],
+            {"x_header": "Laser Ablation Centre X", "y_header": "Laser Ablation Centre Y",
+             "ref_col": "Mineral Classification", "ref_label": "Fiducial"},
+            ["Particle ID", "Mineral Classification", "Effective Diameter ï¿½m",
+             "Feret Max Diameter ï¿½m", "Feret Min Diameter ï¿½m", "F (N)", "Cl (N)"],
         ),
     ],
 )
@@ -89,6 +94,7 @@ def test_recoordinate_sem_points(
 ):
     # Arrange
     output_csv = tmp_path / "recoordinated_output.csv"
+    print(output_csv)
     # Place 3 Analysis Points which will be used for recoordination
     tactool.graphics_view.left_click.emit(336, 472)
     tactool.graphics_view.left_click.emit(318, 394)
@@ -108,10 +114,10 @@ def test_recoordinate_sem_points(
         assert input_reader.fieldnames == output_reader.fieldnames
 
         # Iterate through CSV file lines
-        for input_item, output_item, (new_x, new_y) in zip(input_reader, output_reader, expected_coordinates):
+        for input_item, output_item, (expect_x, expect_y) in zip(input_reader, output_reader, expected_coordinates):
             # Check that the non coordinate fields remain the same
             for header in non_coord_headers:
                 assert input_item[header] == output_item[header]
             # Check that the coordinate fields are correct
-            assert int(output_item[recoordinate_fields["x_header"]]) == new_x
-            assert int(output_item[recoordinate_fields["y_header"]]) == new_y
+            assert int(output_item[recoordinate_fields["x_header"]]) == expect_x
+            assert int(output_item[recoordinate_fields["y_header"]]) == expect_y
