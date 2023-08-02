@@ -138,16 +138,25 @@ class RecoordinateDialog(QDialog, LoggerMixin):
             )
 
 
-    def recoordinate_sem_points(self, input_csv: str, output_csv: str) -> None:
+    def recoordinate_sem_points(
+        self,
+        input_csv: str,
+        output_csv: str,
+        x_header: str = "Laser Ablation Centre X",
+        y_header: str = "Laser Ablation Centre Y",
+        ref_col: str = "Mineral Classification",
+        ref_label: str = "Fiducial",
+    ) -> None:
         """
         Recoordinate the given input SEM CSV file points using the current Analysis Points as reference points.
         Saves the resulting SEM data to the given output CSV file.
+        The x_header, y_header, ref_col and ref_label values can be changed to allow recoordination
+        of CSV files with different headers and data.
+        For example, using the following values would allow recoordination for TACtool CSV files:
+        x_header="X", y_header="Y", ref_col="Type", ref_label="RefMark"
         """
         # Parse the SEM CSV data
-        required_sem_headers = [
-            "Laser Ablation Centre X",
-            "Laser Ablation Centre Y",
-        ]
+        required_sem_headers = [x_header, y_header]
         try:
             self.logger.info("Loading SEM CSV: %s", input_csv)
             point_dicts, csv_headers = parse_sem_csv(filepath=input_csv, required_headers=required_sem_headers)
@@ -162,18 +171,18 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.logger.debug("Calculating recoordination matrix")
         # Format the source and dest points into lists of tuples of x and y values
         source = [
-            (item["Laser Ablation Centre X"], item["Laser Ablation Centre Y"])
+            (item[x_header], item[y_header])
             for item in point_dicts
-            if item["Mineral Classification"] == "Fiducial"
+            if item[ref_col] == ref_label
         ]
         dest = [(point.x, point.y) for point in self.ref_points]
         matrix = affine_transform_matrix(source=source, dest=dest)
 
         # Apply the matrix
         for idx, item in enumerate(point_dicts):
-            point = (item["Laser Ablation Centre X"], item["Laser Ablation Centre Y"])
+            point = (item[x_header], item[y_header])
             new_point = affine_transform_point(matrix=matrix, point=point)
-            point_dicts[idx]["Laser Ablation Centre X"], point_dicts[idx]["Laser Ablation Centre Y"] = new_point
+            point_dicts[idx][x_header], point_dicts[idx][y_header] = new_point
             self.logger.debug("Transformed point %s to %s", point, new_point)
         self.logger.info("Transformed %s points", len(point_dicts))
 
