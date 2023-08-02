@@ -265,7 +265,7 @@ def parse_sem_csv(filepath: str, required_headers: list[str]) -> tuple[list[dict
         reader.fieldnames
         for header in required_headers:
             if header not in reader.fieldnames:
-                raise KeyError
+                raise KeyError(f"Missing required header: {header}")
 
         # Iterate through each line in the CSV file
         for item in reader:

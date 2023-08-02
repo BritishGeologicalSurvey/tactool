@@ -127,8 +127,9 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         input_csv = self.input_csv_filepath_label.text()
         output_csv = self.output_csv_filepath_label.text()
         if input_csv != "" and output_csv != "":
-            self.recoordinate_sem_points(input_csv, output_csv)
-            self.closeEvent()
+            result = self.recoordinate_sem_points(input_csv, output_csv)
+            if result:
+                self.closeEvent()
         else:
             # Create a message informing the user that their input value is invalid
             self.show_message.emit(
@@ -146,10 +147,12 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         y_header: str = "Laser Ablation Centre Y",
         ref_col: str = "Mineral Classification",
         ref_label: str = "Fiducial",
-    ) -> None:
+    ) -> bool:
         """
         Recoordinate the given input SEM CSV file points using the current Analysis Points as reference points.
         Saves the resulting SEM data to the given output CSV file.
+        Returns a bool which signals if the recoordination successfully completed.
+
         The x_header, y_header, ref_col and ref_label values can be changed to allow recoordination
         of CSV files with different headers and data.
         For example, using the following values would allow recoordination for TACtool CSV files:
@@ -160,12 +163,16 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         try:
             self.logger.info("Loading SEM CSV: %s", input_csv)
             point_dicts, csv_headers = parse_sem_csv(filepath=input_csv, required_headers=required_sem_headers)
-        except KeyError:
+        except KeyError as error:
+            self.logger.error(error)
             self.show_message.emit(
                 "Invalid CSV File",
-                "\n".join(["The given file does not contain the required headers:"] + required_sem_headers),
+                "\n".join(["The given file does not contain the required headers:"] + [
+                    "    " + header for header in required_sem_headers
+                ]),
                 "warning",
             )
+            return False
 
         # Calculate the matrix
         self.logger.debug("Calculating recoordination matrix")
@@ -189,6 +196,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         # Export the new points to the output CSV
         self.logger.info("Saving recoordination results to: %s", output_csv)
         export_sem_csv(filepath=output_csv, headers=csv_headers, points=point_dicts)
+        return True
 
 
     def closeEvent(self, event=None) -> None:
