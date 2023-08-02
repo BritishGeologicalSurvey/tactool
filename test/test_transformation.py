@@ -62,23 +62,42 @@ def test_affine_transform_matrix():
     np.testing.assert_array_almost_equal(matrix, expected, decimal=10)
 
 
-def test_recoordinate_sem_points(tmp_path: Path, tactool: TACtool):
+@pytest.mark.parametrize(
+    ["input_csv", "expected_coordinates", "recoordinate_fields", "non_coord_headers"],
+    [
+        (
+            "test/data/analysis_points_complete.csv",
+            [(336, 472), (318, 394), (268, 469), (340, 527), (380, 362)],
+            {"x_header": "X", "y_header": "Y", "ref_col": "Type", "ref_label": "RefMark"},
+            ["Name", "Type", "diameter", "scale", "colour", "mount_name", "material", "notes"],
+        ),
+        (
+            "test/data/analysis_points_complete.csv",
+            [(336, 472), (318, 394), (268, 469), (340, 527), (380, 362)],
+            {"x_header": "X", "y_header": "Y", "ref_col": "Type", "ref_label": "RefMark"},
+            ["Name", "Type", "diameter", "scale", "colour", "mount_name", "material", "notes"],
+        ),
+    ],
+)
+def test_recoordinate_sem_points(
+    tmp_path: Path,
+    tactool: TACtool,
+    input_csv: str,
+    expected_coordinates: list[tuple[int, int]],
+    recoordinate_fields: dict[str, str],
+    non_coord_headers: list[str],
+):
     # Arrange
-    input_csv = "test/data/analysis_points_complete.csv"
-    output_csv = tmp_path / "analysis_points_complete.csv"
+    output_csv = tmp_path / "recoordinated_output.csv"
     # Place 3 Analysis Points which will be used for recoordination
     tactool.graphics_view.left_click.emit(336, 472)
     tactool.graphics_view.left_click.emit(318, 394)
     tactool.graphics_view.left_click.emit(268, 469)
     # Toggle recoordinate dialog so that the recoordinate_dialog is callable
     tactool.window.toggle_recoordinate_dialog()
-    expected_coordinates = [(336, 472), (318, 394), (268, 469), (340, 527), (380, 362)]
 
     # Act
-    tactool.recoordinate_dialog.recoordinate_sem_points(
-        input_csv, output_csv,
-        x_header="X", y_header="Y", ref_col="Type", ref_label="RefMark",
-    )
+    tactool.recoordinate_dialog.recoordinate_sem_points(input_csv, output_csv, **recoordinate_fields)
 
     # Assert
     with open(input_csv) as input_file, open(output_csv) as output_file:
@@ -88,13 +107,11 @@ def test_recoordinate_sem_points(tmp_path: Path, tactool: TACtool):
         # Check that the headers remain the same
         assert input_reader.fieldnames == output_reader.fieldnames
 
-        non_coord_headers = ["Name", "Type", "diameter", "scale", "colour", "mount_name", "material", "notes"]
-
         # Iterate through CSV file lines
         for input_item, output_item, (new_x, new_y) in zip(input_reader, output_reader, expected_coordinates):
             # Check that the non coordinate fields remain the same
             for header in non_coord_headers:
                 assert input_item[header] == output_item[header]
             # Check that the coordinate fields are correct
-            assert int(output_item["X"]) == new_x
-            assert int(output_item["Y"]) == new_y
+            assert int(output_item[recoordinate_fields["x_header"]]) == new_x
+            assert int(output_item[recoordinate_fields["y_header"]]) == new_y
