@@ -343,6 +343,6 @@ def affine_transform_point(
 
     # Apply the affine transformation
     dest = matrix @ src
-    dest = (int(dest[0]), int(dest[1]))  # to 2D integer coordinate
+    dest = (round(dest[0]), round(dest[1]))  # to 2D integer coordinate
 
     return dest

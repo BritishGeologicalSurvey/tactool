@@ -73,11 +73,11 @@ def test_recoordinate_sem_points(tmp_path: Path, tactool: TACtool):
     # Toggle recoordinate dialog so that the recoordinate_dialog is callable
     tactool.window.toggle_recoordinate_dialog()
     expected_coordinates = [
-        ("335", "472"),
-        ("317", "394"),
-        ("267", "469"),
-        ("339", "526"),
-        ("379", "362"),
+        (336, 472),
+        (318, 394),
+        (268, 469),
+        (340, 527),
+        (380, 362),
     ]
 
     # Act
@@ -102,5 +102,5 @@ def test_recoordinate_sem_points(tmp_path: Path, tactool: TACtool):
             for header in non_coord_headers:
                 assert input_item[header] == output_item[header]
             # Check that the coordinate fields are correct
-            assert output_item["X"] == new_x
-            assert output_item["Y"] == new_y
+            assert int(output_item["X"]) == new_x
+            assert int(output_item["Y"]) == new_y
