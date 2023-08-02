@@ -742,25 +742,35 @@ class Window(QMainWindow, LoggerMixin):
         """
         Toggle the recoordination dialog window.
         """
-        # If the program is not in recoordination mode
-        if self.recoordinate_dialog is None:
-            # Create the Recoordinate Dialog box
-            self.recoordinate_dialog = RecoordinateDialog(self.testing_mode)
-            # Disable main window input widgets
-            self.toggle_main_input_widgets(False)
-            # Move the Dialog box to be at the top left corner of the main window
-            main_window_pos = self.pos()
-            self.recoordinate_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
+        # If there are 3 reference points which can be used for recoordination
+        if len(self.table_model.reference_points) >= 3:
+            # If the program is not in recoordination mode
+            if self.recoordinate_dialog is None:
+                # Create the Recoordinate Dialog box
+                self.recoordinate_dialog = RecoordinateDialog(self.testing_mode, self.table_model.reference_points)
+                # Disable main window input widgets
+                self.toggle_main_input_widgets(False)
+                self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
+                # Move the Dialog box to be at the top left corner of the main window
+                main_window_pos = self.pos()
+                self.recoordinate_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
 
-            # Connect the Recoordinate dialog buttons
-            self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
-            self.recoordinate_dialog.invalid_path_entry.connect(self.show_message)
+                # Connect the Recoordinate dialog buttons
+                self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
+                self.recoordinate_dialog.show_message.connect(self.show_message)
 
-        # Else when the program is in recoordination mode, reset the Recoordination Dialog value
+            # Else when the program is in recoordination mode, reset the Recoordination Dialog value
+            else:
+                self.recoordinate_dialog = None
+                # Enable main window widgets
+                self.toggle_main_input_widgets(True)
+                self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
         else:
-            self.recoordinate_dialog = None
-            # Enable main window widgets
-            self.toggle_main_input_widgets(True)
+            self.show_message(
+                "Reference Points",
+                "3 Reference points are required to perform recoordination.",
+                "warning",
+            )
 
 
     def data_error_message(self, error: Exception) -> None:

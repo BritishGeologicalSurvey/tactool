@@ -13,7 +13,6 @@ from csv import (
     DictReader,
     writer,
 )
-from pathlib import Path
 from typing import Any
 
 from PyQt5.QtWidgets import (
@@ -194,9 +193,10 @@ def parse_row_data(item: dict[str, Any], fields: dict[str, dict[str, Any]]) -> d
     return ap_dict
 
 
-def export_tactool_csv(filepath: Path, headers: list[str], analysis_points: list[AnalysisPoint]) -> None:
+def export_tactool_csv(filepath: str, headers: list[str], analysis_points: list[AnalysisPoint]) -> None:
     """
     Write the given header data and analysis points to the given filepath.
+    This is specifically for TACtool Analysis Point data.
     """
     with open(filepath, "w", newline="") as csvfile:
         csvwriter = writer(csvfile)
@@ -250,6 +250,45 @@ def convert_export_point(analysis_point: AnalysisPoint, headers: list[str]) -> l
     # Insert a new Z column after the Y column for the laser formatting
     analysis_point_row.insert(headers.index("y") + 1, 0)
     return analysis_point_row
+
+
+def parse_sem_csv(filepath: str, required_headers: list[str]) -> tuple[list[dict[str, Any]], list[str]]:
+    """
+    Parse an SEM CSV file.
+    Returns a list of dictionary rows, and the list of headers in the same order they are in the current file.
+    """
+    point_dicts = []
+    with open(filepath) as csv_file:
+        reader = DictReader(csv_file)
+
+        # Check that the given CSV file has the required headers
+        reader.fieldnames
+        for header in required_headers:
+            if header not in reader.fieldnames:
+                raise KeyError
+
+        # Iterate through each line in the CSV file
+        for item in reader:
+            # Convert the required coordinate headers to floats
+            for header in required_headers:
+                item[header] = float(item[header])
+            point_dicts.append(item)
+
+    return point_dicts, reader.fieldnames
+
+
+def export_sem_csv(filepath: str, headers: list[str], points: list[dict[str, Any]]) -> None:
+    """
+    Write the given header data and point data to the given filepath.
+    This is specifically for SEM data.
+    """
+    with open(filepath, "w", newline="") as csvfile:
+        csvwriter = writer(csvfile)
+        csvwriter.writerow(headers)
+        for point in points:
+            # Convert the dictionary to a list of values matching the header positions
+            csv_row = [point[header] for header in headers]
+            csvwriter.writerow(csv_row)
 
 
 def reset_id(analysis_point: AnalysisPoint) -> AnalysisPoint:
