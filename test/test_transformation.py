@@ -66,7 +66,7 @@ def test_affine_transform_matrix():
 
 
 @pytest.mark.parametrize(
-    ["input_csv", "expected_coordinates", "recoordinate_fields", "non_coord_headers"],
+    ["input_csv", "expected_coordinates", "recoordinate_args", "non_coord_headers"],
     [
         (
             "test/data/analysis_points_complete.csv",
@@ -89,7 +89,7 @@ def test_recoordinate_sem_points(
     tactool: TACtool,
     input_csv: str,
     expected_coordinates: list[tuple[int, int]],
-    recoordinate_fields: dict[str, str],
+    recoordinate_args: dict[str, str],
     non_coord_headers: list[str],
 ):
     # Arrange
@@ -103,7 +103,7 @@ def test_recoordinate_sem_points(
     tactool.window.toggle_recoordinate_dialog()
 
     # Act
-    tactool.recoordinate_dialog.recoordinate_sem_points(input_csv, output_csv, **recoordinate_fields)
+    tactool.recoordinate_dialog.recoordinate_sem_points(input_csv, output_csv, **recoordinate_args)
 
     # Assert
     with open(input_csv) as input_file, open(output_csv) as output_file:
@@ -119,5 +119,5 @@ def test_recoordinate_sem_points(
             for header in non_coord_headers:
                 assert input_item[header] == output_item[header]
             # Check that the coordinate fields are correct
-            assert int(output_item[recoordinate_fields["x_header"]]) == expect_x
-            assert int(output_item[recoordinate_fields["y_header"]]) == expect_y
+            assert int(output_item[recoordinate_args["x_header"]]) == expect_x
+            assert int(output_item[recoordinate_args["y_header"]]) == expect_y
