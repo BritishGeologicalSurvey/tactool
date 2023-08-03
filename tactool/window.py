@@ -713,6 +713,7 @@ class Window(QMainWindow, LoggerMixin):
         self.logger.debug("Toggling main widgets to state: %s", enable)
         for widget in self.main_input_widgets:
             widget.setEnabled(enable)
+        self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
         self.graphics_view.disable_analysis_points = not enable
 
 
@@ -756,7 +757,6 @@ class Window(QMainWindow, LoggerMixin):
                 self.recoordinate_dialog = RecoordinateDialog(self.testing_mode, self.table_model.reference_points)
                 # Disable main window input widgets
                 self.toggle_main_input_widgets(False)
-                self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
                 # Move the Dialog box to be at the top left corner of the main window
                 main_window_pos = self.pos()
                 self.recoordinate_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
@@ -770,7 +770,6 @@ class Window(QMainWindow, LoggerMixin):
                 self.recoordinate_dialog = None
                 # Enable main window widgets
                 self.toggle_main_input_widgets(True)
-                self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
         else:
             self.logger.error("Missing 3 references points for recoordination")
             self.show_message(
@@ -796,26 +795,30 @@ class Window(QMainWindow, LoggerMixin):
         """
         Show a given message to the user in a PyQt QMessageBox.
         """
-        # Creating the PyQt Message box and formatting it
-        widget = QMessageBox()
-        widget.setWindowTitle(title)
-        widget.setText(message)
-        widget.setStandardButtons(QMessageBox.Ok)
+        # In testing mode, the user cannot select an option for the message dialog
+        if not self.testing_mode:
+            # Creating the PyQt Message box and formatting it
+            self.current_message = QMessageBox()
+            self.current_message.setWindowTitle(title)
+            self.current_message.setText(message)
+            self.current_message.setStandardButtons(QMessageBox.Ok)
 
-        # Setting the type of message
-        if type == "warning":
-            widget.setIcon(QMessageBox.Warning)
-        elif type == "information":
-            widget.setIcon(QMessageBox.Information)
-        elif type == "question":
-            widget.setIcon(QMessageBox.Question)
-            widget.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+            # Setting the type of message
+            if type == "warning":
+                self.current_message.setIcon(QMessageBox.Warning)
+            elif type == "information":
+                self.current_message.setIcon(QMessageBox.Information)
+            elif type == "question":
+                self.current_message.setIcon(QMessageBox.Question)
+                self.current_message.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
 
-        # Show the message box
-        message_box = widget.exec_()
-        # If the user presses the Cancel button on the message box
-        if message_box == QMessageBox.Cancel:
-            return False
+            # Show the message box
+            message_box = self.current_message.exec_()
+
+            self.current_message = None
+            # If the user presses the Cancel button on the message box
+            if message_box == QMessageBox.Cancel:
+                return False
         return True
 
 
