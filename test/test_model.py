@@ -5,11 +5,8 @@ qapp fixture starts a running QApplication for the context of the test.
 """
 import pytest
 
-from tactool.main import TACtool
-from tactool.table_model import TableModel, AnalysisPoint
-
-
-PUBLIC_INDEX = len(TACtool([], testing_mode=True).window.table_model.headers) - 3
+from tactool.analysis_point import AnalysisPoint
+from tactool.table_model import TableModel
 
 
 @pytest.mark.parametrize("expected_data, match_status", [
@@ -48,7 +45,11 @@ PUBLIC_INDEX = len(TACtool([], testing_mode=True).window.table_model.headers) - 
         True),
 ]
 )
-def test_analysis_point_public_attributes_match(expected_data: AnalysisPoint, match_status: bool) -> None:
+def test_analysis_point_public_attributes_match(
+    public_index: int,
+    expected_data: AnalysisPoint,
+    match_status: bool,
+):
     """
     Function to test the functionality of comparing Analysis Point public attributes.
     For this, only the public attributes must match the existing Analysis Point.
@@ -56,10 +57,10 @@ def test_analysis_point_public_attributes_match(expected_data: AnalysisPoint, ma
     analysis_point = AnalysisPoint(1, "RefMark", 123, 456, 10, 1.0, "#ffff00", "sample_x67", "mount_x15",
                                    "duck", "note1", None, None, None)
     # Compare just the public attributes of the points, i.e. up to the last 3
-    assert (analysis_point.aslist()[:PUBLIC_INDEX] == expected_data.aslist()[:PUBLIC_INDEX]) is match_status
+    assert (analysis_point.aslist()[:public_index] == expected_data.aslist()[:public_index]) is match_status
 
 
-def test_model() -> None:
+def test_model(model: TableModel):
     """
     Function to test the functionality of the PyQt Table Model of TACtool.
     """
@@ -71,7 +72,6 @@ def test_model() -> None:
         [3, "Spot", 123, 456, 10, 1.0, "#ffff00", "sample_x67", "mount_x15",
          "duck", "note3", "outer_ellipse3", "inner_ellipse3", "label_item3"]
     ]
-    model = TableModel()
 
     # Check that the PyQt Table Model is empty with the correct headers
     assert model._data == []
