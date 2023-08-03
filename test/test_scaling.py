@@ -5,39 +5,36 @@ def test_toggle_scaling_mode(tactool: TACtool):
     """
     Function to test the functionality of the scaling mode.
     """
-    # Check that the SetScaleDialog and the transparent rectangle
-    # on the PyQt Graphics Scene do not exist
+    # Check that the SetScaleDialog does not exist
     assert tactool.window.set_scale_dialog is None
-    assert tactool.graphics_scene.scaling_rect is None
     # Check that the main input widgets are enabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
     assert tactool.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_scene.scaling_rect is None
 
     # Start the scaling mode
     tactool.window.toggle_scaling_mode()
 
-    # Check that the SetScaleDialog and the transparent rectangle
-    # on the PyQt Graphics Scene exist and are the correct type
+    # Check that the SetScaleDialog does exist
     assert tactool.window.set_scale_dialog is not None
-    assert tactool.graphics_scene.scaling_rect is not None
     # Check that the main input widgets are disabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is False
     assert tactool.graphics_view.disable_analysis_points is True
+    assert tactool.graphics_scene.scaling_rect is not None
 
     # Set the scale, following the same steps as the user would
     tactool.window.set_scale_dialog.scale_value.setText(str(2.0))
     tactool.window.set_scale_dialog.set_scale()
 
-    # Check that the SetScaleDialog and the transparent rectangle
-    # on the PyQt Graphics Scene do not exist
+    # Check that the SetScaleDialog does not exist
     assert tactool.window.set_scale_dialog is None
-    assert tactool.graphics_scene.scaling_rect is None
     # Check that the main input widgets are enabled
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
     assert tactool.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_scene.scaling_rect is None
 
 
 def test_set_scale(tactool: TACtool):
