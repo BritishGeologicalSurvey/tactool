@@ -9,6 +9,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import (
     QDialog,
     QFileDialog,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -63,13 +64,16 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.input_csv_button = QPushButton("Select Input CSV", self)
         self.input_csv_filepath_label = QLineEdit("")
         self.input_csv_filepath_label.setDisabled(True)
+
         output_csv_label = QLabel("Output CSV")
         self.output_csv_button = QPushButton("Select Output CSV", self)
         self.output_csv_filepath_label = QLineEdit("")
         self.output_csv_filepath_label.setDisabled(True)
-        self.recoordinate_button = QPushButton("Recoordinate and Export CSV")
 
-        # Arrange and set the layout
+        self.recoordinate_button = QPushButton("Recoordinate and Export")
+        self.cancel_button = QPushButton("Cancel", self)
+
+        # Arrange the main layout
         layout = QVBoxLayout()
         layout.addWidget(input_csv_label)
         layout.addWidget(self.input_csv_button)
@@ -77,7 +81,14 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         layout.addWidget(output_csv_label)
         layout.addWidget(self.output_csv_button)
         layout.addWidget(self.output_csv_filepath_label)
-        layout.addWidget(self.recoordinate_button)
+
+        # Add the final 2 buttons alongside eachother
+        bottom_button_layout = QHBoxLayout()
+        bottom_button_layout.addWidget(self.recoordinate_button)
+        bottom_button_layout.addWidget(self.cancel_button)
+        layout.addLayout(bottom_button_layout)
+
+        # Set the layout
         self.setLayout(layout)
 
 
@@ -89,6 +100,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.input_csv_button.clicked.connect(self.get_input_csv)
         self.output_csv_button.clicked.connect(self.set_output_csv)
         self.recoordinate_button.clicked.connect(self.get_export_and_recoordinate)
+        self.cancel_button.clicked.connect(self.closeEvent)
 
 
     def get_input_csv(self) -> None:
