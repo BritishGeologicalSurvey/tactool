@@ -65,6 +65,61 @@ def test_affine_transform_matrix():
     np.testing.assert_array_almost_equal(matrix, expected, decimal=10)
 
 
+def test_toggle_recoordinate_dialog(tactool: TACtool):
+    # close recoord window
+    # check that toggling off works, main widgets, grey rect, disable graphics scene points
+
+    # Check that the RecoordinateDialog does not exist
+    assert tactool.window.recoordinate_dialog is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
+    assert tactool.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_scene.scaling_rect is None
+
+    # Add 2 RefMark points
+    tactool.graphics_view.left_click.emit(336, 472)
+    tactool.graphics_view.left_click.emit(318, 394)
+
+    # Try to start the recoordination dialog
+    # This should not work because 3 RefMark points are needed
+    # and currently there are only 2
+    tactool.window.toggle_recoordinate_dialog()
+
+    # Check that the RecoordinateDialog does not exist
+    assert tactool.window.recoordinate_dialog is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
+    assert tactool.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_scene.scaling_rect is None
+
+    # Add the 3rd RefMark point
+    tactool.graphics_view.left_click.emit(268, 469)
+
+    # Toggle the recoordinate dialog, this should now work
+    tactool.window.toggle_recoordinate_dialog()
+
+    # Check that the RecoordinateDialog does exist
+    assert tactool.window.recoordinate_dialog is not None
+    # Check that the main input widgets are disabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is False
+    assert tactool.graphics_view.disable_analysis_points is True
+    assert tactool.graphics_scene.scaling_rect is not None
+
+    # Close the RecoordinateDialog
+    tactool.recoordinate_dialog.cancel_button.click()
+
+    # Check that the RecoordinateDialog does not exist
+    assert tactool.window.recoordinate_dialog is None
+    # Check that the main input widgets are enabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
+    assert tactool.graphics_view.disable_analysis_points is False
+    assert tactool.graphics_scene.scaling_rect is None
+
+
 @pytest.mark.parametrize(
     ["input_csv", "expected_coordinates", "recoordinate_args", "non_coord_headers"],
     [
