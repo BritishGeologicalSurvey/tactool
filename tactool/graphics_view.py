@@ -282,7 +282,6 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         Toggle the scaling mode Graphics Scene settings.
         """
         self.scaling_mode = not self.scaling_mode
-        self.graphics_scene.toggle_transparent_window(self._image)
 
         if self.scaling_mode:
             self.logger.debug("Activating scaling mode")
