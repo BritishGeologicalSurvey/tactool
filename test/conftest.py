@@ -2,6 +2,8 @@
 Definitions for test fixtures used within other tests.
 """
 import pytest
+
+from tactool.table_model import TableModel
 from tactool.main import TACtool
 
 
@@ -18,3 +20,19 @@ def tactool():
     yield tactool_application
     # Delete the application instance before restarting a new one
     del tactool_application
+
+
+@pytest.fixture(scope="function")
+def model():
+    """
+    An instance of the TableModel to be used in tests.
+    """
+    return TableModel()
+
+
+@pytest.fixture(scope="function")
+def public_index(model: TableModel):
+    """
+    The index in the list of headers where the public headers end.
+    """
+    return len(model.public_headers)
