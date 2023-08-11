@@ -5,6 +5,7 @@ The Recoordinate Dialog is used for allowing the user to provide a CSV to be rec
 from PyQt5.QtCore import (
     pyqtSignal,
     Qt,
+    QSize,
 )
 from PyQt5.QtWidgets import (
     QDialog,
@@ -35,10 +36,16 @@ class RecoordinateDialog(QDialog, LoggerMixin):
     # Used for showing messages with methods from the main window
     show_message = pyqtSignal(str, str, str)
 
-    def __init__(self, testing_mode: bool, ref_points: list[AnalysisPoint]) -> None:
+    def __init__(
+        self,
+        testing_mode: bool,
+        ref_points: list[AnalysisPoint],
+        image_size: QSize,
+    ) -> None:
         super().__init__()
         self.testing_mode = testing_mode
         self.ref_points = ref_points
+        self.image_size = image_size
 
         # Setting the Dialog Box settings
         self.setWindowTitle("Recoordination")
@@ -155,6 +162,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self,
         input_csv: str,
         output_csv: str,
+        invert_x_axis_dest: bool = True,
         x_header: str = "Laser Ablation Centre X",
         y_header: str = "Laser Ablation Centre Y",
         ref_col: str = "Mineral Classification",
@@ -165,10 +173,17 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         Saves the resulting SEM data to the given output CSV file.
         Returns a bool which signals if the recoordination successfully completed.
 
+        invert_x_axis_dest determines if the X axis coordinate values of the
+        destination coordinates should be inverted.
+        This is used because the origin of the PyQt GraphicsScene is at the top left,
+        but the origin of the SEM coordinates of at the top right.
+        Therefore, we use the size of the image to invert the X axis origin of the destination coordinates
+        to account for this difference.
+
         The x_header, y_header, ref_col and ref_label values can be changed to allow recoordination
         of CSV files with different headers and data.
         For example, using the following values would allow recoordination for TACtool CSV files:
-        x_header="X", y_header="Y", ref_col="Type", ref_label="RefMark"
+        invert_x_axis_dest=False, x_header="X", y_header="Y", ref_col="Type", ref_label="RefMark"
         """
         # Parse the SEM CSV data
         required_sem_headers = [x_header, y_header]
@@ -194,7 +209,12 @@ class RecoordinateDialog(QDialog, LoggerMixin):
             for item in point_dicts
             if item[ref_col] == ref_label
         ]
-        dest = [(point.x, point.y) for point in self.ref_points]
+        # Check if the destination points (from TACtool) need the y axis inverted to change the origin
+        dest = [
+            (self.image_size.width() - point.x, point.y)
+            if invert_x_axis_dest else (point.x, point.y)
+            for point in self.ref_points
+        ]
         matrix = affine_transform_matrix(source=source, dest=dest)
 
         # Apply the matrix
