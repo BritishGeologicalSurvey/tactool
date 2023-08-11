@@ -138,6 +138,15 @@ def test_toggle_recoordinate_dialog(tactool: TACtool):
             ["Particle ID", "Mineral Classification", "Effective Diameter m",
              "Feret Max Diameter m", "Feret Min Diameter m", "F (N)", "Cl (N)"],
         ),
+        (
+            "test/data/SEM_co-ordinate_import_test_set_4_refs.csv",
+            [(460, 472), (478, 394), (528, 469), (472, 447), (525, 458),
+             (509, 483), (487, 466), (476, 458), (464, 477)],
+            {"invert_x_axis_dest": True, "x_header": "Laser Ablation Centre X", "y_header": "Laser Ablation Centre Y",
+             "ref_col": "Mineral Classification", "ref_label": "Fiducial"},
+            ["Particle ID", "Mineral Classification", "Effective Diameter m",
+             "Feret Max Diameter m", "Feret Min Diameter m", "F (N)", "Cl (N)"],
+        ),
     ],
 )
 def test_recoordinate_sem_points(
@@ -151,10 +160,12 @@ def test_recoordinate_sem_points(
     # Arrange
     output_csv = tmp_path / "recoordinated_output.csv"
     print(output_csv)
-    # Place 3 Analysis Points which will be used for recoordination
+    # Place 4 Analysis Points which will be used for recoordination
+    # Only the first 3 should be used
     tactool.graphics_view.left_click.emit(336, 472)
     tactool.graphics_view.left_click.emit(318, 394)
     tactool.graphics_view.left_click.emit(268, 469)
+    tactool.graphics_view.left_click.emit(87, 392)
     # Toggle recoordinate dialog so that the recoordinate_dialog is callable
     tactool.window.toggle_recoordinate_dialog()
 
