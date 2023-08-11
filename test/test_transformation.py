@@ -126,13 +126,14 @@ def test_toggle_recoordinate_dialog(tactool: TACtool):
         (
             "test/data/analysis_points_complete.csv",
             [(336, 472), (318, 394), (268, 469), (340, 527), (380, 362)],
-            {"x_header": "X", "y_header": "Y", "ref_col": "Type", "ref_label": "RefMark"},
+            {"invert_x_axis_dest": False, "x_header": "X", "y_header": "Y",
+             "ref_col": "Type", "ref_label": "RefMark"},
             ["Name", "Type", "diameter", "scale", "colour", "mount_name", "material", "notes"],
         ),
         (
             "test/data/SEM_co-ordinate_import_test_set.csv",
-            [(336, 472), (318, 394), (268, 469), (271, 458), (287, 483), (309, 466), (320, 458), (332, 477)],
-            {"x_header": "Laser Ablation Centre X", "y_header": "Laser Ablation Centre Y",
+            [(460, 472), (478, 394), (528, 469), (525, 458), (509, 483), (487, 466), (476, 458), (464, 477)],
+            {"invert_x_axis_dest": True, "x_header": "Laser Ablation Centre X", "y_header": "Laser Ablation Centre Y",
              "ref_col": "Mineral Classification", "ref_label": "Fiducial"},
             ["Particle ID", "Mineral Classification", "Effective Diameter m",
              "Feret Max Diameter m", "Feret Min Diameter m", "F (N)", "Cl (N)"],

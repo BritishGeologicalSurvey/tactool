@@ -754,7 +754,11 @@ class Window(QMainWindow, LoggerMixin):
             # If the program is not in recoordination mode
             if self.recoordinate_dialog is None:
                 # Create the Recoordinate Dialog box
-                self.recoordinate_dialog = RecoordinateDialog(self.testing_mode, self.table_model.reference_points)
+                self.recoordinate_dialog = RecoordinateDialog(
+                    testing_mode=self.testing_mode,
+                    ref_points=self.table_model.reference_points,
+                    image_size=self.graphics_view._image.pixmap().size(),
+                )
                 # Disable main window input widgets
                 self.toggle_main_input_widgets(False)
                 # Move the Dialog box to be at the top left corner of the main window
