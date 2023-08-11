@@ -809,12 +809,14 @@ class Window(QMainWindow, LoggerMixin):
             self.current_message.setText(message)
             self.current_message.setStandardButtons(QMessageBox.Ok)
 
-            # Setting the type of message
-            if type == "warning":
-                self.current_message.setIcon(QMessageBox.Warning)
-            elif type == "information":
-                self.current_message.setIcon(QMessageBox.Information)
-            elif type == "question":
+            # Set the type of message
+            type_dict = {
+                "warning": QMessageBox.Warning,
+                "information": QMessageBox.Information,
+                "question": QMessageBox.Question,
+            }
+            self.current_message.setIcon(type_dict[type])
+            if type == "question":
                 self.current_message.setIcon(QMessageBox.Question)
                 self.current_message.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
 
