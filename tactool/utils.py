@@ -17,7 +17,7 @@ class LoggerMixin:
     Logger class to give each class of the TACtool application a built-in logger.
     """
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
 
     @staticmethod
