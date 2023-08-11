@@ -203,18 +203,19 @@ class RecoordinateDialog(QDialog, LoggerMixin):
 
         # Calculate the matrix
         self.logger.debug("Calculating recoordination matrix")
+        # For source and dest points, only use the first 3 reference points
         # Format the source and dest points into lists of tuples of x and y values
         source = [
             (item[x_header], item[y_header])
             for item in point_dicts
             if item[ref_col] == ref_label
-        ]
+        ][:3]
         # Check if the destination points (from TACtool) need the y axis inverted to change the origin
         dest = [
             (self.image_size.width() - point.x, point.y)
             if invert_x_axis_dest else (point.x, point.y)
             for point in self.ref_points
-        ]
+        ][:3]
         matrix = affine_transform_matrix(source=source, dest=dest)
 
         # Apply the matrix
