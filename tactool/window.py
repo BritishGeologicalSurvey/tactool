@@ -756,7 +756,8 @@ class Window(QMainWindow, LoggerMixin):
                 # Create the Recoordinate Dialog box
                 self.recoordinate_dialog = RecoordinateDialog(
                     testing_mode=self.testing_mode,
-                    ref_points=self.table_model.reference_points,
+                    # Pass just the first 3 reference points
+                    ref_points=self.table_model.reference_points[:3],
                     image_size=self.graphics_view._image.pixmap().size(),
                 )
                 # Disable main window input widgets
