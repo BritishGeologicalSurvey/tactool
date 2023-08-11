@@ -218,16 +218,34 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         matrix = affine_transform_matrix(source=source, dest=dest)
 
         # Apply the matrix
+        # Track if any of the new points extend the image boundary
+        extends_boundary = False
         for idx, item in enumerate(point_dicts):
             point = (item[x_header], item[y_header])
-            new_point = affine_transform_point(matrix=matrix, point=point)
-            point_dicts[idx][x_header], point_dicts[idx][y_header] = new_point
-            self.logger.debug("Transformed point %s to %s", point, new_point)
+            new_x, new_y = affine_transform_point(matrix=matrix, point=point)
+            point_dicts[idx][x_header] = new_x
+            point_dicts[idx][y_header] = new_y
+            # Check if the new point extends the image boundary
+            if new_x > self.image_size.height() or new_x < 0 or new_y > self.image_size.width() or new_y < 0:
+                extends_boundary = True
+
+            self.logger.debug("Transformed point %s to %s", point, (new_x, new_y))
         self.logger.info("Transformed %s points", len(point_dicts))
 
         # Export the new points to the output CSV
         self.logger.info("Saving recoordination results to: %s", output_csv)
         export_sem_csv(filepath=output_csv, headers=csv_headers, points=point_dicts)
+
+        # Create a message informing the user that the recoordinated points extend the image boundary
+        if extends_boundary:
+            message = "At least 1 of the recoordinated points goes beyond the current image boundary"
+            self.logger.warning(message)
+            self.show_message.emit(
+                "Recoordination Warning",
+                message,
+                "warning",
+            )
+
         return True
 
 
