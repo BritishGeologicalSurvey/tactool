@@ -163,3 +163,15 @@ _Export the current analysis point data to a TACtool CSV file._
 By default, the exported file will be a `CSV` file. However, you can add your own file extension to the filename if you wish to create a different file type, though this is not recommended.
 
 _Note: Upon export, the `sample_name` and `id` columns will be concatenated into a single column labeled `Name`, using the character pattern `_#` to join them._
+
+### Recoordinate SEM CSV
+
+_Recoordinate a given SEM CSV file, using the current reference points in TACtool._
+
+- Ensure you currently have 3 analysis points with the label `RefMark` placed in TACtool.
+- Press the `Recoordinate SEM CSV` button.
+- Select an input `CSV` file by clicking on the `Select Input CSV` button and then use the file picker.
+- Select an output `CSV` file by clicking on the `Select Output CSV` button and then use the file picker.
+- Press the `Recoordinate and Export` button.
+
+_Note: If there are more than `3` analysis points with the label `RefMark` in TACtool, the recoordination process will only use the first `3` reference points from the Analysis Points Table Data._
