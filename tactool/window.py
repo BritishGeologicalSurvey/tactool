@@ -617,14 +617,6 @@ class Window(QMainWindow, LoggerMixin):
             self.set_colour_button_style()
 
 
-    def set_scale(self, scale: float) -> None:
-        """
-        Set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
-        """
-        self.scale_value_input.setText(str(scale))
-        self.toggle_status_bar_messages()
-
-
     def get_point_settings(self, analysis_point: AnalysisPoint, clicked_column_index: int) -> None:
         """
         Get the settings of an Analysis Point which has been selected in the PyQt Table View.
@@ -716,6 +708,14 @@ class Window(QMainWindow, LoggerMixin):
             widget.setEnabled(enable)
         self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
         self.graphics_view.disable_analysis_points = not enable
+
+
+    def set_scale(self, scale: float) -> None:
+        """
+        Set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
+        """
+        self.scale_value_input.setText(str(scale))
+        self.toggle_status_bar_messages()
 
 
     def toggle_scaling_mode(self) -> None:
