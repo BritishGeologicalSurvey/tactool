@@ -38,7 +38,7 @@ class SetScaleDialog(QDialog, LoggerMixin):
         self.setWindowTitle("Set Scale")
         self.setMinimumSize(100, 200)
         self.setWindowFlags(
-            Qt.Window | Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint
+            Qt.Window | Qt.WindowCloseButtonHint
         )
         self.setup_ui_elements()
         self.connect_signals_and_slots()
