@@ -106,8 +106,8 @@ class Window(QMainWindow, LoggerMixin):
         self.menu_bar_file_import_image = self.menu_bar_file.addAction("Import Image")
         self.menu_bar_file_export_image = self.menu_bar_file.addAction("Export Image")
         self.menu_bar_file.addSeparator()
-        self.file_menu_bar_import_tactool_csv = self.menu_bar_file.addAction("Import TACtool CSV")
-        self.file_menu_bar_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
+        self.menu_bar_file_import_tactool_csv = self.menu_bar_file.addAction("Import TACtool CSV")
+        self.menu_bar_file_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
         self.menu_bar_file.addSeparator()
         self.menu_bar_recoordinate_csv = self.menu_bar_file.addAction("Recoordinate SEM CSV")
 
@@ -206,8 +206,8 @@ class Window(QMainWindow, LoggerMixin):
         # Connect menu bar clicks to handlers
         self.menu_bar_file_import_image.triggered.connect(self.import_image_get_path)
         self.menu_bar_file_export_image.triggered.connect(self.export_image_get_path)
-        self.file_menu_bar_import_tactool_csv.triggered.connect(self.import_tactool_csv_get_path)
-        self.file_menu_bar_export_tactool_csv.triggered.connect(self.export_tactool_csv_get_path)
+        self.menu_bar_file_import_tactool_csv.triggered.connect(self.import_tactool_csv_get_path)
+        self.menu_bar_file_export_tactool_csv.triggered.connect(self.export_tactool_csv_get_path)
         self.menu_bar_recoordinate_csv.triggered.connect(self.toggle_recoordinate_dialog)
 
         # Connect button clicks to handlers
