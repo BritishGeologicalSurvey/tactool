@@ -31,10 +31,10 @@ class RecoordinateDialog(QDialog, LoggerMixin):
     """
     PyQt QDialog class for creating the recoordination dialog box.
     """
-    # Tracks when the Recoordinate Dialog Box is closed
-    closed_recoordinate_dialog = pyqtSignal()
     # Used for showing messages with methods from the main window
     show_message = pyqtSignal(str, str, str)
+    # Tracks when the Recoordinate Dialog Box is closed
+    closed_recoordinate_dialog = pyqtSignal()
 
     def __init__(
         self,
@@ -105,8 +105,8 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         """
         self.logger.debug("Connecting signals and slots")
         self.input_csv_button.clicked.connect(self.get_input_csv)
-        self.output_csv_button.clicked.connect(self.set_output_csv)
-        self.recoordinate_button.clicked.connect(self.get_export_and_recoordinate)
+        self.output_csv_button.clicked.connect(self.get_output_csv)
+        self.recoordinate_button.clicked.connect(self.recoordinate_and_export)
         self.cancel_button.clicked.connect(self.closeEvent)
 
 
@@ -124,9 +124,9 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.logger.info("Selected input CSV: %s", input_csv)
 
 
-    def set_output_csv(self) -> None:
+    def get_output_csv(self) -> None:
         """
-        Set the output CSV file for the recoordination results.
+        Get the output CSV file for the recoordination results.
         """
         pyqt_save_dialog = QFileDialog.getSaveFileName(
             parent=self,
@@ -139,9 +139,9 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.logger.info("Selected output CSV: %s", output_csv)
 
 
-    def get_export_and_recoordinate(self) -> None:
+    def recoordinate_and_export(self) -> None:
         """
-        Get the export CSV file and emit the recoordinate signal back to the main class.
+        Get the given CSV files, if they are both valid then perform the recoordination process.
         """
         input_csv = self.input_csv_filepath_label.text()
         output_csv = self.output_csv_filepath_label.text()
