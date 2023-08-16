@@ -255,7 +255,7 @@ class Window(QMainWindow, LoggerMixin):
         self.colour_button.setStyleSheet(colour_button_stylesheet)
 
 
-    def create_status_bar_messages(self):
+    def create_status_bar_messages(self) -> dict[str, dict[str, None | QLabel | Callable[[], tuple[bool, str]]]]:
         """
         Create the status bar message functions.
         """
