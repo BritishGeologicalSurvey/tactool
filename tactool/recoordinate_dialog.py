@@ -227,7 +227,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
             point_dicts[idx][x_header] = new_x
             point_dicts[idx][y_header] = new_y
             # Check if the new point extends the image boundary
-            if new_x > self.image_size.height() or new_x < 0 or new_y > self.image_size.width() or new_y < 0:
+            if new_x > self.image_size.width() or new_x < 0 or new_y > self.image_size.height() or new_y < 0:
                 extends_boundary = True
 
             self.logger.debug("Transformed point %s to %s", point, (new_x, new_y))
