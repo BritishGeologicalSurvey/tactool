@@ -385,9 +385,26 @@ class Window(QMainWindow, LoggerMixin):
             analysis_points = parse_tactool_csv(filepath, self.default_settings)
             self.clear_analysis_points()
             self.reset_settings()
+            # Track if any of the points extend the image boundary
+            extends_boundary = False
+            image_size = self.graphics_view._image.pixmap().size()
             for analysis_point in analysis_points:
                 self.add_analysis_point(**analysis_point, from_click=False)
+                ap_x = analysis_point["x"]
+                ap_y = analysis_point["y"]
+                if ap_x > image_size.width() or ap_x < 0 or ap_y > image_size.height() or ap_y < 0:
+                    extends_boundary = True
             self.table_view.scrollToTop()
+
+            # Create a message informing the user that the points extend the image boundary
+            if extends_boundary:
+                message = "At least 1 of the imported analysis points goes beyond the current image boundary"
+                self.logger.warning(message)
+                self.show_message(
+                    "Imported Points Warning",
+                    message,
+                    "warning",
+                )
 
         # A KeyError and UnicodeError usually occur with an incorrectly formatted CSV file
         except (KeyError, UnicodeError):
