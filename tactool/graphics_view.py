@@ -1,5 +1,7 @@
 import math
 
+from typing import Optional
+
 from PyQt5.QtCore import (
     pyqtSignal,
     QPointF,
@@ -21,6 +23,7 @@ from PyQt5.QtWidgets import (
     QGraphicsView,
 )
 
+from tactool.analysis_point import AnalysisPoint
 from tactool.graphics_scene import GraphicsScene
 from tactool.utils import LoggerMixin
 
@@ -38,6 +41,9 @@ class GraphicsView(QGraphicsView, LoggerMixin):
     # Tracks the users mouse movement on the Graphics View whilst in scaling mode
     scale_move_event = pyqtSignal(float)
 
+    # Tracks the position for a ghost analysis point
+    ghost_point_move = pyqtSignal(int, int)
+
 
     def __init__(self) -> None:
         super().__init__()
@@ -52,6 +58,7 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         self.scaling_mode = False
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
+        self.ghost_point: Optional[AnalysisPoint] = None
 
         # Create the Graphics Scene which is displayed in the Graphics View
         self.graphics_scene = GraphicsScene()
@@ -107,15 +114,31 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         parent PyQt class, QGraphicsView, at the end of the function to handle
         all other event occurences.
         """
+        event_position = self.mapToScene(event.pos()).toPoint()
+
+        # Check to ensure a ghost point is not left behind when it shouldn't exist
+        if self.disable_analysis_points and self.ghost_point is not None:
+            self.remove_ghost_point()
+
         if self.scaling_mode:
             # If there is a current start point but not an end point of a scaling line
             if not self.scale_start_point.isNull() and self.scale_end_point.isNull():
                 # Emit a signal that the mouse has been moved
                 # Passing the start point of the scaling line and the coordinates of the mouse
-                start, end = self.scale_start_point, self.mapToScene(event.pos()).toPoint()
+                start, end = self.scale_start_point, event_position
                 pixel_distance = round(math.sqrt((start.y() - end.y())**2 + (start.x() - end.x())**2), 2)
                 self.graphics_scene.draw_scale_line(start, end)
                 self.scale_move_event.emit(pixel_distance)
+
+        # Check if ghost points should be active
+        if not self.disable_analysis_points:
+            # If there is already a ghost point, then remove it
+            if self.ghost_point is not None:
+                self.remove_ghost_point()
+            # If the cursor is on the image and navigation mode is not enabled
+            if self._image.isUnderMouse() and not self.navigation_mode:
+                # Add a new ghost point
+                self.ghost_point_move.emit(event_position.x(), event_position.y())
         super().mouseMoveEvent(event)
 
 
@@ -301,3 +324,15 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
         self.graphics_scene.remove_scale_items()
+
+
+    def remove_ghost_point(self) -> None:
+        """
+        Remove the current ghost point.
+        """
+        self.graphics_scene.remove_graphics_items([
+            self.ghost_point._outer_ellipse,
+            self.ghost_point._inner_ellipse,
+            self.ghost_point._label_text_item,
+        ])
+        self.ghost_point = None

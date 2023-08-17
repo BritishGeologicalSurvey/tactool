@@ -220,6 +220,7 @@ class Window(QMainWindow, LoggerMixin):
         # Connect Graphics View interactions to handlers
         self.graphics_view.left_click.connect(self.add_analysis_point)
         self.graphics_view.right_click.connect(self.remove_analysis_point)
+        self.graphics_view.ghost_point_move.connect(self.add_ghost_point)
 
         # Connect Table interaction clicks to handlers
         self.table_view.selected_analysis_point.connect(self.get_point_settings)
@@ -606,6 +607,46 @@ class Window(QMainWindow, LoggerMixin):
             self.table_view.model().layoutChanged.emit()
 
             self.logger.info("Deleted Analysis Point: %s", analysis_point.id)
+
+
+    def add_ghost_point(self, x: int, y: int) -> None:
+        """
+        Add a ghost point to the GraphicsScene.
+        """
+        apid = self.table_model.next_point_id
+        label = self.label_input.currentText()
+        diameter = self.diameter_input.value()
+        colour = self.point_colour
+        scale = float(self.scale_value_input.text())
+        # Get the graphics items for the ghost point
+        outer_ellipse, inner_ellipse, label_text_item = self.graphics_scene.add_analysis_point(
+            x=x,
+            y=y,
+            apid=apid,
+            label=label,
+            diameter=diameter,
+            colour=colour,
+            scale=scale,
+            alpha=100,
+        )
+        # Create a fake AnalysisPoint object for the ghost point
+        ghost_point = AnalysisPoint(
+            x=x,
+            y=y,
+            id=apid,
+            label=label,
+            diameter=diameter,
+            scale=scale,
+            colour=colour,
+            sample_name="",
+            mount_name="",
+            material="",
+            notes="",
+            _outer_ellipse=outer_ellipse,
+            _inner_ellipse=inner_ellipse,
+            _label_text_item=label_text_item,
+        )
+        self.graphics_view.ghost_point = ghost_point
 
 
     def reload_analysis_points(

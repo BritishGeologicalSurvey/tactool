@@ -47,6 +47,7 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         diameter: int,
         colour: str,
         scale: float,
+        alpha: int = 200,
     ) -> tuple[QGraphicsEllipseItem, QGraphicsEllipseItem, QGraphicsTextItem]:
         """
         Draw an Analysis Point onto the Graphics Scene.
@@ -56,7 +57,9 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         # Set the drawing colours to use the given colour
         # pen just provides an outline of an object
         # brush also fills the object
-        pen = QPen(QColor(colour))
+        qcolour = QColor(colour)
+        qcolour.setAlpha(alpha)
+        pen = QPen(qcolour)
         brush = QBrush(pen.color())
 
         # Calculate the scaled diameter size in pixels based on the given scale
@@ -86,7 +89,7 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         # Create the label as a PyQt graphic and set it's attributes appropriately
         label_text_item = QGraphicsTextItem(label_text)
         label_text_item.setPos(x, y)
-        label_text_item.setDefaultTextColor(QColor(colour))
+        label_text_item.setDefaultTextColor(qcolour)
         label_text_item.setFont(QFont("Helvetica", 14))
         # Add the label to the Graphics Scene
         self.addItem(label_text_item)
