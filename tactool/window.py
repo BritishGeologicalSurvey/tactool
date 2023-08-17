@@ -214,7 +214,7 @@ class Window(QMainWindow, LoggerMixin):
         self.clear_points_button.clicked.connect(self.clear_analysis_points)
         self.reset_ids_button.clicked.connect(lambda: self.reload_analysis_points(transform=reset_id))
         self.reset_settings_button.clicked.connect(self.reset_settings)
-        self.colour_button.clicked.connect(self.set_point_colour)
+        self.colour_button.clicked.connect(self.get_point_colour)
         self.set_scale_button.clicked.connect(self.toggle_scaling_mode)
 
         # Connect Graphics View interactions to handlers
@@ -501,15 +501,15 @@ class Window(QMainWindow, LoggerMixin):
         self,
         x: int,
         y: int,
+        apid: Optional[int] = None,
         label: Optional[str] = None,
         diameter: Optional[int] = None,
         scale: Optional[float] = None,
         colour: Optional[str] = None,
-        notes: str = "",
-        apid: Optional[int] = None,
         sample_name: str = "",
         mount_name: str = "",
         material: str = "",
+        notes: str = "",
         from_click: bool = True,
     ) -> None:
         """
@@ -535,17 +535,17 @@ class Window(QMainWindow, LoggerMixin):
             apid = self.table_model.next_point_id
 
         analysis_point = self.graphics_scene.add_analysis_point(
-            apid=apid,
             x=x,
             y=y,
+            apid=apid,
             label=label,
             diameter=diameter,
             scale=scale,
             colour=colour,
-            notes=notes,
             sample_name=sample_name,
             mount_name=mount_name,
             material=material,
+            notes=notes,
         )
         if self.logger.level == logging.DEBUG:
             self.logger.debug("Created Analysis Point: %s", analysis_point)
@@ -575,9 +575,9 @@ class Window(QMainWindow, LoggerMixin):
         for analysis_point in current_analysis_points:
             analysis_point = transform(analysis_point)
             self.add_analysis_point(
-                apid=analysis_point.id,
                 x=analysis_point.x,
                 y=analysis_point.y,
+                apid=analysis_point.id,
                 label=analysis_point.label,
                 diameter=analysis_point.diameter,
                 scale=analysis_point.scale,
@@ -620,9 +620,9 @@ class Window(QMainWindow, LoggerMixin):
         self.table_view.model().layoutChanged.emit()
 
 
-    def set_point_colour(self) -> None:
+    def get_point_colour(self) -> None:
         """
-        Function to update the selected colour in the user interface.
+        Get a new colour from the user through a QColorDialog.
         """
         # Create a PyQt Colour Dialog to select a colour
         colour = QColorDialog.getColor()
@@ -630,8 +630,16 @@ class Window(QMainWindow, LoggerMixin):
             # Update the colour of the button and the value
             # colour is a QColor class
             hex_colour = colour.name()
-            self.point_colour = hex_colour
-            self.set_colour_button_style()
+            self.set_point_colour(hex_colour)
+
+
+    def set_point_colour(self, colour: str) -> None:
+        """
+        Set the currently selected colour as the given colour.
+        Also updates the stylesheet for the GUI colour button to reflect the change.
+        """
+        self.point_colour = colour
+        self.set_colour_button_style()
 
 
     def get_point_settings(self, analysis_point: AnalysisPoint, clicked_column_index: int) -> None:
@@ -644,13 +652,13 @@ class Window(QMainWindow, LoggerMixin):
         if clicked_column_index == self.table_model.headers.index("id"):
             # Update the Analysis Point settings to be the same as the Point settings of the Point selected in the table
             self.update_point_settings(
-                sample_name=analysis_point.sample_name,
-                mount_name=analysis_point.mount_name,
-                material=analysis_point.material,
                 label=analysis_point.label,
                 diameter=analysis_point.diameter,
                 scale=analysis_point.scale,
                 colour=analysis_point.colour,
+                sample_name=analysis_point.sample_name,
+                mount_name=analysis_point.mount_name,
+                material=analysis_point.material,
             )
 
 
@@ -659,25 +667,25 @@ class Window(QMainWindow, LoggerMixin):
         Reset input fields and general Analysis Point settings to default.
         """
         self.update_point_settings(
-            sample_name=self.default_settings["metadata"],
-            mount_name=self.default_settings["metadata"],
-            material=self.default_settings["metadata"],
             label=self.default_settings["label"],
             diameter=self.default_settings["diameter"],
             scale=self.default_settings["scale"],
             colour=self.default_settings["colour"],
+            sample_name=self.default_settings["metadata"],
+            mount_name=self.default_settings["metadata"],
+            material=self.default_settings["metadata"],
         )
 
 
     def update_point_settings(
         self,
-        sample_name: Optional[str] = None,
-        mount_name: Optional[str] = None,
-        material: Optional[str] = None,
         label: Optional[str] = None,
         diameter: Optional[int] = None,
         scale: Optional[str | float] = None,
         colour: Optional[str] = None,
+        sample_name: Optional[str] = None,
+        mount_name: Optional[str] = None,
+        material: Optional[str] = None,
     ) -> None:
         """
         Update the Analysis Point settings to be the given settings.
@@ -686,20 +694,11 @@ class Window(QMainWindow, LoggerMixin):
         """
         self.logger.debug(
             (
-                "Updating Analysis Point settings: sample_name='%s', mount_name='%s', "
-                "material='%s', label='%s' diamter='%s', scale='%s', colour='%s'"
+                "Updating Analysis Point settings: label='%s' diamter='%s', scale='%s', colour='%s', "
+                "sample_name='%s', mount_name='%s', material='%s'"
             ),
-            sample_name, mount_name, material, label, diameter, scale, colour,
+            label, diameter, scale, colour, sample_name, mount_name, material
         )
-
-        if sample_name is not None:
-            self.sample_name_input.setText(sample_name)
-
-        if mount_name is not None:
-            self.mount_name_input.setText(mount_name)
-
-        if material is not None:
-            self.material_input.setText(material)
 
         if label is not None:
             self.label_input.setCurrentText(label)
@@ -712,8 +711,16 @@ class Window(QMainWindow, LoggerMixin):
             self.toggle_status_bar_messages()
 
         if colour is not None:
-            self.point_colour = colour
-            self.set_colour_button_style()
+            self.set_point_colour(colour)
+
+        if sample_name is not None:
+            self.sample_name_input.setText(sample_name)
+
+        if mount_name is not None:
+            self.mount_name_input.setText(mount_name)
+
+        if material is not None:
+            self.material_input.setText(material)
 
 
     def toggle_main_input_widgets(self, enable: bool) -> None:
