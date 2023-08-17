@@ -119,7 +119,12 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         return point_data
 
 
-    def remove_analysis_point(self, x: int, y: int, apid: int) -> Optional[int]:
+    def remove_analysis_point(
+        self,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        apid: Optional[int] = None,
+    ) -> Optional[int]:
         """
         Remove an Analysis Point from the Graphics Scene,
         using either it's coordinates or it's ID value.
