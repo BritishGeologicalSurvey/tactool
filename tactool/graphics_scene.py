@@ -43,17 +43,17 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
 
     def add_analysis_point(
         self,
-        apid: int,
         x: int,
         y: int,
+        apid: int,
         label: str,
         diameter: int,
         colour: str,
         scale: float,
-        notes: str = "",
-        sample_name: str = "",
-        mount_name: str = "",
-        material: str = "",
+        sample_name: str,
+        mount_name: str,
+        material: str,
+        notes: str,
     ) -> AnalysisPoint:
         """
         Draw an Analysis Point onto the Graphics Scene and
@@ -100,10 +100,10 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
 
         # Place the new point data into an Analysis Point object
         point_data = AnalysisPoint(
-            id=apid,
-            label=label,
             x=x,
             y=y,
+            id=apid,
+            label=label,
             diameter=diameter,
             scale=scale,
             colour=colour,
