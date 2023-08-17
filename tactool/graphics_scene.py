@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import (
     QGraphicsTextItem,
 )
 
-from tactool.table_model import AnalysisPoint, TableModel
+from tactool.table_model import TableModel
 from tactool.utils import LoggerMixin
 
 
@@ -50,14 +50,10 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         diameter: int,
         colour: str,
         scale: float,
-        sample_name: str,
-        mount_name: str,
-        material: str,
-        notes: str,
-    ) -> AnalysisPoint:
+    ) -> tuple[QGraphicsEllipseItem, QGraphicsEllipseItem, QGraphicsTextItem]:
         """
-        Draw an Analysis Point onto the Graphics Scene and
-        add it's data to the Table Model.
+        Draw an Analysis Point onto the Graphics Scene.
+        Returns the newly created graphics items.
         """
         self.logger.debug("Adding new Analysis Point")
         # Set the drawing colours to use the given colour
@@ -98,59 +94,16 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         # Add the label to the Graphics Scene
         self.addItem(label_text_item)
 
-        # Place the new point data into an Analysis Point object
-        point_data = AnalysisPoint(
-            x=x,
-            y=y,
-            id=apid,
-            label=label,
-            diameter=diameter,
-            scale=scale,
-            colour=colour,
-            sample_name=sample_name,
-            mount_name=mount_name,
-            material=material,
-            notes=notes,
-            _outer_ellipse=outer_ellipse,
-            _inner_ellipse=inner_ellipse,
-            _label_text_item=label_text_item,
-        )
-        self.table_model.add_point(point_data)
-        return point_data
+        return outer_ellipse, inner_ellipse, label_text_item
 
 
-    def remove_analysis_point(
-        self,
-        x: Optional[int] = None,
-        y: Optional[int] = None,
-        apid: Optional[int] = None,
-    ) -> Optional[int]:
+    def remove_graphics_items(self, items: list[QGraphicsEllipseItem | QGraphicsTextItem]) -> None:
         """
-        Remove an Analysis Point from the Graphics Scene,
-        using either it's coordinates or it's ID value.
+        Remove a given list of QGraphicsItems from the GraphicsScene.
         """
-        self.logger.debug("Removing existing Analysis Point")
-        analysis_point = None
-        # If a target ID is provided, get the Analysis Point using it's ID
-        if apid:
-            analysis_point = self.table_model.get_point_by_apid(apid)
-
-        # Else when the user right clicks on the Graphics View to remove an Analysis Point
-        elif x and y:
-            # Get the ellipse and check it exists
-            ellipse = self.get_ellipse_at(x, y)
-            if ellipse:
-                # Get the corresponding Analysis Point object of the ellipse
-                analysis_point = self.table_model.get_point_by_ellipse(ellipse)
-
-        # If an Analysis Point is found
-        if analysis_point:
-            self.table_model.remove_point(analysis_point.id)
-            # Remove the ellipse elements from the PyQt Graphics Scene
-            self.removeItem(analysis_point._outer_ellipse)
-            self.removeItem(analysis_point._inner_ellipse)
-            self.removeItem(analysis_point._label_text_item)
-            return analysis_point.id
+        self.logger.debug("Removing %s graphics items", len(items))
+        for item in items:
+            self.removeItem(item)
 
 
     def get_ellipse_at(self, x: int, y: int) -> Optional[QGraphicsEllipseItem]:

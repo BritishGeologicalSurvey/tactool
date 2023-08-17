@@ -534,10 +534,22 @@ class Window(QMainWindow, LoggerMixin):
         if not apid:
             apid = self.table_model.next_point_id
 
-        analysis_point = self.graphics_scene.add_analysis_point(
+        # Get the graphics items for the analysis point
+        outer_ellipse, inner_ellipse, label_text_item = self.graphics_scene.add_analysis_point(
             x=x,
             y=y,
             apid=apid,
+            label=label,
+            diameter=diameter,
+            colour=colour,
+            scale=scale,
+        )
+
+        # Place the new point data into an Analysis Point object
+        analysis_point = AnalysisPoint(
+            x=x,
+            y=y,
+            id=apid,
             label=label,
             diameter=diameter,
             scale=scale,
@@ -546,7 +558,12 @@ class Window(QMainWindow, LoggerMixin):
             mount_name=mount_name,
             material=material,
             notes=notes,
+            _outer_ellipse=outer_ellipse,
+            _inner_ellipse=inner_ellipse,
+            _label_text_item=label_text_item,
         )
+        self.table_model.add_point(analysis_point)
+
         if self.logger.level == logging.DEBUG:
             self.logger.debug("Created Analysis Point: %s", analysis_point)
         else:
@@ -555,6 +572,43 @@ class Window(QMainWindow, LoggerMixin):
         # Update the status bar messages and PyQt Table View
         self.toggle_status_bar_messages()
         self.table_view.model().layoutChanged.emit()
+
+
+    def remove_analysis_point(
+        self,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        apid: Optional[int] = None,
+    ) -> None:
+        """
+        Remove an Analysis Point from the PyQt Graphics Scene and Table Model.
+        The Point is specified using it's coordinates or it's ID value.
+        """
+        analysis_point = None
+        # If a target ID is provided, get the Analysis Point using it's ID
+        if apid:
+            analysis_point = self.table_model.get_point_by_apid(apid)
+
+        # Else when the user right clicks on the Graphics View to remove an Analysis Point
+        elif x and y:
+            # Get the ellipse and check it exists
+            ellipse = self.graphics_scene.get_ellipse_at(x, y)
+            if ellipse:
+                # Get the corresponding Analysis Point object of the ellipse
+                analysis_point = self.table_model.get_point_by_ellipse(ellipse)
+
+        if analysis_point is not None:
+            self.table_model.remove_point(analysis_point.id)
+            self.graphics_scene.remove_graphics_items([
+                analysis_point._outer_ellipse,
+                analysis_point._inner_ellipse,
+                analysis_point._label_text_item,
+            ])
+            # Update the status bar messages and PyQt TableView
+            self.toggle_status_bar_messages()
+            self.table_view.model().layoutChanged.emit()
+
+            self.logger.info("Deleted Analysis Point: %s", analysis_point.id)
 
 
     def reload_analysis_points(
@@ -603,21 +657,6 @@ class Window(QMainWindow, LoggerMixin):
         """
         for point in self.table_model.analysis_points:
             self.remove_analysis_point(apid=point.id)
-
-
-    def remove_analysis_point(self, x: int = None, y: int = None, apid: int = None) -> None:
-        """
-        Remove an Analysis Point from the PyQt Graphics Scene.
-        The Point is specified using it's coordinates or it's ID value.
-        """
-        deletion_result = self.graphics_scene.remove_analysis_point(x=x, y=y, apid=apid)
-        # If the deletion returned a value, it is the Analysis Point ID and so is outputted
-        if deletion_result:
-            self.logger.info("Deleted Analysis Point: %s", deletion_result)
-
-        # Update the status bar messages and PyQt TableView
-        self.toggle_status_bar_messages()
-        self.table_view.model().layoutChanged.emit()
 
 
     def get_point_colour(self) -> None:
