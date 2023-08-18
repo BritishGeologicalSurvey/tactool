@@ -539,10 +539,6 @@ class Window(QMainWindow, LoggerMixin):
             apid = self.table_model.next_point_id
 
         # Get the graphics items for the analysis point
-        if ghost:
-            alpha = 100
-        else:
-            alpha = 200
         outer_ellipse, inner_ellipse, label_text_item = self.graphics_scene.add_analysis_point(
             x=x,
             y=y,
@@ -551,7 +547,7 @@ class Window(QMainWindow, LoggerMixin):
             diameter=diameter,
             colour=colour,
             scale=scale,
-            alpha=alpha,
+            ghost=ghost,
         )
 
         # Place the new point data into an Analysis Point object
@@ -618,11 +614,7 @@ class Window(QMainWindow, LoggerMixin):
 
         if analysis_point is not None:
             self.table_model.remove_point(analysis_point.id)
-            self.graphics_scene.remove_graphics_items([
-                analysis_point._outer_ellipse,
-                analysis_point._inner_ellipse,
-                analysis_point._label_text_item,
-            ])
+            self.graphics_scene.remove_analysis_point(analysis_point)
             # Update the status bar messages and PyQt TableView
             self.toggle_status_bar_messages()
             self.table_view.model().layoutChanged.emit()

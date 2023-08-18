@@ -330,9 +330,5 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         """
         Remove the current ghost point.
         """
-        self.graphics_scene.remove_graphics_items([
-            self.ghost_point._outer_ellipse,
-            self.ghost_point._inner_ellipse,
-            self.ghost_point._label_text_item,
-        ])
+        self.graphics_scene.remove_analysis_point(self.ghost_point, log=False)
         self.ghost_point = None

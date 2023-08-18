@@ -21,6 +21,8 @@ from PyQt5.QtWidgets import (
     QGraphicsTextItem,
 )
 
+from tactool.analysis_point import AnalysisPoint
+from tactool.table_model import TableModel
 from tactool.utils import LoggerMixin
 
 
@@ -47,13 +49,19 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         diameter: int,
         colour: str,
         scale: float,
-        alpha: int = 200,
+        ghost: bool = False,
     ) -> tuple[QGraphicsEllipseItem, QGraphicsEllipseItem, QGraphicsTextItem]:
         """
         Draw an Analysis Point onto the Graphics Scene.
         Returns the newly created graphics items.
         """
-        self.logger.debug("Adding new Analysis Point")
+        # The alpha changes for ghost points
+        if ghost:
+            alpha = 100
+        else:
+            alpha = 200
+            self.logger.debug("Adding new Analysis Point")
+
         # Set the drawing colours to use the given colour
         # pen just provides an outline of an object
         # brush also fills the object
@@ -97,12 +105,17 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         return outer_ellipse, inner_ellipse, label_text_item
 
 
-    def remove_graphics_items(self, items: list[QGraphicsEllipseItem | QGraphicsTextItem]) -> None:
+    def remove_analysis_point(
+        self,
+        ap: AnalysisPoint,
+        log: bool = True,
+    ) -> None:
         """
-        Remove a given list of QGraphicsItems from the GraphicsScene.
+        Remove the QGraphics items belonging to the given AnalysisPoint from the GraphicsScene.
         """
-        self.logger.debug("Removing %s graphics items", len(items))
-        for item in items:
+        if log:
+            self.logger.debug("Removing graphics items for analysis point ID: %s", ap.id)
+        for item in [ap._inner_ellipse, ap._outer_ellipse, ap._label_text_item]:
             self.removeItem(item)
 
 
