@@ -599,6 +599,11 @@ class Window(QMainWindow, LoggerMixin):
         Remove an Analysis Point from the PyQt Graphics Scene and Table Model.
         The Point is specified using it's coordinates or it's ID value.
         """
+        # If a ghost point exists, it must be deleted before deleting the genuine AnalysisPoint
+        # Because when getting a point by ellipse, the ghost point becomes the selected point for deletion otherwise
+        if self.graphics_view.ghost_point is not None:
+            self.graphics_view.remove_ghost_point()
+
         analysis_point = None
         # If a target ID is provided, get the Analysis Point using it's ID
         if apid:
@@ -620,6 +625,9 @@ class Window(QMainWindow, LoggerMixin):
             self.table_view.model().layoutChanged.emit()
 
             self.logger.info("Deleted Analysis Point: %s", analysis_point.id)
+
+        # Re-add the ghost point
+        self.graphics_view.ghost_point_move.emit(x, y)
 
 
     def reload_analysis_points(
