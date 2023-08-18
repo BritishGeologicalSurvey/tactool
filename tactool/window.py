@@ -390,7 +390,7 @@ class Window(QMainWindow, LoggerMixin):
             extends_boundary = False
             image_size = self.graphics_view._image.pixmap().size()
             for analysis_point in analysis_points:
-                self.add_analysis_point(**analysis_point, from_click=False)
+                self.add_analysis_point(**analysis_point, use_window_inputs=False)
                 ap_x = analysis_point["x"]
                 ap_y = analysis_point["y"]
                 if ap_x > image_size.width() or ap_x < 0 or ap_y > image_size.height() or ap_y < 0:
@@ -511,18 +511,22 @@ class Window(QMainWindow, LoggerMixin):
         mount_name: str = "",
         material: str = "",
         notes: str = "",
-        from_click: bool = True,
+        use_window_inputs: bool = True,
+        ghost: bool = False,
     ) -> None:
         """
         Add an Analysis Point to the PyQt Graphics Scene.
         The main ways a user can do this is by clicking on the Graphics Scene, or by importing a TACtool CSV file.
 
         If the Analysis Point has been created from a click, get the values from the window settings.
-        Otherwise, from_click is set to False and the Analysis Point settings are retrieved from the CSV columns.
+        Otherwise, use_window_inputs is set to False and the Analysis Point settings are retrieved from the CSV columns.
+
+        The ghost option is used to determine if the AnalysisPoint is a transparent hint used on the
+        GraphicsView/GraphicsScene, or a genuine Analysis Point.
         """
-        if from_click:
+        # Assign attributes
+        if use_window_inputs:
             # Get the required input values from the window input settings
-            # Coordinates and the Point ID are taken from the arguments, notes defaults to None
             label = self.label_input.currentText()
             diameter = self.diameter_input.value()
             colour = self.point_colour
@@ -530,12 +534,15 @@ class Window(QMainWindow, LoggerMixin):
             sample_name = self.sample_name_input.text()
             mount_name = self.mount_name_input.text()
             material = self.material_input.text()
-
         # If no analysis point ID is given, assign it the next ID available
         if not apid:
             apid = self.table_model.next_point_id
 
         # Get the graphics items for the analysis point
+        if ghost:
+            alpha = 100
+        else:
+            alpha = 200
         outer_ellipse, inner_ellipse, label_text_item = self.graphics_scene.add_analysis_point(
             x=x,
             y=y,
@@ -544,6 +551,7 @@ class Window(QMainWindow, LoggerMixin):
             diameter=diameter,
             colour=colour,
             scale=scale,
+            alpha=alpha,
         )
 
         # Place the new point data into an Analysis Point object
@@ -563,13 +571,26 @@ class Window(QMainWindow, LoggerMixin):
             _inner_ellipse=inner_ellipse,
             _label_text_item=label_text_item,
         )
-        self.table_model.add_point(analysis_point)
-        self.logger.debug("Created Analysis Point: %s", analysis_point)
-        self.logger.info("Creating Analysis Point with ID: %s", analysis_point.id)
 
-        # Update the status bar messages and PyQt Table View
-        self.toggle_status_bar_messages()
-        self.table_view.model().layoutChanged.emit()
+        if ghost:
+            self.graphics_view.ghost_point = analysis_point
+        else:
+            self.table_model.add_point(analysis_point)
+            if self.logger.level == logging.DEBUG:
+                self.logger.debug("Created Analysis Point: %s", analysis_point)
+            else:
+                self.logger.info("Creating Analysis Point with ID: %s", analysis_point.id)
+
+            # Update the status bar messages and PyQt Table View
+            self.toggle_status_bar_messages()
+            self.table_view.model().layoutChanged.emit()
+
+
+    def add_ghost_point(self, x: int, y: int) -> None:
+        """
+        Add a ghost Analysis Point.
+        """
+        self.add_analysis_point(x=x, y=y, use_window_inputs=True, ghost=True)
 
 
     def remove_analysis_point(
@@ -609,46 +630,6 @@ class Window(QMainWindow, LoggerMixin):
             self.logger.info("Deleted Analysis Point: %s", analysis_point.id)
 
 
-    def add_ghost_point(self, x: int, y: int) -> None:
-        """
-        Add a ghost point to the GraphicsScene.
-        """
-        apid = self.table_model.next_point_id
-        label = self.label_input.currentText()
-        diameter = self.diameter_input.value()
-        colour = self.point_colour
-        scale = float(self.scale_value_input.text())
-        # Get the graphics items for the ghost point
-        outer_ellipse, inner_ellipse, label_text_item = self.graphics_scene.add_analysis_point(
-            x=x,
-            y=y,
-            apid=apid,
-            label=label,
-            diameter=diameter,
-            colour=colour,
-            scale=scale,
-            alpha=100,
-        )
-        # Create a fake AnalysisPoint object for the ghost point
-        ghost_point = AnalysisPoint(
-            x=x,
-            y=y,
-            id=apid,
-            label=label,
-            diameter=diameter,
-            scale=scale,
-            colour=colour,
-            sample_name="",
-            mount_name="",
-            material="",
-            notes="",
-            _outer_ellipse=outer_ellipse,
-            _inner_ellipse=inner_ellipse,
-            _label_text_item=label_text_item,
-        )
-        self.graphics_view.ghost_point = ghost_point
-
-
     def reload_analysis_points(
         self,
         index: Optional[QModelIndex] = None,
@@ -679,7 +660,7 @@ class Window(QMainWindow, LoggerMixin):
                 mount_name=analysis_point.mount_name,
                 material=analysis_point.material,
                 notes=analysis_point.notes,
-                from_click=False
+                use_window_inputs=False,
             )
 
         # Index is given when the user edits a cell in the PyQt Table View
