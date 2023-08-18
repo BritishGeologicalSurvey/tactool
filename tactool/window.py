@@ -24,16 +24,17 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from tactool.graphics_view import GraphicsView
-from tactool.recoordinate_dialog import RecoordinateDialog
-from tactool.set_scale_dialog import SetScaleDialog
-from tactool.table_model import AnalysisPoint
-from tactool.table_view import TableView
 from tactool.analysis_point import (
+    AnalysisPoint,
     export_tactool_csv,
     parse_tactool_csv,
     reset_id,
 )
+from tactool.graphics_view import GraphicsView
+from tactool.recoordinate_dialog import RecoordinateDialog
+from tactool.set_scale_dialog import SetScaleDialog
+from tactool.table_model import TableModel
+from tactool.table_view import TableView
 from tactool.utils import LoggerMixin
 
 
@@ -68,7 +69,7 @@ class Window(QMainWindow, LoggerMixin):
         self.setMinimumSize(750, 650)
         self.graphics_view = GraphicsView()
         self.graphics_scene = self.graphics_view.graphics_scene
-        self.table_model = self.graphics_view.graphics_scene.table_model
+        self.table_model = TableModel()
         self.table_view = TableView(self.table_model)
         self.set_scale_dialog: Optional[SetScaleDialog] = None
         self.recoordinate_dialog: Optional[RecoordinateDialog] = None
