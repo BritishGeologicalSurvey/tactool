@@ -21,7 +21,6 @@ from PyQt5.QtWidgets import (
     QGraphicsTextItem,
 )
 
-from tactool.table_model import TableModel
 from tactool.utils import LoggerMixin
 
 
@@ -37,8 +36,6 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         self.scaling_rect: Optional[QGraphicsRectItem] = None
         self.scaling_group: Optional[QGraphicsItemGroup] = None
         self.scaling_line: Optional[QGraphicsLineItem] = None
-
-        self.table_model = TableModel()
 
 
     def add_analysis_point(
