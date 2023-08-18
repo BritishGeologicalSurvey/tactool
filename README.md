@@ -164,104 +164,6 @@ pre-loaded into the GraphicsView.
             +signal: selected_analysis_point(analysis_point, column)
         }
 
-        class GraphicsView{
-            QGraphicsView
-            Manage user interaction and visual display of GraphicsScene
-            ---
-            +_zoom: int
-            +_empty: bool
-            +_image: QGraphicsPixmapItem
-            +disable_analysis_points: bool
-            +navigation_mode: bool
-            +scaling_mode: bool
-            +scale_start_point: QPointF
-            +scale_end_point: QPointF
-            +graphics_scene: GraphicsScene
-
-            +mousePressEvent(event)
-            +mouseMoveEvent(event)
-            +wheelEvent(event)
-            +keyPressEvent(event)
-            +keyReleaseEvent(event)
-            +configure_frame()
-            +load_image(filepath)
-            +save_image(filepath)
-            +show_entire_image()
-            +toggle_scaling_mode()
-            +reset_scaling_elements()
-            +signal: left_click(x, y)
-            +signal: right_click(x, y)
-            +signal: scale_move_event(pixel_distance)
-        }
-
-        class SetScaleDialog{
-            QDialog
-            Allows the user to interactively calculate a scale
-            ---
-            +testing_mode: bool
-            +pixel_input_default: str
-            +set_scale_button: QPushButton
-            +clear_scale_button: QPushButton
-            +cancel_button: QPushButton
-            +distance_input: QSpinBox
-            +pixel_input: QLineEdit
-            +scale_value: QLineEdit
-
-            +setup_ui_elements()
-            +connect_signals_and_slots()
-            +update_scale()
-            +scale_move_event_handler(pixel_distance)
-            +set_scale()
-            +clear_scale()
-            +closeEvent(event)
-            signal: clear_scale_clicked()
-            signal: set_scale_clicked(scale)
-            signal: closed_set_scale_dialog()
-        }
-
-        class RecoordinateDialog{
-            QDialog
-            Allows the user to recoordinate an SEM CSV file
-            ---
-            +testing_mode: bool
-            +ref_points: list[AnalysisPoint]
-            +image_size: QSize
-            +input_csv_button: QPushButton
-            +input_csv_filepath_label: QLineEdit
-            +output_csv_button: QPushButton
-            +output_csv_filepath_label: QLineEdit
-            +recoordinate_button: QPushButton
-            +cancel_button: QPushButton
-
-            +setup_ui_elements()
-            +connect_signals_and_slots()
-            +get_input_csv()
-            +get_output_csv()
-            +recoordinate_and_export()
-            +recoordinate_sem_points(input_csv, output_csv, invert_x_axis_dest, x_header, y_header, ref_col, ref_label)
-            +closeEvent(event)
-            signal: show_message(title, message, type)
-            signal: closed_recoordinate_dialog()
-        }
-
-        class GraphicsScene{
-            QGraphicsScene
-            Manage items painted on image
-            ---
-            +scaling_rect: QGraphicsRectItem
-            +scaling_group: QGraphicsItemGroup
-            +scaling_line: QGraphicsLineItem
-            +table_model: TableModel
-
-            +add_analysis_point(apid, x, y, label, diameter, scale, colour, notes, sample_name, mount_name, material)
-            +remove_analysis_point(x, y, apid)
-            +get_ellipse_at(x, y)
-            +toggle_transparent_window(graphics_view_image)
-            +draw_scale_line(start_point, end_point)
-            +draw_scale_point(x, y)
-            +remove_scale_items()
-        }
-
         class TableModel{
             QAbstractTableModel
             Manage AnalysisPoint data
@@ -326,15 +228,112 @@ pre-loaded into the GraphicsView.
             +affine_transform_point(matrix, point)
         }
 
+        class GraphicsView{
+            QGraphicsView
+            Manage user interaction and visual display of GraphicsScene
+            ---
+            +_zoom: int
+            +_empty: bool
+            +_image: QGraphicsPixmapItem
+            +disable_analysis_points: bool
+            +navigation_mode: bool
+            +scaling_mode: bool
+            +scale_start_point: QPointF
+            +scale_end_point: QPointF
+            +graphics_scene: GraphicsScene
+
+            +mousePressEvent(event)
+            +mouseMoveEvent(event)
+            +wheelEvent(event)
+            +keyPressEvent(event)
+            +keyReleaseEvent(event)
+            +configure_frame()
+            +load_image(filepath)
+            +save_image(filepath)
+            +show_entire_image()
+            +toggle_scaling_mode()
+            +reset_scaling_elements()
+            +signal: left_click(x, y)
+            +signal: right_click(x, y)
+            +signal: scale_move_event(pixel_distance)
+        }
+
+        class GraphicsScene{
+            QGraphicsScene
+            Manage items painted on image
+            ---
+            +scaling_rect: QGraphicsRectItem
+            +scaling_group: QGraphicsItemGroup
+            +scaling_line: QGraphicsLineItem
+
+            +add_analysis_point(apid, x, y, label, diameter, scale, colour, notes, sample_name, mount_name, material)
+            +remove_analysis_point(x, y, apid)
+            +get_ellipse_at(x, y)
+            +toggle_transparent_window(graphics_view_image)
+            +draw_scale_line(start_point, end_point)
+            +draw_scale_point(x, y)
+            +remove_scale_items()
+        }
+
+        class SetScaleDialog{
+            QDialog
+            Allows the user to interactively calculate a scale
+            ---
+            +testing_mode: bool
+            +pixel_input_default: str
+            +set_scale_button: QPushButton
+            +clear_scale_button: QPushButton
+            +cancel_button: QPushButton
+            +distance_input: QSpinBox
+            +pixel_input: QLineEdit
+            +scale_value: QLineEdit
+
+            +setup_ui_elements()
+            +connect_signals_and_slots()
+            +update_scale()
+            +scale_move_event_handler(pixel_distance)
+            +set_scale()
+            +clear_scale()
+            +closeEvent(event)
+            signal: clear_scale_clicked()
+            signal: set_scale_clicked(scale)
+            signal: closed_set_scale_dialog()
+        }
+
+        class RecoordinateDialog{
+            QDialog
+            Allows the user to recoordinate an SEM CSV file
+            ---
+            +testing_mode: bool
+            +ref_points: list[AnalysisPoint]
+            +image_size: QSize
+            +input_csv_button: QPushButton
+            +input_csv_filepath_label: QLineEdit
+            +output_csv_button: QPushButton
+            +output_csv_filepath_label: QLineEdit
+            +recoordinate_button: QPushButton
+            +cancel_button: QPushButton
+
+            +setup_ui_elements()
+            +connect_signals_and_slots()
+            +get_input_csv()
+            +get_output_csv()
+            +recoordinate_and_export()
+            +recoordinate_sem_points(input_csv, output_csv, invert_x_axis_dest, x_header, y_header, ref_col, ref_label)
+            +closeEvent(event)
+            signal: show_message(title, message, type)
+            signal: closed_recoordinate_dialog()
+        }
+
         TACtool *-- Window
         Window *-- GraphicsView
         Window *-- TableView
         Window *-- SetScaleDialog
         Window *-- RecoordinateDialog
-        GraphicsView *-- GraphicsScene
-        GraphicsScene *-- TableModel
+        TableView *-- TableModel
         TableModel *-- AnalysisPoint
         AnalysisPoint *-- analysis_point
+        GraphicsView *-- GraphicsScene
 
         Window <.. TableView : selected_analysis_point(analysis_point, column)
         Window <.. SetScaleDialog : clear_scale_clicked()
