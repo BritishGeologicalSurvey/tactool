@@ -110,6 +110,10 @@ class Window(QMainWindow, LoggerMixin):
         self.menu_bar_file_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
         self.menu_bar_file.addSeparator()
         self.menu_bar_recoordinate_csv = self.menu_bar_file.addAction("Recoordinate SEM CSV")
+        # Create the tools drop down
+        self.menu_bar_tools = self.menu_bar.addMenu("&Tools")
+        self.menu_bar_tools_ghost_point = self.menu_bar_tools.addAction("Ghost Point")
+        self.menu_bar_tools_ghost_point.setCheckable(True)
 
         # Create the status bar
         self.status_bar = QStatusBar(self)
@@ -524,6 +528,10 @@ class Window(QMainWindow, LoggerMixin):
         The ghost option is used to determine if the AnalysisPoint is a transparent hint used on the
         GraphicsView/GraphicsScene, or a genuine Analysis Point.
         """
+        # If it is meant to be a ghost point but ghost points are disabled, just return and end the process
+        if ghost and not self.menu_bar_tools_ghost_point.isChecked():
+            return
+
         # Assign attributes
         if use_window_inputs:
             # Get the required input values from the window input settings
