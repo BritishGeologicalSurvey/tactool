@@ -42,7 +42,7 @@ class GraphicsView(QGraphicsView, LoggerMixin):
     scale_move_event = pyqtSignal(float)
 
     # Tracks the position for a ghost analysis point
-    ghost_point_move = pyqtSignal(int, int)
+    move_ghost_point = pyqtSignal(int, int)
 
 
     def __init__(self) -> None:
@@ -117,7 +117,7 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         event_position = self.mapToScene(event.pos()).toPoint()
 
         # Check to ensure a ghost point is not left behind when it shouldn't exist
-        if self.disable_analysis_points and self.ghost_point is not None:
+        if (self.disable_analysis_points and self.ghost_point is not None) or not self._image.isUnderMouse():
             self.remove_ghost_point()
 
         if self.scaling_mode:
@@ -132,13 +132,10 @@ class GraphicsView(QGraphicsView, LoggerMixin):
 
         # Check if ghost points should be active
         if not self.disable_analysis_points:
-            # If there is already a ghost point, then remove it
-            if self.ghost_point is not None:
-                self.remove_ghost_point()
             # If the cursor is on the image and navigation mode is not enabled
             if self._image.isUnderMouse() and not self.navigation_mode:
                 # Add a new ghost point
-                self.ghost_point_move.emit(event_position.x(), event_position.y())
+                self.move_ghost_point.emit(event_position.x(), event_position.y())
         super().mouseMoveEvent(event)
 
 
@@ -332,5 +329,7 @@ class GraphicsView(QGraphicsView, LoggerMixin):
         Remove the current ghost point if it exists.
         """
         if self.ghost_point is not None:
+            ghost_point_id = self.ghost_point.id
             self.graphics_scene.remove_analysis_point(self.ghost_point, log=False)
             self.ghost_point = None
+            self.logger.info("Deleted Ghost Point: %s", ghost_point_id)

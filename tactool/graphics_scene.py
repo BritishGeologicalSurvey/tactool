@@ -118,6 +118,19 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
             self.removeItem(item)
 
 
+    def move_analysis_point(
+        self,
+        ap: AnalysisPoint,
+        x_change: int,
+        y_change: int,
+    ) -> None:
+        """
+        Move the QGraphics items belonging to the given AnalysisPoint on the GraphicsScene.
+        """
+        for item in [ap._inner_ellipse, ap._outer_ellipse, ap._label_text_item]:
+            item.moveBy(x_change, y_change)
+
+
     def get_ellipse_at(self, x: int, y: int) -> Optional[QGraphicsEllipseItem]:
         """
         Get an Ellipse Item from the Graphics Scene at the given coordinates.

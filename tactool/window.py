@@ -225,7 +225,7 @@ class Window(QMainWindow, LoggerMixin):
         # Connect Graphics View interactions to handlers
         self.graphics_view.left_click.connect(self.add_analysis_point)
         self.graphics_view.right_click.connect(self.remove_analysis_point)
-        self.graphics_view.ghost_point_move.connect(self.add_ghost_point)
+        self.graphics_view.move_ghost_point.connect(self.add_ghost_point)
 
         # Connect Table interaction clicks to handlers
         self.table_view.selected_analysis_point.connect(self.get_point_settings)
@@ -578,22 +578,39 @@ class Window(QMainWindow, LoggerMixin):
         )
 
         if ghost:
+            point_type = "Ghost"
             self.graphics_view.ghost_point = analysis_point
         else:
+            self.graphics_view.remove_ghost_point()
+            point_type = "Analysis"
             self.table_model.add_point(analysis_point)
-            self.logger.debug("Created Analysis Point: %s", analysis_point)
-            self.logger.info("Creating Analysis Point with ID: %s", analysis_point.id)
-
             # Update the status bar messages and PyQt Table View
             self.toggle_status_bar_messages()
             self.table_view.model().layoutChanged.emit()
 
+        self.logger.debug("Created %s Point: %s", point_type, analysis_point)
+        self.logger.info("Creating %s Point with ID: %s", point_type, analysis_point.id)
+
 
     def add_ghost_point(self, x: int, y: int) -> None:
         """
-        Add a ghost Analysis Point.
+        Add a ghost point or move the existing ghost point.
         """
-        self.add_analysis_point(x=x, y=y, use_window_inputs=True, ghost=True)
+        # If a ghost point doesn't exist
+        if self.graphics_view.ghost_point is None:
+            self.add_analysis_point(x=x, y=y, use_window_inputs=True, ghost=True)
+        else:
+            # Calculate movement change
+            x_change = x - self.graphics_view.ghost_point.x
+            y_change = y - self.graphics_view.ghost_point.y
+            # Update metadata coordinates
+            self.graphics_view.ghost_point.x = x
+            self.graphics_view.ghost_point.y = y
+            self.graphics_scene.move_analysis_point(
+                ap=self.graphics_view.ghost_point,
+                x_change=x_change,
+                y_change=y_change,
+            )
 
 
     def remove_analysis_point(
@@ -634,7 +651,7 @@ class Window(QMainWindow, LoggerMixin):
             self.logger.info("Deleted Analysis Point: %s", analysis_point.id)
 
         # Re-add the ghost point
-        self.graphics_view.ghost_point_move.emit(x, y)
+        self.graphics_view.move_ghost_point.emit(x, y)
 
 
     def reload_analysis_points(
