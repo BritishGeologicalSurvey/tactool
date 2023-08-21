@@ -9,7 +9,7 @@ from csv import DictReader
 from pathlib import Path
 
 from tactool.main import TACtool
-from tactool.analysis_point import (
+from tactool.recoordinate_dialog import (
     affine_transform_point,
     affine_transform_matrix,
 )
