@@ -22,7 +22,6 @@ from PyQt5.QtWidgets import (
 )
 
 from tactool.analysis_point import AnalysisPoint
-from tactool.table_model import TableModel
 from tactool.utils import LoggerMixin
 
 
