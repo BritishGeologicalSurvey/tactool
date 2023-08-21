@@ -213,6 +213,7 @@ class Window(QMainWindow, LoggerMixin):
         self.menu_bar_file_import_tactool_csv.triggered.connect(self.import_tactool_csv_get_path)
         self.menu_bar_file_export_tactool_csv.triggered.connect(self.export_tactool_csv_get_path)
         self.menu_bar_recoordinate_csv.triggered.connect(self.toggle_recoordinate_dialog)
+        self.menu_bar_tools_ghost_point.triggered.connect(self.graphics_view.remove_ghost_point)
 
         # Connect button clicks to handlers
         self.clear_points_button.clicked.connect(self.clear_analysis_points)
@@ -797,6 +798,8 @@ class Window(QMainWindow, LoggerMixin):
             widget.setEnabled(enable)
         self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
         self.graphics_view.disable_analysis_points = not enable
+        # Ensure no ghost points are left behind
+        self.graphics_view.remove_ghost_point()
 
 
     def set_scale(self, scale: float) -> None:

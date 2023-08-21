@@ -192,6 +192,7 @@ class GraphicsView(QGraphicsView, LoggerMixin):
                 # Enable navigation mode
                 self.navigation_mode = True
                 self.setDragMode(QGraphicsView.ScrollHandDrag)
+                self.remove_ghost_point()
         super().keyPressEvent(event)
 
 
@@ -328,7 +329,8 @@ class GraphicsView(QGraphicsView, LoggerMixin):
 
     def remove_ghost_point(self) -> None:
         """
-        Remove the current ghost point.
+        Remove the current ghost point if it exists.
         """
-        self.graphics_scene.remove_analysis_point(self.ghost_point, log=False)
-        self.ghost_point = None
+        if self.ghost_point is not None:
+            self.graphics_scene.remove_analysis_point(self.ghost_point, log=False)
+            self.ghost_point = None
