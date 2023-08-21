@@ -589,7 +589,7 @@ class Window(QMainWindow, LoggerMixin):
             self.table_view.model().layoutChanged.emit()
 
         self.logger.debug("Created %s Point: %s", point_type, analysis_point)
-        self.logger.info("Creating %s Point with ID: %s", point_type, analysis_point.id)
+        self.logger.info("Created %s Point with ID: %s", point_type, analysis_point.id)
 
 
     def add_ghost_point(self, x: int, y: int) -> None:
