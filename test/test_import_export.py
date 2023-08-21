@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from PyQt5.QtGui import QPixmap
+
 from tactool.main import TACtool
 from tactool.analysis_point import (
     AnalysisPoint,
