@@ -1,12 +1,11 @@
 """
 Tests for functions in the transformation module
 """
-import pytest
-
 import numpy as np
-
 from csv import DictReader
 from pathlib import Path
+
+import pytest
 
 from tactool.main import TACtool
 from tactool.recoordinate_dialog import (
