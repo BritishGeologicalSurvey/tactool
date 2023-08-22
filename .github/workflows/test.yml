@@ -29,4 +29,4 @@ jobs:
       shell: bash -l {0}
       run: |
         export PYTHONPATH=.
-        pytest -vs test/
+        pytest -vvs test/
