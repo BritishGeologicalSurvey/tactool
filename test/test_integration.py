@@ -8,6 +8,7 @@ tactool fixtures start a running QApplication for the context of the test.
 """
 from tactool.main import TACtool
 from tactool.analysis_point import AnalysisPoint
+from conftest import create_mock_event, create_function_return
 
 
 def test_add_and_remove_points(tactool: TACtool, public_index: int):
@@ -24,6 +25,12 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
     # The 1st Analysis Point has default settings
     tactool.graphics_view.left_click.emit(101, 101)
 
+    # Override the function with a new function which always returns True, to avoid genuine mouse detection during test
+    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+    # Ensure the ghost point is not created as it is disabled by default
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
+    assert tactool.graphics_view.ghost_point is None
+
     # Adjust the settings for the 2nd Analysis Point
     tactool.window.update_point_settings(
         sample_name="sample_x83",
@@ -35,6 +42,14 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
         colour="#222222",
     )
     tactool.graphics_view.left_click.emit(202, 202)
+
+    # Enable the ghost point and create it with a mouse movement event
+    tactool.window.menu_bar_tools_ghost_point.setChecked(True)
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
+    # Check that the ghost point inherits the correct settings
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        3, "Spot", 203, 305, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None
+    ).aslist()[:public_index]
 
     # Adjust the settings for the 3rd Analysis Point
     # Purposefully making it overlap the 2nd Analysis Point
@@ -71,6 +86,12 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
     # Nothing should change
     tactool.graphics_view.right_click.emit(0, 0)
 
+    # Check that the ghost point uses the newly deleted ID value of 3
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=176, y=301))
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        3, "RefMark", 176, 301, 50, 2.0, "#333333", "sample_x67", "mount_x15", "duck", "", None, None, None
+    ).aslist()[:public_index]
+
     # Adjust the settings for the 4th Analysis Point to match those of the 2nd Analysis Point
     # This is done by emitting a signal from the PyQt Table View of the selected Analysis Point
     tactool.table_view.selected_analysis_point.emit(expected_data[1], 0)
@@ -90,6 +111,12 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
         # Compare the size of the actual ellipse to the mathematically expected size
         expected_ellipse = (expected_analysis_point.diameter * expected_analysis_point.scale) + offset
         assert analysis_point._outer_ellipse.boundingRect().width() == expected_ellipse
+
+    # Check that the ghost point inherits the correct settings
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=82, y=288))
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        4, "Spot", 82, 288, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None
+    ).aslist()[:public_index]
 
 
 def test_clear_points(tactool: TACtool):

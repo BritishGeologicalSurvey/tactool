@@ -1,7 +1,18 @@
 """
 Definitions for test fixtures used within other tests.
 """
+from typing import (
+    Callable,
+    Any,
+)
+
 import pytest
+from PyQt5.QtCore import (
+    Qt,
+    QEvent,
+    QPoint,
+)
+from PyQt5.QtGui import QMouseEvent
 
 from tactool.table_model import TableModel
 from tactool.main import TACtool
@@ -36,3 +47,29 @@ def public_index(model: TableModel):
     The index in the list of headers where the public headers end.
     """
     return len(model.public_headers)
+
+
+def create_mock_event(
+    x: int = 0,
+    y: int = 0,
+) -> QMouseEvent:
+    """
+    Create a QEvent object for tests to simulate mouse/keyboard input from user.
+    """
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(x, y),
+        Qt.NoButton,
+        Qt.MouseButtons(Qt.NoButton),
+        Qt.KeyboardModifiers(Qt.NoModifier),
+    )
+    return event
+
+
+def create_function_return(value: Any) -> Callable[[Any], Any]:
+    """
+    Return a function which returns the given value.
+    """
+    def new_function(*args, **kwargs) -> Any:
+        return value
+    return new_function
