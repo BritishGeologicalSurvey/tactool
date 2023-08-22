@@ -74,7 +74,7 @@ def test_toggle_recoordinate_dialog(tactool: TACtool):
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
     assert tactool.graphics_view.disable_analysis_points is False
-    assert tactool.graphics_scene.scaling_rect is None
+    assert tactool.graphics_scene.transparent_window is None
 
     # Add 2 RefMark points
     tactool.graphics_view.left_click.emit(336, 472)
@@ -91,7 +91,7 @@ def test_toggle_recoordinate_dialog(tactool: TACtool):
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
     assert tactool.graphics_view.disable_analysis_points is False
-    assert tactool.graphics_scene.scaling_rect is None
+    assert tactool.graphics_scene.transparent_window is None
 
     # Add the 3rd RefMark point
     tactool.graphics_view.left_click.emit(268, 469)
@@ -105,7 +105,7 @@ def test_toggle_recoordinate_dialog(tactool: TACtool):
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is False
     assert tactool.graphics_view.disable_analysis_points is True
-    assert tactool.graphics_scene.scaling_rect is not None
+    assert tactool.graphics_scene.transparent_window is not None
 
     # Close the RecoordinateDialog
     tactool.recoordinate_dialog.cancel_button.click()
@@ -116,7 +116,7 @@ def test_toggle_recoordinate_dialog(tactool: TACtool):
     for widget in tactool.window.main_input_widgets:
         assert widget.isEnabled() is True
     assert tactool.graphics_view.disable_analysis_points is False
-    assert tactool.graphics_scene.scaling_rect is None
+    assert tactool.graphics_scene.transparent_window is None
 
 
 @pytest.mark.parametrize(

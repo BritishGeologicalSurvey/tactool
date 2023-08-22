@@ -34,9 +34,9 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         super().__init__()
 
         # Defining variables used in the Graphics Scene for scaling mode
-        self.scaling_rect: Optional[QGraphicsRectItem] = None
         self.scaling_group: Optional[QGraphicsItemGroup] = None
         self.scaling_line: Optional[QGraphicsLineItem] = None
+        self.transparent_window: Optional[QGraphicsRectItem] = None
 
 
     def add_analysis_point(
@@ -155,25 +155,25 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
         """
         Toggle a transparent grey overlay ontop of the image for scaling mode.
         """
-        if self.scaling_rect is not None:
+        if self.transparent_window is not None:
             self.logger.debug("Removing transparent window")
             # Remove the PyQt Rect from the PyQt Item Group and reset the scaling_rect variable
-            self.removeItem(self.scaling_rect)
-            self.scaling_rect = None
+            self.removeItem(self.transparent_window)
+            self.transparent_window = None
         else:
             self.logger.debug("Adding transparent window")
             # Convert the current image to a pixmap
             image_pixmap = graphics_view_image.pixmap()
             image_width, image_height = image_pixmap.width(), image_pixmap.height()
             # Create a PyQt Rect Item matching the size of the current image
-            self.scaling_rect = QGraphicsRectItem(QRectF(0, 0, image_width, image_height))
+            self.transparent_window = QGraphicsRectItem(QRectF(0, 0, image_width, image_height))
             # Set the Rect Item to be 50% transparent and grey in colour
-            self.scaling_rect.setOpacity(0.5)
-            self.scaling_rect.setBrush(Qt.gray)
+            self.transparent_window.setOpacity(0.5)
+            self.transparent_window.setBrush(Qt.gray)
 
             # Creating a PyQt Item Group to store all Graphics Scene scaling items within one variable
             self.scaling_group = self.createItemGroup([])
-            self.scaling_group.addToGroup(self.scaling_rect)
+            self.scaling_group.addToGroup(self.transparent_window)
 
 
     def draw_scale_line(self, start_point: float, end_point: float) -> None:
@@ -223,7 +223,7 @@ class GraphicsScene(QGraphicsScene, LoggerMixin):
             # Iterate through the items and remove them if they are not
             # the transparet PyQt Rect, this is removed separately
             for item in self.scaling_group.childItems():
-                if item != self.scaling_rect:
+                if item != self.transparent_window:
                     self.removeItem(item)
             # Reset the scaling_line variable
             self.scaling_line = None
