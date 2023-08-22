@@ -6,6 +6,8 @@ Analysis Points are added and removed by emitting corresponding click signals.
 
 tactool fixtures start a running QApplication for the context of the test.
 """
+from PyQt5.QtWidgets import QGraphicsRectItem
+
 from tactool.main import TACtool
 from tactool.analysis_point import AnalysisPoint
 from conftest import create_mock_event, create_function_return
@@ -25,12 +27,6 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
     # The 1st Analysis Point has default settings
     tactool.graphics_view.left_click.emit(101, 101)
 
-    # Override the function with a new function which always returns True, to avoid genuine mouse detection during test
-    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
-    # Ensure the ghost point is not created as it is disabled by default
-    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
-    assert tactool.graphics_view.ghost_point is None
-
     # Adjust the settings for the 2nd Analysis Point
     tactool.window.update_point_settings(
         sample_name="sample_x83",
@@ -43,10 +39,11 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
     )
     tactool.graphics_view.left_click.emit(202, 202)
 
-    # Enable the ghost point and create it with a mouse movement event
+    # Enable ghost point and override function to detect mouse position is on image
+    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
     tactool.window.menu_bar_tools_ghost_point.setChecked(True)
-    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
     # Check that the ghost point inherits the correct settings
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
     assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
         3, "Spot", 203, 305, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None
     ).aslist()[:public_index]
@@ -303,3 +300,96 @@ def test_reference_point_hint(tactool: TACtool):
     ref_points_status = tactool.window.status_bar_messages["ref_points"]["status"]
     assert ref_points_status is not None
     assert ref_points_status in tactool.window.status_bar.children()
+
+
+def test_ghost_point_delete_analysis_point(tactool: TACtool, public_index: int):
+    # Enable ghost point and override function to detect mouse position is on image
+    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+    tactool.window.menu_bar_tools_ghost_point.setChecked(True)
+
+    # Ensure ghost point initially exists
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        1, "RefMark", 203, 305, 10, 1.0, "#ffff00", "", "", "", "", None, None, None
+    ).aslist()[:public_index]
+
+    # Add an Analysis Point
+    tactool.graphics_view.left_click.emit(215, 215)
+
+    # Ensure ghost point has newly incremented ID
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=83, y=106))
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        2, "RefMark", 83, 106, 10, 1.0, "#ffff00", "", "", "", "", None, None, None
+    ).aslist()[:public_index]
+
+    # Remove the Analysis Point
+    tactool.graphics_view.right_click.emit(218, 218)
+
+    # Ensure the ghost point has the new next ID (back to 1)
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=176, y=301))
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        1, "RefMark", 176, 301, 10, 1.0, "#ffff00", "", "", "", "", None, None, None
+    ).aslist()[:public_index]
+
+
+def test_ghost_point_enable_disable(tactool: TACtool, public_index: int):
+    # Ensure ghost point does not initially exist (it is disabled by default)
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
+    assert tactool.graphics_view.ghost_point is None
+
+    # Enable ghost point and override function to detect mouse position is on image
+    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+    tactool.window.menu_bar_tools_ghost_point.setChecked(True)
+
+    # Ensure ghost point is now created
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=83, y=106))
+    assert tactool.graphics_view.ghost_point.aslist()[:public_index] == AnalysisPoint(
+        1, "RefMark", 83, 106, 10, 1.0, "#ffff00", "", "", "", "", None, None, None
+    ).aslist()[:public_index]
+
+    # Disable the ghost point
+    # We have to set the check state and trigger the click separately
+    tactool.window.menu_bar_tools_ghost_point.setChecked(False)
+    tactool.window.menu_bar_tools_ghost_point.trigger()
+
+    # Ensure the ghost point does not exist
+    assert tactool.graphics_view.ghost_point is None
+
+
+def test_toggle_main_input_widgets(tactool: TACtool):
+    # Enable ghost point and override function to detect mouse position is on image
+    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+    tactool.window.menu_bar_tools_ghost_point.setChecked(True)
+
+    # Trigger a mouse movement event
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=83, y=106))
+
+    # Ensure everything is enabled by default
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
+    assert tactool.graphics_scene.transparent_window is None
+    assert tactool.graphics_view.disable_analysis_points is False
+    assert isinstance(tactool.graphics_view.ghost_point, AnalysisPoint)
+
+    # Disable main widgets
+    tactool.window.toggle_main_input_widgets(enable=False)
+    # Trigger a mouse movement event
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=83, y=106))
+
+    # Ensure everything is disabled
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is False
+    assert isinstance(tactool.graphics_scene.transparent_window, QGraphicsRectItem)
+    assert tactool.graphics_view.disable_analysis_points is True
+    assert tactool.graphics_view.ghost_point is None
+
+    # Enable main widgets
+    tactool.window.toggle_main_input_widgets(enable=True)
+    # Trigger a mouse movement event
+    tactool.graphics_view.mouseMoveEvent(create_mock_event(x=83, y=106))
+
+    # Ensure everything is enabled again
+    for widget in tactool.window.main_input_widgets:
+        assert widget.isEnabled() is True
+    assert tactool.graphics_scene.transparent_window is None
+    assert isinstance(tactool.graphics_view.ghost_point, AnalysisPoint)
