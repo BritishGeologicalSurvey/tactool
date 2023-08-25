@@ -624,7 +624,8 @@ class Window(QMainWindow, LoggerMixin):
         self.clear_analysis_points()
         # Iterate through each previously existing Point and recreate it
         for analysis_point in current_analysis_points:
-            analysis_point = transform(analysis_point)
+            if transform is not None:
+                analysis_point = transform(analysis_point)
             self.add_analysis_point(
                 x=analysis_point.x,
                 y=analysis_point.y,
