@@ -91,11 +91,13 @@ def test_model(model: TableModel):
         "_inner_ellipse",
         "_label_text_item",
     ]
+    assert model.next_point_id == 1
 
     # Add Analysis Points to the PyQt Table Model and check that it has added correctly
     for row in expected_data:
         model.add_point(AnalysisPoint(*row))
     assert model._data == expected_data
+    assert model.next_point_id == 4
 
     # Check that the PyQt Table Model does not return non existent Analysis Points
     assert model.get_point_by_ellipse("non-existent ellipse") is None
@@ -109,12 +111,19 @@ def test_model(model: TableModel):
     # Check that the PyQt Table Model does not change the data when removing a non existent Analysis Point
     model.remove_point(4)
     assert model._data == expected_data
+    assert model.next_point_id == 4
 
     # Check that the PyQt Table Model does remove the correct Analysis Point
     model.remove_point(1)
     assert model._data == expected_data[1:]
+    assert model.next_point_id == 4
 
     # Check that the PyQt Table Model does return the correct Analysis Point using the Point's ID value
     analysis_point_3 = model.get_point_by_apid(3)
     assert analysis_point_3 == AnalysisPoint(3, "Spot", 123, 456, 10, 1.0, "#ffff00", "sample_x67", "mount_x15",
                                              "duck", "note3", "outer_ellipse3", "inner_ellipse3", "label_item3")
+
+    # Check that the PyQt Table Model does remove the correct Analysis Point
+    model.remove_point(3)
+    assert model._data == expected_data[1:2]
+    assert model.next_point_id == 3
