@@ -2,7 +2,7 @@
 
 > A graphical tool for selecting points for analysis on an SEM image
 
-### Download
+## Download
 
 You can download the **TACtool** application here:
 
@@ -11,7 +11,60 @@ You can download the **TACtool** application here:
 
 Instructions for using the application can be found [here](https://github.com/BritishGeologicalSurvey/tactool/blob/main/instructions.md).
 
-## Class Relationship Diagram
+## Original Contributors
+
+TACTool was initially developed within the British Geological Survey by:
+- Connor Newstead
+- Dan Sutton
+- Declan Valters
+- Leo Rudczenko
+- John A Stevenson
+
+The original idea was by Connor Newstead and Matt Horstwood.
+
+
+## Development
+
+### Installation
+
+Check out the repository and install dependencies using Anaconda.
+
+#### Windows
+```bash
+conda env create -f environments/windows-environment.yml
+conda activate tactool-windows
+```
+
+#### MacOS
+```bash
+conda env create -f environments/macos-environment.yml
+conda activate tactool-macos
+```
+
+### Running the Program
+
+To run the program, first you need to setup your Python path.
+
+#### Windows
+```bash
+$env:PYTHONPATH="."
+```
+
+#### MacOS
+```bash
+export PYTHONPATH=.
+```
+
+Then you can run the program with:
+
+```bash
+python tactool/main.py --dev
+```
+
+The `--dev` flag starts the application in developer mode, with a test image
+pre-loaded into the GraphicsView.
+
+### Class Relationship Diagram
 
 <details>
     <summary>Mermaid JS Code</summary>
@@ -224,46 +277,7 @@ Instructions for using the application can be found [here](https://github.com/Br
 
 ![TACtool - Class Relationship Diagram](class_relationship_diagram.png)
 
-## Installation
-
-Check out the repository and install dependencies using Anaconda.
-
-### Windows
-```bash
-conda env create -f environments/windows-environment.yml
-conda activate tactool-windows
-```
-
-### MacOS
-```bash
-conda env create -f environments/macos-environment.yml
-conda activate tactool-macos
-```
-
-## Running the Program
-
-To run the program, first you need to setup your Python path.
-
-#### Windows
-```bash
-$env:PYTHONPATH="."
-```
-
-#### MacOS
-```bash
-export PYTHONPATH=.
-```
-
-Then you can run the program with:
-
-```bash
-python tactool/main.py --dev
-```
-
-The `--dev` flag starts the application in developer mode, with a test image
-pre-loaded into the GraphicsView.
-
-## Running tests
+### Testing
 
 Ensure you have setup your Python path. Then you can run the tests with:
 
@@ -271,7 +285,7 @@ Ensure you have setup your Python path. Then you can run the tests with:
 pytest -vv test/
 ```
 
-### List of Tests
+#### List of Tests
 
 **test_integration.py**
 - test_add_and_remove_points
@@ -290,7 +304,7 @@ pytest -vv test/
 - test_analysis_point_public_attributes_match
 - test_model
 
-## Create a standalone executable using PyInstaller
+### Create a standalone executable using PyInstaller
 
 ```
 pyinstaller --name="TACtool" --windowed --paths=. --onefile tactool/main.py
@@ -302,8 +316,3 @@ Run the above code and a .spec file and dist/ build/ directories will be created
 TACtool is distributed under the [GPL v3.0 licence](LICENSE).
 
 Copyright: © BGS / UKRI 2023
-
-## Original Contributors
-
-TACTool was initially developed within the British Geological Survey by Connor Newstead, Dan Sutton, Declan Valters, Leo Rudczenko and John A Stevenson.
-The original idea was by Matt Horstwood.
