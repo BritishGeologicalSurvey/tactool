@@ -53,12 +53,13 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
         AnalysisPoint(3, "RefMark", 240, 240, 50, 2.0, "#333333", "sample_x67", "mount_x15",
                       "duck", "", None, None, None),
     ]
+    assert len(tactool.table_model.analysis_points) == len(expected_data)
     # Iterate through each actual Analysis Point and compare to expected Analysis Point
-    for index, analysis_point in enumerate(tactool.table_model.analysis_points):
+    for analysis_point, expected_analysis_point in zip(tactool.table_model.analysis_points, expected_data):
         # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
-        assert analysis_point.aslist()[:public_index] == expected_data[index].aslist()[:public_index]
+        assert analysis_point.aslist()[:public_index] == expected_analysis_point.aslist()[:public_index]
         # Compare the size of the actual ellipse to the mathematically expected size
-        expected_ellipse = (expected_data[index].diameter * expected_data[index].scale) + offset
+        expected_ellipse = (expected_analysis_point.diameter * expected_analysis_point.scale) + offset
         assert analysis_point._outer_ellipse.boundingRect().width() == expected_ellipse
 
     # Remove the Analysis Point with an ID value of 3
@@ -81,12 +82,13 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
         AnalysisPoint(2, "Spot", 202, 202, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None),
         AnalysisPoint(3, "Spot", 404, 404, 50, 2.0, "#222222", "sample_x83", "mount_x81", "rock", "", None, None, None),
     ]
+    assert len(tactool.table_model.analysis_points) == len(expected_data)
     # Iterate through each actual Analysis Point and compare to expected Analysis Point
-    for index, analysis_point in enumerate(tactool.table_model.analysis_points):
+    for analysis_point, expected_analysis_point in zip(tactool.table_model.analysis_points, expected_data):
         # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
-        assert analysis_point.aslist()[:public_index] == expected_data[index].aslist()[:public_index]
+        assert analysis_point.aslist()[:public_index] == expected_analysis_point.aslist()[:public_index]
         # Compare the size of the actual ellipse to the mathematically expected size
-        expected_ellipse = (expected_data[index].diameter * expected_data[index].scale) + offset
+        expected_ellipse = (expected_analysis_point.diameter * expected_analysis_point.scale) + offset
         assert analysis_point._outer_ellipse.boundingRect().width() == expected_ellipse
 
 
@@ -120,6 +122,49 @@ def test_clear_points(tactool: TACtool):
 
     # Check that all Analysis Points have been removed
     assert tactool.table_model.analysis_points == []
+
+
+def test_reload_analysis_points_no_args(tactool: TACtool, public_index: int):
+    """
+    Test the functionality of reloading analysis points.
+    """
+    # Arrange
+    # The 1st Analysis Point has default settings
+    tactool.graphics_view.left_click.emit(101, 101)
+
+    # Adjust the settings for the 2nd Analysis Point
+    tactool.window.update_point_settings(
+        sample_name="sample_x83",
+        mount_name="mount_x81",
+        material="rock",
+        label="Spot",
+        diameter=50,
+        scale=2.0,
+        colour="#222222",
+    )
+    tactool.graphics_view.left_click.emit(202, 202)
+
+    # Adjust the settings for the 3rd Analysis Point
+    # Purposefully making it overlap the 2nd Analysis Point
+    tactool.window.update_point_settings(
+        sample_name="sample_x67",
+        mount_name="mount_x15",
+        material="duck",
+        label="RefMark",
+        colour="#333333",
+    )
+    tactool.graphics_view.left_click.emit(240, 240)
+    expected_data = tactool.table_model.analysis_points
+
+    # Act
+    tactool.window.reload_analysis_points()
+
+    # Assert
+    assert len(tactool.table_model.analysis_points) == len(expected_data)
+    # Iterate through each actual Analysis Point and compare to expected Analysis Point
+    for analysis_point, expected_analysis_point in zip(tactool.table_model.analysis_points, expected_data):
+        # Using list slicing to compare just the public attributes of the Analysis Points, i.e. up to the last 3
+        assert analysis_point.aslist()[:public_index] == expected_analysis_point.aslist()[:public_index]
 
 
 def test_reset_id_values(tactool: TACtool):
