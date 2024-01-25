@@ -13,6 +13,7 @@ from PyQt5.QtCore import (
     QPoint,
 )
 from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtWidgets import QMessageBox
 
 from tactool.table_model import TableModel
 from tactool.main import TACtool
@@ -49,12 +50,21 @@ def public_index(model: TableModel):
     return len(model.public_headers)
 
 
+@pytest.fixture()
+def monkeypatch_qmsgbox_question_yes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    A monkeypatch to prevent QMessageBox warning and information popups from showing during tests.
+    """
+    for attribute in ["warning", "information"]:
+        monkeypatch.setattr(QMessageBox, attribute, lambda *args: QMessageBox.Ok)
+
+
 def create_mock_event(
     x: int = 0,
     y: int = 0,
 ) -> QMouseEvent:
     """
-    Create a QEvent object for tests to simulate mouse/keyboard input from user.
+    Create a QEvent object for tests to simulate mouse movement input from user.
     """
     event = QMouseEvent(
         QEvent.MouseMove,

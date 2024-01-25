@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
 )
@@ -30,8 +31,6 @@ class RecoordinateDialog(QDialog, LoggerMixin):
     """
     PyQt QDialog class for creating the recoordination dialog box.
     """
-    # Used for showing messages with methods from the main window
-    show_message = pyqtSignal(str, str, str)
     # Tracks when the Recoordinate Dialog Box is closed
     closed_recoordinate_dialog = pyqtSignal()
 
@@ -149,12 +148,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
             if result:
                 self.closeEvent()
         else:
-            # Create a message informing the user that their input value is invalid
-            self.show_message.emit(
-                "Invalid Paths",
-                "Please select an input and output CSV first.",
-                "warning",
-            )
+            QMessageBox.warning(None, "Invalid Paths", "Please select an input and output CSV first.")
 
 
     def recoordinate_sem_points(
@@ -191,12 +185,11 @@ class RecoordinateDialog(QDialog, LoggerMixin):
             point_dicts, csv_headers = parse_sem_csv(filepath=input_csv, required_headers=required_sem_headers)
         except KeyError as error:
             self.logger.error(error)
-            self.show_message.emit(
+            string_headers = "\n".join(required_sem_headers)
+            QMessageBox.warning(
+                None,
                 "Invalid CSV File",
-                "\n".join(["The given file does not contain the required headers:"] + [
-                    "    " + header for header in required_sem_headers
-                ]),
-                "warning",
+                f"The given file does not contain the required headers:\n\n{string_headers}",
             )
             return False
 
@@ -240,11 +233,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         if extends_boundary:
             message = "At least 1 of the recoordinated points goes beyond the current image boundary"
             self.logger.warning(message)
-            self.show_message.emit(
-                "Recoordination Warning",
-                message,
-                "warning",
-            )
+            QMessageBox.warning(None, "Recoordination Warning", message)
 
         return True
 

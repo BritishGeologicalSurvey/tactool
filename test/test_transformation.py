@@ -64,7 +64,7 @@ def test_affine_transform_matrix():
     np.testing.assert_array_almost_equal(matrix, expected, decimal=10)
 
 
-def test_toggle_recoordinate_dialog(tactool: TACtool):
+def test_toggle_recoordinate_dialog(tactool: TACtool, monkeypatch_qmsgbox_question_yes: pytest.MonkeyPatch):
     # close recoord window
     # check that toggling off works, main widgets, grey rect, disable graphics scene points
 

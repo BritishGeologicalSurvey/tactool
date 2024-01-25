@@ -1,4 +1,3 @@
-from textwrap import dedent
 from typing import (
     Callable,
     Optional,
@@ -229,7 +228,6 @@ class Window(QMainWindow, LoggerMixin):
 
         # Connect Table interaction clicks to handlers
         self.table_view.selected_analysis_point.connect(self.get_point_settings)
-        self.table_model.invalid_label_entry.connect(self.show_message)
         self.table_model.updated_analysis_points.connect(self.reload_analysis_points)
 
 
@@ -341,7 +339,7 @@ class Window(QMainWindow, LoggerMixin):
                 self.image_filepath = filepath
                 self.setWindowTitle(f"TACtool: {self.image_filepath}")
             except Exception as error:
-                self.data_error_message(error)
+                self.qmessagebox_error(error)
 
 
     def export_image_get_path(self) -> None:
@@ -361,7 +359,7 @@ class Window(QMainWindow, LoggerMixin):
                 try:
                     self.graphics_view.save_image(filepath)
                 except Exception as error:
-                    self.data_error_message(error)
+                    self.qmessagebox_error(error)
 
 
     def import_tactool_csv_get_path(self) -> None:
@@ -379,7 +377,7 @@ class Window(QMainWindow, LoggerMixin):
                 self.load_tactool_csv_data(filepath)
                 self.csv_filepath = filepath
             except Exception as error:
-                self.data_error_message(error)
+                self.qmessagebox_error(error)
 
 
     def load_tactool_csv_data(self, filepath: str) -> None:
@@ -406,11 +404,7 @@ class Window(QMainWindow, LoggerMixin):
             if extends_boundary:
                 message = "At least 1 of the imported analysis points goes beyond the current image boundary"
                 self.logger.warning(message)
-                self.show_message(
-                    "Imported Points Warning",
-                    message,
-                    "warning",
-                )
+                QMessageBox.warning(None, "Imported Points Warning", message)
 
         # A KeyError and UnicodeError usually occur with an incorrectly formatted CSV file
         except (KeyError, UnicodeError):
@@ -425,7 +419,7 @@ class Window(QMainWindow, LoggerMixin):
                 "Plese use a CSV file with the following headers:",
                 *required_headers,
             ])
-            self.show_message("Error loading data", message, "warning")
+            QMessageBox.warning(None, "Error Loading Data", message)
 
 
     def export_tactool_csv_get_path(self) -> None:
@@ -451,7 +445,7 @@ class Window(QMainWindow, LoggerMixin):
                         analysis_points=self.table_model.analysis_points,
                     )
                 except Exception as error:
-                    self.data_error_message(error)
+                    self.qmessagebox_error(error)
 
 
     def validate_current_data(self, validate_image: bool = False) -> bool:
@@ -465,38 +459,28 @@ class Window(QMainWindow, LoggerMixin):
         if validate_image:
             # If there is currently no image in the PyQt Graphics View
             if self.graphics_view._empty:
-                message = dedent("""
-                    Image not found.
-
-                    There is no image to save.
-                """)
-                # This is an information dialog, meaning it can only return True
-                if self.show_message("Warning", message, "warning"):
-                    return False
+                QMessageBox.warning(None, "Image Not Found", "There is no image to save.")
+                return False
 
         # If there are less than 3 reference points
         if len(self.table_model.reference_points) < 3:
             default_label = self.default_settings["label"]
-            message = dedent(f"""
-                Missing reference points.
-
-                There must be at least 3 points labelled '{default_label}'.
-
-                Do you still want to continue?
-            """)
-            # If the user presses Cancel
-            if not self.show_message("Warning", message, "question"):
+            choice = QMessageBox.question(
+                None,
+                "Missing Reference Points",
+                f"There must be at least 3 points labelled '{default_label}.\n\nDo you still want to continue?",
+            )
+            if choice == QMessageBox.No:
                 return False
 
         # If the scale value has not been changed
         if self.scale_value_input.text() == self.default_settings["scale"]:
-            message = dedent("""
-                A scale value has not been set.
-
-                Do you still want to continue?
-            """)
-            # If the user presses Cancel
-            if not self.show_message("Warning", message, "question"):
+            choice = QMessageBox.question(
+                None,
+                "No Scale Set",
+                "A scale value has not been set.\n\nDo you still want to continue?",
+            )
+            if choice == QMessageBox.No:
                 return False
 
         # If all checks are passed then continue
@@ -877,7 +861,6 @@ class Window(QMainWindow, LoggerMixin):
 
                 # Connect the Recoordinate dialog buttons
                 self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
-                self.recoordinate_dialog.show_message.connect(self.show_message)
 
             # Else when the program is in recoordination mode, reset the Recoordination Dialog value
             else:
@@ -885,57 +868,20 @@ class Window(QMainWindow, LoggerMixin):
                 # Enable main window widgets
                 self.toggle_main_input_widgets(True)
         else:
-            self.logger.error("Missing 3 references points for recoordination")
-            self.show_message(
-                "Reference Points",
-                "3 Reference points are required to perform recoordination.",
-                "warning",
+            self.logger.error("Missing 3 references points for re-coordination")
+            QMessageBox.warning(
+                None,
+                "Missing Reference Points",
+                "3 Reference points are required to perform re-coordination"
             )
 
 
-    def data_error_message(self, error: Exception) -> None:
+    def qmessagebox_error(self, error: Exception) -> None:
         """
         Show an error message to the user in the event that
         an error occurs when loading in data.
         """
-        self.show_message(
-            "Error loading data",
-            f"An unexpected error occured: {error}",
-            "warning",
-        )
-
-
-    def show_message(self, title: str, message: str, type: str) -> bool:
-        """
-        Show a given message to the user in a PyQt QMessageBox.
-        """
-        # In testing mode, the user cannot select an option for the message dialog
-        if not self.testing_mode:
-            # Creating the PyQt Message box and formatting it
-            self.current_message = QMessageBox()
-            self.current_message.setWindowTitle(title)
-            self.current_message.setText(message)
-            self.current_message.setStandardButtons(QMessageBox.Ok)
-
-            # Set the type of message
-            type_dict = {
-                "warning": QMessageBox.Warning,
-                "information": QMessageBox.Information,
-                "question": QMessageBox.Question,
-            }
-            self.current_message.setIcon(type_dict[type])
-            if type == "question":
-                self.current_message.setIcon(QMessageBox.Question)
-                self.current_message.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-
-            # Show the message box
-            message_box = self.current_message.exec_()
-
-            self.current_message = None
-            # If the user presses the Cancel button on the message box
-            if message_box == QMessageBox.Cancel:
-                return False
-        return True
+        QMessageBox.warning(None, "Error Loading Data", f"An unexpected error occured: {error}")
 
 
     def closeEvent(self, event=None) -> None:
