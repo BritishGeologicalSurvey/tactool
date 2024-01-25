@@ -108,7 +108,7 @@ class Window(QMainWindow, LoggerMixin):
         self.import_tactool_csv_button = self.menu_bar_file.addAction("Import TACtool CSV")
         self.export_tactool_csv_button = self.menu_bar_file.addAction("Export TACtool CSV")
         self.menu_bar_file.addSeparator()
-        self.recoordinate_sem_csv_button = self.menu_bar_file.addAction("Recoordinate SEM CSV")
+        self.recoordinate_sem_csv_button = self.menu_bar_file.addAction("Import and Re-coordinate SEM CSV")
         # Create the tools drop down
         self.menu_bar_tools = self.menu_bar.addMenu("&Tools")
         self.ghost_point_button = self.menu_bar_tools.addAction("Ghost Point")
@@ -507,7 +507,8 @@ class Window(QMainWindow, LoggerMixin):
         The main ways a user can do this is by clicking on the Graphics Scene, or by importing a TACtool CSV file.
 
         If the Analysis Point has been created from a click, get the values from the window settings.
-        Otherwise, use_window_inputs is set to False and the Analysis Point settings are retrieved from the CSV columns.
+        Otherwise, use_window_inputs is set to False and the Analysis Point settings are retrieved from
+        the given input values where possible.
 
         The ghost option is used to determine if the AnalysisPoint is a transparent hint used on the
         GraphicsView/GraphicsScene, or a genuine Analysis Point.
@@ -518,11 +519,17 @@ class Window(QMainWindow, LoggerMixin):
 
         # Assign attributes
         if use_window_inputs:
-            # Get the required input values from the window input settings
-            label = self.label_input.currentText()
-            diameter = self.diameter_input.value()
-            colour = self.point_colour
-            scale = float(self.scale_value_input.text())
+            # Get the required input values from the window input settings if they are not given
+            # We only do this for the settings fields, not the metadata, because the settings are required
+            # but the metadata is optional
+            if label is None:
+                label = self.label_input.currentText()
+            if diameter is None:
+                diameter = self.diameter_input.value()
+            if scale is None:
+                scale = float(self.scale_value_input.text())
+            if colour is None:
+                colour = self.point_colour
             sample_name = self.sample_name_input.text()
             mount_name = self.mount_name_input.text()
             material = self.material_input.text()
@@ -861,9 +868,19 @@ class Window(QMainWindow, LoggerMixin):
                 # Connect the Recoordinate dialog buttons
                 self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
 
-            # Else when the program is in recoordination mode, reset the Recoordination Dialog value
+            # Else when the program is in recoordination mode, end the recoordination process
             else:
+                # Keep the recoordinated points and close the dialog
+                recoordinated_point_dicts = self.recoordinate_dialog.recoordinated_point_dicts
                 self.recoordinate_dialog = None
+
+                # Clear the current points
+                self.clear_analysis_points()
+                # Add the recoordinated points as new Analysis Points to the canvas
+                for point_dict in recoordinated_point_dicts:
+                    # We use the window inputs to fill the Analysis Point empty settings
+                    self.add_analysis_point(**point_dict, use_window_inputs=True)
+
                 # Enable main window widgets
                 self.toggle_main_input_widgets(True)
         else:

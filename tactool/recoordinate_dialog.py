@@ -20,9 +20,9 @@ from PyQt5.QtWidgets import (
 )
 
 from tactool.analysis_point import (
+    SEM_HEADERS,
     AnalysisPoint,
     parse_sem_csv,
-    export_sem_csv,
 )
 from tactool.utils import LoggerMixin
 
@@ -47,12 +47,15 @@ class RecoordinateDialog(QDialog, LoggerMixin):
 
         # Setting the Dialog Box settings
         self.setWindowTitle("Recoordination")
-        self.setMinimumSize(300, 200)
+        self.setMinimumSize(300, 150)
         self.setWindowFlags(
             Qt.Window | Qt.WindowCloseButtonHint
         )
         self.setup_ui_elements()
         self.connect_signals_and_slots()
+
+        # This is used later to save recoordinated points
+        self.recoordinated_point_dicts: list[dict[str, str | int | float]] = []
 
         if not self.testing_mode:
             self.show()
@@ -70,12 +73,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.input_csv_filepath_label = QLineEdit("")
         self.input_csv_filepath_label.setDisabled(True)
 
-        output_csv_label = QLabel("Output CSV")
-        self.output_csv_button = QPushButton("Select Output CSV", self)
-        self.output_csv_filepath_label = QLineEdit("")
-        self.output_csv_filepath_label.setDisabled(True)
-
-        self.recoordinate_button = QPushButton("Recoordinate and Export")
+        self.recoordinate_button = QPushButton("Import and Re-coordinate")
         self.cancel_button = QPushButton("Cancel", self)
 
         # Arrange the main layout
@@ -83,9 +81,6 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         layout.addWidget(input_csv_label)
         layout.addWidget(self.input_csv_button)
         layout.addWidget(self.input_csv_filepath_label)
-        layout.addWidget(output_csv_label)
-        layout.addWidget(self.output_csv_button)
-        layout.addWidget(self.output_csv_filepath_label)
 
         # Add the final 2 buttons alongside eachother
         bottom_button_layout = QHBoxLayout()
@@ -103,8 +98,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         """
         self.logger.debug("Connecting signals and slots")
         self.input_csv_button.clicked.connect(self.get_input_csv)
-        self.output_csv_button.clicked.connect(self.get_output_csv)
-        self.recoordinate_button.clicked.connect(self.recoordinate_and_export)
+        self.recoordinate_button.clicked.connect(self.import_and_recoordinate_sem_csv)
         self.cancel_button.clicked.connect(self.closeEvent)
 
 
@@ -122,90 +116,58 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.logger.info("Selected input CSV: %s", input_csv)
 
 
-    def get_output_csv(self) -> None:
+    def import_and_recoordinate_sem_csv(self) -> None:
         """
-        Get the output CSV file for the recoordination results.
+        Get the given CSV file, if it is valid then perform the recoordination process.
         """
-        pyqt_save_dialog = QFileDialog.getSaveFileName(
-            parent=self,
-            caption="Export Recoordinated CSV",
-            directory=self.input_csv_filepath_label.text(),
-            filter="*.csv",
-        )
-        output_csv = pyqt_save_dialog[0]
-        self.output_csv_filepath_label.setText(output_csv)
-        self.logger.info("Selected output CSV: %s", output_csv)
-
-
-    def recoordinate_and_export(self) -> None:
-        """
-        Get the given CSV files, if they are both valid then perform the recoordination process.
-        """
+        # Check the given paths
         input_csv = self.input_csv_filepath_label.text()
-        output_csv = self.output_csv_filepath_label.text()
-        if input_csv != "" and output_csv != "":
-            result = self.recoordinate_sem_points(input_csv, output_csv)
-            if result:
-                self.closeEvent()
-        else:
-            QMessageBox.warning(None, "Invalid Paths", "Please select an input and output CSV first.")
+        if input_csv == "":
+            QMessageBox.warning(None, "Invalid Path", "Please select an input SEM CSV first.")
+            return
 
-
-    def recoordinate_sem_points(
-        self,
-        input_csv: str,
-        output_csv: str,
-        invert_x_axis_dest: bool = True,
-        x_header: str = "Laser Ablation Centre X",
-        y_header: str = "Laser Ablation Centre Y",
-        ref_col: str = "Mineral Classification",
-        ref_label: str = "Fiducial",
-    ) -> bool:
-        """
-        Recoordinate the given input SEM CSV file points using the current Analysis Points as reference points.
-        Saves the resulting SEM data to the given output CSV file.
-        Returns a bool which signals if the recoordination successfully completed.
-
-        invert_x_axis_dest determines if the X axis coordinate values of the
-        destination coordinates should be inverted.
-        This is used because the origin of the PyQt GraphicsScene is at the top left,
-        but the origin of the SEM coordinates of at the top right.
-        Therefore, we use the size of the image to invert the X axis origin of the destination coordinates
-        to account for this difference.
-
-        The x_header, y_header, ref_col and ref_label values can be changed to allow recoordination
-        of CSV files with different headers and data.
-        For example, using the following values would allow recoordination for TACtool CSV files:
-        invert_x_axis_dest=False, x_header="X", y_header="Y", ref_col="Type", ref_label="RefMark"
-        """
-        # Parse the SEM CSV data
-        required_sem_headers = [x_header, y_header]
+        # Get the points from the SEM CSV
         try:
             self.logger.info("Loading SEM CSV: %s", input_csv)
-            point_dicts, csv_headers = parse_sem_csv(filepath=input_csv, required_headers=required_sem_headers)
+            point_dicts = parse_sem_csv(filepath=input_csv)
         except KeyError as error:
             self.logger.error(error)
-            string_headers = "\n".join(required_sem_headers)
+            string_headers = "\n".join(SEM_HEADERS.values())
             QMessageBox.warning(
                 None,
                 "Invalid CSV File",
                 f"The given file does not contain the required headers:\n\n{string_headers}",
             )
-            return False
+            return
 
+        # Invert all of the X coordinates because the SEM has an origin at the top right
+        # but TACtool has an origin at the top left
+        for idx, point_dict in enumerate(point_dicts):
+            point_dict["x"] = self.image_size.width() - point_dict["x"]
+            point_dicts[idx] = point_dict
+
+        self.recoordinated_point_dicts = self.recoordinate_sem_points(point_dicts)
+        self.closeEvent()
+
+
+    def recoordinate_sem_points(
+        self,
+        point_dicts: list[dict[str, str | int | float]],
+    ) -> list[dict[str, str | int | float]]:
+        """
+        Recoordinate the given input SEM CSV file points using the current Analysis Points as reference points.
+        """
         # Calculate the matrix
         self.logger.debug("Calculating recoordination matrix")
-        # For source and dest points, only use the first 3 reference points
-        # Format the source and dest points into lists of tuples of x and y values
+        # For source and dest points, we only use the first 3 reference points
+        # Format the points into lists of tuples of x and y values
         source = [
-            (item[x_header], item[y_header])
+            (item["x"], item["y"])
             for item in point_dicts
-            if item[ref_col] == ref_label
+            if item["label"] == "RefMark"
         ][:3]
-        # Check if the destination points (from TACtool) need the y axis inverted to change the origin
         dest = [
-            (self.image_size.width() - point.x, point.y)
-            if invert_x_axis_dest else (point.x, point.y)
+            (point.x, point.y)
             for point in self.ref_points
         ][:3]
         matrix = affine_transform_matrix(source=source, dest=dest)
@@ -214,10 +176,10 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         # Track if any of the new points extend the image boundary
         extends_boundary = False
         for idx, item in enumerate(point_dicts):
-            point = (item[x_header], item[y_header])
+            point = (item["x"], item["y"])
             new_x, new_y = affine_transform_point(matrix=matrix, point=point)
-            point_dicts[idx][x_header] = new_x
-            point_dicts[idx][y_header] = new_y
+            point_dicts[idx]["x"] = new_x
+            point_dicts[idx]["y"] = new_y
             # Check if the new point extends the image boundary
             if new_x > self.image_size.width() or new_x < 0 or new_y > self.image_size.height() or new_y < 0:
                 extends_boundary = True
@@ -225,17 +187,13 @@ class RecoordinateDialog(QDialog, LoggerMixin):
             self.logger.debug("Transformed point %s to %s", point, (new_x, new_y))
         self.logger.info("Transformed %s points", len(point_dicts))
 
-        # Export the new points to the output CSV
-        self.logger.info("Saving recoordination results to: %s", output_csv)
-        export_sem_csv(filepath=output_csv, headers=csv_headers, points=point_dicts)
-
         # Create a message informing the user that the recoordinated points extend the image boundary
         if extends_boundary:
             message = "At least 1 of the recoordinated points goes beyond the current image boundary"
             self.logger.warning(message)
             QMessageBox.warning(None, "Recoordination Warning", message)
 
-        return True
+        return point_dicts
 
 
     def closeEvent(self, event=None) -> None:

@@ -17,6 +17,13 @@ from PyQt5.QtWidgets import (
     QGraphicsTextItem,
 )
 
+SEM_HEADERS = {
+    "id_header": "Particle ID",
+    "ref_col": "Mineral Classification",
+    "x_header": "Laser Ablation Centre X",
+    "y_header": "Laser Ablation Centre Y",
+}
+
 
 @dataclasses.dataclass
 class AnalysisPoint:
@@ -249,43 +256,42 @@ def convert_export_point(analysis_point: AnalysisPoint, headers: list[str]) -> l
     return analysis_point_row
 
 
-def parse_sem_csv(filepath: str, required_headers: list[str]) -> tuple[list[dict[str, Any]], list[str]]:
+def parse_sem_csv(filepath: str) -> list[dict[str, str | int | float]]:
     """
-    Parse an SEM CSV file.
-    Returns a list of dictionary rows, and the list of headers in the same order they are in the current file.
+    Parse an SEM CSV file into a list of dictionaries.
+    We only retain the integer ID value and the coordinates of the points.
+    The ID can be used later in the lab workflow to re-link the points to extra metadata.
     """
     point_dicts = []
     with open(filepath) as csv_file:
         reader = DictReader(csv_file)
 
         # Check that the given CSV file has the required headers
-        reader.fieldnames
-        for header in required_headers:
+        for header in SEM_HEADERS.values():
             if header not in reader.fieldnames:
-                raise KeyError(f"Missing required header: {header}")
+                raise KeyError(f"SEM CSV missing required header: {header}")
 
         # Iterate through each line in the CSV file
         for item in reader:
-            # Convert the required coordinate headers to floats
-            for header in required_headers:
-                item[header] = float(item[header])
-            point_dicts.append(item)
 
-    return point_dicts, reader.fieldnames
+            point_dict = {
+                "x": float(item[SEM_HEADERS["x_header"]]),
+                "y": float(item[SEM_HEADERS["y_header"]]),
+            }
 
+            # Sometimes the ID is not an integer, we ignore those
+            if item[SEM_HEADERS["id_header"]].isnumeric():
+                point_dict["apid"] = int(item[SEM_HEADERS["id_header"]])
 
-def export_sem_csv(filepath: str, headers: list[str], points: list[dict[str, Any]]) -> None:
-    """
-    Write the given header data and point data to the given filepath.
-    This is specifically for SEM data.
-    """
-    with open(filepath, "w", newline="") as csvfile:
-        csvwriter = writer(csvfile)
-        csvwriter.writerow(headers)
-        for point in points:
-            # Convert the dictionary to a list of values matching the header positions
-            csv_row = [point[header] for header in headers]
-            csvwriter.writerow(csv_row)
+            # Apply the correct label
+            if item[SEM_HEADERS["ref_col"]] == "Fiducial":
+                point_dict["label"] = "RefMark"
+            else:
+                point_dict["label"] = "Spot"
+
+            point_dicts.append(point_dict)
+
+    return point_dicts
 
 
 def reset_id(analysis_point: AnalysisPoint) -> AnalysisPoint:
