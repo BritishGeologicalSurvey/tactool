@@ -2,9 +2,6 @@ from tactool.main import TACtool
 
 
 def test_toggle_scaling_mode(tactool: TACtool):
-    """
-    Function to test the functionality of the scaling mode.
-    """
     # Check that the SetScaleDialog does not exist
     assert tactool.window.set_scale_dialog is None
     # Check that the main input widgets are enabled
@@ -38,9 +35,6 @@ def test_toggle_scaling_mode(tactool: TACtool):
 
 
 def test_set_scale(tactool: TACtool):
-    """
-    Function to test the functionality of setting the scale.
-    """
     # Set the scale, following the same steps as the user would
     scale = 2.0
     tactool.window.toggle_scaling_mode()
@@ -59,9 +53,6 @@ def test_set_scale(tactool: TACtool):
 
 
 def test_scale_hint(tactool: TACtool):
-    """
-    Function to test the functionality of the Set Scale reminder in the Status Bar.
-    """
     # Check Set Scale hint is not visible
     set_scale_status = tactool.window.status_bar_messages["set_scale"]["status"]
     assert set_scale_status is None

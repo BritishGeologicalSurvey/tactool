@@ -14,9 +14,6 @@ from conftest import create_mock_event, create_function_return
 
 
 def test_add_and_remove_points(tactool: TACtool, public_index: int):
-    """
-    Function to test the functionality of adding and removing Analysis Points via mouse clicks.
-    """
     # Test for empty model (ensures no leakage between apc fixtures)
     assert tactool.table_model.analysis_points == []
 
@@ -117,10 +114,6 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
 
 
 def test_clear_points(tactool: TACtool):
-    """
-    Function to test the functionality of the Clear Points button.
-    Some points are purposefully overlapping for the test.
-    """
     # Check that the PyQt Table Model data is empty
     assert tactool.table_model.analysis_points == []
 
@@ -192,9 +185,6 @@ def test_reload_analysis_points_no_args(tactool: TACtool, public_index: int):
 
 
 def test_reset_id_values(tactool: TACtool):
-    """
-    Function to test the functionality of the Reset IDs button.
-    """
     # Add some Analysis Points
     tactool.graphics_view.left_click.emit(101, 101)
     tactool.graphics_view.left_click.emit(202, 202)
@@ -218,9 +208,6 @@ def test_reset_id_values(tactool: TACtool):
 
 
 def test_reset_settings(tactool: TACtool):
-    """
-    Function to test the functionality of the Reset Settings button.
-    """
     # Adjust the settings
     tactool.window.update_point_settings(
         sample_name="sample_x83",
@@ -265,9 +252,6 @@ def test_reset_settings(tactool: TACtool):
 
 
 def test_reference_point_hint(tactool: TACtool):
-    """
-    Function to test the functionality of the RefMark Points reminder in the Status Bar.
-    """
     # Check reference Points hint is visible
     ref_points_status = tactool.window.status_bar_messages["ref_points"]["status"]
     assert ref_points_status is not None

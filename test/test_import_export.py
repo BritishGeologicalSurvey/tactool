@@ -11,9 +11,6 @@ from tactool.analysis_point import (
 
 
 def test_export_image(tactool: TACtool, tmp_path: Path):
-    """
-    Function to test the functionality of exporting an image.
-    """
     tmp_image_path = tmp_path / "exported_image.png"
 
     # Add some Analysis Points
@@ -85,9 +82,6 @@ def test_import_tactool_csv(
     filepath: str,
     expected_points: list[AnalysisPoint],
 ):
-    """
-    Function to test the functionality of importing a TACtool CSV file.
-    """
     # Check that the PyQt Table Model data is empty
     assert tactool.table_model.analysis_points == []
 
@@ -119,9 +113,6 @@ def test_import_tactool_csv(
 
 
 def test_export_tactool_csv(tactool: TACtool, tmp_path: Path):
-    """
-    Function to test the functionality of exporting a TACtool CSV file.
-    """
     # Check that the PyQt Table Model data is empty
     assert tactool.table_model.analysis_points == []
 
@@ -159,7 +150,7 @@ def test_export_tactool_csv(tactool: TACtool, tmp_path: Path):
     assert_csv_data(csv_path, expected_headers, expected_data)
 
 
-def assert_csv_data(csv_path: str, expected_headers: list[str], expected_data: list):
+def assert_csv_data(csv_path: str, expected_headers: list[str], expected_data: list) -> None:
     """
     Function to assert that the CSV data in the given file matches the given expected data.
     """

@@ -50,10 +50,6 @@ def test_analysis_point_public_attributes_match(
     expected_data: AnalysisPoint,
     match_status: bool,
 ):
-    """
-    Function to test the functionality of comparing Analysis Point public attributes.
-    For this, only the public attributes must match the existing Analysis Point.
-    """
     analysis_point = AnalysisPoint(1, "RefMark", 123, 456, 10, 1.0, "#ffff00", "sample_x67", "mount_x15",
                                    "duck", "note1", None, None, None)
     # Compare just the public attributes of the points, i.e. up to the last 3
@@ -61,9 +57,6 @@ def test_analysis_point_public_attributes_match(
 
 
 def test_model(model: TableModel):
-    """
-    Function to test the functionality of the PyQt Table Model of TACtool.
-    """
     expected_data = [
         [1, "RefMark", 123, 456, 10, 1.0, "#ffff00", "sample_x83", "mount_x15",
          "rock", "note1", "outer_ellipse1", "inner_ellipse1", "label_item1"],

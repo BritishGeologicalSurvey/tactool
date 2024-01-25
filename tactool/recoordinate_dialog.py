@@ -60,7 +60,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
 
     def setup_ui_elements(self) -> None:
         """
-        Function to create the elements of the Set Scale dialog box User Interface.
+        Create the elements of the Set Scale dialog box User Interface.
         Also sets the layout for the dialog box.
         """
         self.logger.debug("Setting up UI elements")

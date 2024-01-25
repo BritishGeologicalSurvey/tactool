@@ -325,7 +325,7 @@ class Window(QMainWindow, LoggerMixin):
 
     def import_image_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog, allowing the user to visually select an image file to import.
+        Create a PyQt File Dialog, allowing the user to visually select an image file to import.
         """
         pyqt_open_dialog = QFileDialog.getOpenFileName(
             parent=self,
@@ -344,7 +344,7 @@ class Window(QMainWindow, LoggerMixin):
 
     def export_image_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog, allowing the user to visually select a directory to export an image file.
+        Create a PyQt File Dialog, allowing the user to visually select a directory to export an image file.
         """
         if self.validate_current_data(validate_image=True):
             current_filepath = self.image_filepath if self.image_filepath else ""
@@ -364,7 +364,7 @@ class Window(QMainWindow, LoggerMixin):
 
     def import_tactool_csv_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog, allowing the user to visually select a TACtool CSV file to import.
+        Create a PyQt File Dialog, allowing the user to visually select a TACtool CSV file to import.
         """
         pyqt_open_dialog = QFileDialog.getOpenFileName(
             parent=self,
@@ -424,8 +424,7 @@ class Window(QMainWindow, LoggerMixin):
 
     def export_tactool_csv_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog,
-        allowing the user to visually select a directory to save a TACtool CSV file.
+        Create a PyQt File Dialog allowing the user to visually select a directory to save a TACtool CSV file.
         """
         if self.validate_current_data():
             current_filepath = self.csv_filepath if self.csv_filepath else ""
@@ -644,7 +643,7 @@ class Window(QMainWindow, LoggerMixin):
         transform: Optional[Callable[[AnalysisPoint], AnalysisPoint]] = None,
     ) -> None:
         """
-        Function to reload all of the existing Analysis Points.
+        Reload all of the existing Analysis Points.
         Takes an index which indicates if the TableView should be automatically scrolled to a specific point.
         Also takes a transform function to transform the existing Analysis Points before replacing them.
         """
@@ -813,7 +812,7 @@ class Window(QMainWindow, LoggerMixin):
 
     def toggle_scaling_mode(self) -> None:
         """
-        Function to toggle the program's scaling mode functionality.
+        Toggle the program's scaling mode functionality.
         """
         # Toggle the scaling mode for the Graphics View
         self.graphics_view.toggle_scaling_mode()
