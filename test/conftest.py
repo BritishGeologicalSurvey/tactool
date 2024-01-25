@@ -54,7 +54,7 @@ def monkeypatch_qmsgbox_question_yes(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(QMessageBox, attribute, lambda *args: QMessageBox.Ok)
 
 
-def create_mock_event(
+def create_mock_mouse_event(
     x: int = 0,
     y: int = 0,
 ) -> QMouseEvent:
