@@ -6,14 +6,15 @@ Analysis Points are added and removed by emitting corresponding click signals.
 
 tactool fixtures start a running QApplication for the context of the test.
 """
+import pytest
 from PyQt5.QtWidgets import QGraphicsRectItem
 
 from tactool.main import TACtool
 from tactool.analysis_point import AnalysisPoint
-from conftest import create_mock_event, create_function_return
+from conftest import create_mock_event
 
 
-def test_add_and_remove_points(tactool: TACtool, public_index: int):
+def test_add_and_remove_points(tactool: TACtool, public_index: int, monkeypatch: pytest.MonkeyPatch):
     # Test for empty model (ensures no leakage between apc fixtures)
     assert tactool.table_model.analysis_points == []
 
@@ -36,8 +37,8 @@ def test_add_and_remove_points(tactool: TACtool, public_index: int):
     )
     tactool.graphics_view.left_click.emit(202, 202)
 
-    # Enable ghost point and override function to detect mouse position is on image
-    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+    # Enable ghost point and monkeypatch function to detect mouse position is on image
+    monkeypatch.setattr(tactool.graphics_view._image, "isUnderMouse", lambda: True)
     tactool.window.ghost_point_button.toggle()
     # Check that the ghost point inherits the correct settings
     tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
@@ -286,9 +287,9 @@ def test_reference_point_hint(tactool: TACtool):
     assert ref_points_status in tactool.window.status_bar.children()
 
 
-def test_ghost_point_delete_analysis_point(tactool: TACtool, public_index: int):
-    # Enable ghost point and override function to detect mouse position is on image
-    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+def test_ghost_point_delete_analysis_point(tactool: TACtool, public_index: int, monkeypatch: pytest.MonkeyPatch):
+    # Enable ghost point and monkeypatch function to detect mouse position is on image
+    monkeypatch.setattr(tactool.graphics_view._image, "isUnderMouse", lambda: True)
     tactool.window.ghost_point_button.toggle()
 
     # Ensure ghost point initially exists
@@ -316,13 +317,13 @@ def test_ghost_point_delete_analysis_point(tactool: TACtool, public_index: int):
     ).aslist()[:public_index]
 
 
-def test_ghost_point_enable_disable(tactool: TACtool, public_index: int):
+def test_ghost_point_enable_disable(tactool: TACtool, public_index: int, monkeypatch: pytest.MonkeyPatch):
     # Ensure ghost point does not initially exist (it is disabled by default)
     tactool.graphics_view.mouseMoveEvent(create_mock_event(x=203, y=305))
     assert tactool.graphics_view.ghost_point is None
 
-    # Enable ghost point and override function to detect mouse position is on image
-    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+    # Enable ghost point and monkeypatch function to detect mouse position is on image
+    monkeypatch.setattr(tactool.graphics_view._image, "isUnderMouse", lambda: True)
     tactool.window.ghost_point_button.toggle()
 
     # Ensure ghost point is now created
@@ -340,9 +341,9 @@ def test_ghost_point_enable_disable(tactool: TACtool, public_index: int):
     assert tactool.graphics_view.ghost_point is None
 
 
-def test_toggle_main_input_widgets(tactool: TACtool):
-    # Enable ghost point and override function to detect mouse position is on image
-    tactool.graphics_view._image.isUnderMouse = create_function_return(True)
+def test_toggle_main_input_widgets(tactool: TACtool, monkeypatch: pytest.MonkeyPatch):
+    # Enable ghost point and monkeypatch function to detect mouse position is on image
+    monkeypatch.setattr(tactool.graphics_view._image, "isUnderMouse", lambda: True)
     tactool.window.ghost_point_button.toggle()
 
     # Trigger a mouse movement event

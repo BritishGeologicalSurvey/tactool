@@ -1,11 +1,6 @@
 """
 Definitions for test fixtures used within other tests.
 """
-from typing import (
-    Callable,
-    Any,
-)
-
 import pytest
 from PyQt5.QtCore import (
     Qt,
@@ -74,12 +69,3 @@ def create_mock_event(
         Qt.KeyboardModifiers(Qt.NoModifier),
     )
     return event
-
-
-def create_function_return(value: Any) -> Callable[[Any], Any]:
-    """
-    Return a function which returns the given value.
-    """
-    def new_function(*args, **kwargs) -> Any:
-        return value
-    return new_function
