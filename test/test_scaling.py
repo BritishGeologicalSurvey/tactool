@@ -1,3 +1,5 @@
+import pytest
+
 from tactool.main import TACtool
 
 
@@ -49,7 +51,8 @@ def test_set_scale(tactool: TACtool):
     # Iterate through each actual Analysis Point
     for analysis_point in tactool.table_model.analysis_points:
         # Check that the scale value is equal to expected
-        assert analysis_point.scale == scale
+        # We use pytest.approx to compare the floats due to potential computing errors in floating point numbers
+        assert analysis_point.scale == pytest.approx(scale)
 
 
 def test_scale_hint(tactool: TACtool):
