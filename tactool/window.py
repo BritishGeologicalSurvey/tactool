@@ -102,17 +102,17 @@ class Window(QMainWindow, LoggerMixin):
         # Create the file drop down
         self.menu_bar_file = self.menu_bar.addMenu("&File")
         # Add buttons to the file drop down
-        self.menu_bar_file_import_image = self.menu_bar_file.addAction("Import Image")
-        self.menu_bar_file_export_image = self.menu_bar_file.addAction("Export Image")
+        self.import_image_button = self.menu_bar_file.addAction("Import Image")
+        self.export_image_button = self.menu_bar_file.addAction("Export Image")
         self.menu_bar_file.addSeparator()
-        self.menu_bar_file_import_tactool_csv = self.menu_bar_file.addAction("Import TACtool CSV")
-        self.menu_bar_file_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
+        self.import_tactool_csv_button = self.menu_bar_file.addAction("Import TACtool CSV")
+        self.export_tactool_csv_button = self.menu_bar_file.addAction("Export TACtool CSV")
         self.menu_bar_file.addSeparator()
-        self.menu_bar_recoordinate_csv = self.menu_bar_file.addAction("Recoordinate SEM CSV")
+        self.recoordinate_sem_csv_button = self.menu_bar_file.addAction("Recoordinate SEM CSV")
         # Create the tools drop down
         self.menu_bar_tools = self.menu_bar.addMenu("&Tools")
-        self.menu_bar_tools_ghost_point = self.menu_bar_tools.addAction("Ghost Point")
-        self.menu_bar_tools_ghost_point.setCheckable(True)
+        self.ghost_point_button = self.menu_bar_tools.addAction("Ghost Point")
+        self.ghost_point_button.setCheckable(True)
 
         # Create the status bar
         self.status_bar = QStatusBar(self)
@@ -207,12 +207,12 @@ class Window(QMainWindow, LoggerMixin):
         """
         self.logger.debug("Connecting signals and slots")
         # Connect menu bar clicks to handlers
-        self.menu_bar_file_import_image.triggered.connect(self.import_image_get_path)
-        self.menu_bar_file_export_image.triggered.connect(self.export_image_get_path)
-        self.menu_bar_file_import_tactool_csv.triggered.connect(self.import_tactool_csv_get_path)
-        self.menu_bar_file_export_tactool_csv.triggered.connect(self.export_tactool_csv_get_path)
-        self.menu_bar_recoordinate_csv.triggered.connect(self.toggle_recoordinate_dialog)
-        self.menu_bar_tools_ghost_point.triggered.connect(self.graphics_view.remove_ghost_point)
+        self.import_image_button.triggered.connect(self.import_image_get_path)
+        self.export_image_button.triggered.connect(self.export_image_get_path)
+        self.import_tactool_csv_button.triggered.connect(self.import_tactool_csv_get_path)
+        self.export_tactool_csv_button.triggered.connect(self.export_tactool_csv_get_path)
+        self.recoordinate_sem_csv_button.triggered.connect(self.toggle_recoordinate_dialog)
+        self.ghost_point_button.triggered.connect(self.graphics_view.remove_ghost_point)
 
         # Connect button clicks to handlers
         self.clear_points_button.clicked.connect(self.clear_analysis_points)
@@ -514,7 +514,7 @@ class Window(QMainWindow, LoggerMixin):
         GraphicsView/GraphicsScene, or a genuine Analysis Point.
         """
         # If it is meant to be a ghost point but ghost points are disabled, just return and end the process
-        if ghost and not self.menu_bar_tools_ghost_point.isChecked():
+        if ghost and not self.ghost_point_button.isChecked():
             return
 
         # Assign attributes
