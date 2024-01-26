@@ -357,35 +357,6 @@ Ensure you have setup your Python path. Then you can run the tests with:
 pytest -vv test/
 ```
 
-#### List of Tests
-
-**test_import_export.py**
-- test_export_image
-- test_import_tactool_csv
-- test_export_tactool_csv
-
-**test_integration.py**
-- test_add_and_remove_points
-- test_clear_points
-- test_reset_id_values
-- test_reset_settings
-- test_reference_point_hint
-
-**test_model.py**
-- test_analysis_point_public_attributes_match
-- test_model
-
-**test_scaling.py**
-- test_toggle_scaling_mode
-- test_set_scale
-- test_scale_hint
-
-**test_transformation.py**
-- test_affine_transform_point
-- test_affine_transform_matrix
-- test_toggle_recoordinate_dialog
-- test_recoordinate_sem_points
-
 ### Create a standalone executable using PyInstaller
 
 ```
