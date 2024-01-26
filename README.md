@@ -103,14 +103,15 @@ pre-loaded into the GraphicsView.
             +table_view: TableView
             +set_scale_dialog: Optional[SetScaleDialog]
             +recoordinate_dialog: Optional[RecoordinateDialog]
-            +current_message: Optional[QMessageBox]
             +menu_bar: QMenuBar
             +menu_bar_file: QMenu
-            +menu_bar_file_import_image: QAction
-            +menu_bar_file_export_image: QAction
-            +menu_bar_file_import_tactool_csv: QAction
-            +menu_bar_file_export_tactool_csv: QAction
-            +menu_bar_recoordinate_csv: QAction
+            +import_image_button: QAction
+            +export_image_button: QAction
+            +import_tactool_csv_button: QAction
+            +export_tactool_csv_button: QAction
+            +recoordinate_sem_csv_button: QAction
+            +menu_bar_tools: QMenu
+            +ghost_point_button: QAction
             +status_bar: QStatusBar
             +sample_name_input: QLineEdit
             +mount_name_input: QLineEdit
@@ -138,20 +139,21 @@ pre-loaded into the GraphicsView.
             +load_tactool_csv_data(filepath)
             +export_tactool_csv_get_path()
             +validate_current_data(validate_image)
-            +add_analysis_point(x, y, label, diameter, scale, colour, notes, apid, sample_name, mount_name, material, from_click)
+            +add_analysis_point(x, y, apid, label, diameter, scale, colour, sample_name, mount_name, material, notes, use_windows_inputs, ghost)
+            +add_ghost_point(x, y)
+            +remove_analysis_point(x, y, apid)
             +reload_analysis_points(index, transform)
             +clear_analysis_points()
-            +remove_analysis_point(x, y, apid)
-            +set_point_colour()
+            +get_point_colour()
+            +set_point_colour(colour)
             +get_point_settings(analysis_point, clicked_column_index)
             +reset_settings()
-            +update_point_settings(sample_name, mount_name, material, label, diameter, scale, colour)
+            +update_point_settings(label, diameter, scale, colour, sample_name, mount_name, material)
             +toggle_main_input_widgets(enable)
             +set_scale(scale)
             +toggle_scaling_mode()
             +toggle_recoordinate_dialog()
-            +data_error_message(error)
-            +show_message(title, message, type)
+            +qmessagebox_error(error)
             +closeEvent(event)
         }
 
@@ -186,7 +188,6 @@ pre-loaded into the GraphicsView.
             +remove_point(target_id)
             +get_point_by_ellipse(target_ellipse)
             +get_point_by_apid(target_id)
-            signal: invalid_label_entry(title, message, type)
             signal: updated_analysis_point(index)
         }
 
@@ -210,22 +211,6 @@ pre-loaded into the GraphicsView.
 
             +field_names()
             +aslist()
-        }
-
-        class analysis_point{
-            Functions for AnalysisPoint processing
-            ---
-
-            +parse_tactool_csv(filepath, default_settings)
-            +parse_row_data(item, fields)
-            +export_tactool_csv(filepath, headers, analysis_points)
-            +convert_export_headers(headers)
-            +convert_export_point(analysis_point, headers)
-            +parse_sem_csv(filepath, required_headers)
-            +export_sem_csv(filepath, headers, points)
-            +reset_id(analysis_point)
-            +affine_transform_matrix(source, dest)
-            +affine_transform_point(matrix, point)
         }
 
         class GraphicsView{
@@ -253,21 +238,24 @@ pre-loaded into the GraphicsView.
             +show_entire_image()
             +toggle_scaling_mode()
             +reset_scaling_elements()
+            +remove_ghost_point()
             +signal: left_click(x, y)
             +signal: right_click(x, y)
             +signal: scale_move_event(pixel_distance)
+            +signal: move_ghost_point(x, y)
         }
 
         class GraphicsScene{
             QGraphicsScene
             Manage items painted on image
             ---
-            +scaling_rect: QGraphicsRectItem
             +scaling_group: QGraphicsItemGroup
             +scaling_line: QGraphicsLineItem
+            +transparent_window: QGraphicsRectItem
 
-            +add_analysis_point(apid, x, y, label, diameter, scale, colour, notes, sample_name, mount_name, material)
-            +remove_analysis_point(x, y, apid)
+            +add_analysis_point(x, y, apid, label, diameter, colour, scale, ghost)
+            +remove_analysis_point(ap)
+            +move_analysis_point(ap, x_change, y_change)
             +get_ellipse_at(x, y)
             +toggle_transparent_window(graphics_view_image)
             +draw_scale_line(start_point, end_point)
@@ -307,21 +295,18 @@ pre-loaded into the GraphicsView.
             +testing_mode: bool
             +ref_points: list[AnalysisPoint]
             +image_size: QSize
+            +recoordinated_point_dicts: list[dict[str, str | int | float]]
             +input_csv_button: QPushButton
             +input_csv_filepath_label: QLineEdit
-            +output_csv_button: QPushButton
-            +output_csv_filepath_label: QLineEdit
             +recoordinate_button: QPushButton
             +cancel_button: QPushButton
 
             +setup_ui_elements()
             +connect_signals_and_slots()
             +get_input_csv()
-            +get_output_csv()
-            +recoordinate_and_export()
-            +recoordinate_sem_points(input_csv, output_csv, invert_x_axis_dest, x_header, y_header, ref_col, ref_label)
+            +import_and_recoordinate_sem_csv()
+            +recoordinate_sem_points(point_dicts)
             +closeEvent(event)
-            signal: show_message(title, message, type)
             signal: closed_recoordinate_dialog()
         }
 
@@ -332,18 +317,18 @@ pre-loaded into the GraphicsView.
         Window *-- RecoordinateDialog
         TableView *-- TableModel
         TableModel *-- AnalysisPoint
-        AnalysisPoint *-- analysis_point
         GraphicsView *-- GraphicsScene
 
         Window <.. TableView : selected_analysis_point(analysis_point, column)
-        Window <.. SetScaleDialog : clear_scale_clicked()
-        Window <.. SetScaleDialog : set_scale_clicked(scale)
-        Window <.. SetScaleDialog : closed_set_scale_dialog()
-        Window <.. RecoordinateDialog : show_message(title, message, type)
-        Window <.. RecoordinateDialog : closed_recoordinate_dialog()
+        Window <.. TableModel : updated_analysis_point(index)
         Window <.. GraphicsView : left_click(x, y)
         Window <.. GraphicsView : right_click(x, y)
         Window <.. GraphicsView : scale_move_event(pixel_distance)
+        Window <.. GraphicsView : move_ghost_point(x, y)
+        Window <.. SetScaleDialog : clear_scale_clicked()
+        Window <.. SetScaleDialog : set_scale_clicked(scale)
+        Window <.. SetScaleDialog : closed_set_scale_dialog()
+        Window <.. RecoordinateDialog : closed_recoordinate_dialog()
 
 </details>
 
