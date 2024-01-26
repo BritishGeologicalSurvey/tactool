@@ -7,6 +7,7 @@ from tactool.main import TACtool
 from tactool.analysis_point import (
     AnalysisPoint,
     export_tactool_csv,
+    parse_sem_csv,
 )
 
 
@@ -172,3 +173,37 @@ def assert_csv_data(csv_path: str, expected_headers: list[str], expected_data: l
                 # Attributes from the expected Analysis Point are converted to a string because
                 # the raw CSV data will all be a string type
                 assert csv_attribute == str(item_attribute)
+
+
+def test_parse_sem_csv_good():
+    # Arrange
+    sem_csv = Path("test/data/SEM_co-ordinate_import_test_set.csv")
+    expected_point_dicts = [
+        {"label": "RefMark", "x": 91.576, "y": 67.762},
+        {"label": "RefMark", "x": 86.01, "y": 55.893},
+        {"label": "RefMark", "x": 98.138, "y": 49.417},
+        {"apid": 509, "label": "Spot", "x": 96.764747, "y": 49.303754},
+        {"apid": 577, "label": "Spot", "x": 97.520798, "y": 55.785059},
+        {"apid": 662, "label": "Spot", "x": 93.746436, "y": 60.03264},
+        {"apid": 705, "label": "Spot", "x": 91.770031, "y": 62.312733},
+        {"apid": 759, "label": "Spot", "x": 92.415936, "y": 67.080603},
+    ]
+
+    # Act
+    actual_point_dicts = parse_sem_csv(sem_csv)
+
+    # Assert
+    assert expected_point_dicts == actual_point_dicts
+
+
+def test_parse_sem_csv_bad():
+    # Arrange
+    sem_csv = Path("test/data/analysis_points_complete.csv")
+    expected_error = "SEM CSV missing required header: Particle ID"
+
+    # Act
+    with pytest.raises(KeyError) as excinfo:
+        parse_sem_csv(sem_csv)
+
+    # Assert
+    assert expected_error in str(excinfo.value)

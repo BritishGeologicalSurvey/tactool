@@ -10,6 +10,7 @@ from csv import (
     DictReader,
     writer,
 )
+from pathlib import Path
 from typing import Any
 
 from PyQt5.QtWidgets import (
@@ -256,7 +257,7 @@ def convert_export_point(analysis_point: AnalysisPoint, headers: list[str]) -> l
     return analysis_point_row
 
 
-def parse_sem_csv(filepath: str) -> list[dict[str, str | int | float]]:
+def parse_sem_csv(filepath: str | Path) -> list[dict[str, str | int | float]]:
     """
     Parse an SEM CSV file into a list of dictionaries.
     We only retain the integer ID value and the coordinates of the points.
