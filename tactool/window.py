@@ -71,7 +71,6 @@ class Window(QMainWindow, LoggerMixin):
         self.table_view = TableView(self.table_model)
         self.set_scale_dialog: Optional[SetScaleDialog] = None
         self.recoordinate_dialog: Optional[RecoordinateDialog] = None
-        self.current_message: Optional[QMessageBox] = None
         self.setup_ui_elements()
         self.connect_signals_and_slots()
         self.status_bar_messages = self.create_status_bar_messages()

@@ -1,4 +1,3 @@
-from textwrap import dedent
 from typing import (
     Any,
     Optional,
@@ -10,7 +9,10 @@ from PyQt5.QtCore import (
     QModelIndex,
     Qt,
 )
-from PyQt5.QtWidgets import QGraphicsEllipseItem
+from PyQt5.QtWidgets import (
+    QGraphicsEllipseItem,
+    QMessageBox,
+)
 
 from tactool.analysis_point import AnalysisPoint
 from tactool.utils import LoggerMixin
@@ -20,8 +22,6 @@ class TableModel(QAbstractTableModel, LoggerMixin):
     """
     PyQt QAbstractTableModel for storing AnalysisPoints.
     """
-    # Tracks if a new edited input in the PyQt Table Model is invalid
-    invalid_label_entry = pyqtSignal(str, str, str)
     # Tracks if a new edited input in the PyQt Table Model is accepted
     updated_analysis_points = pyqtSignal(QModelIndex)
 
@@ -73,7 +73,6 @@ class TableModel(QAbstractTableModel, LoggerMixin):
         It is called when displaying values in the cells, also called when editing (doubleclick).
         Internal method for PyQt.
         """
-
         if role == Qt.DisplayRole or role == Qt.EditRole:
             row = index.row()
             col = index.column()
@@ -103,16 +102,10 @@ class TableModel(QAbstractTableModel, LoggerMixin):
                     value = "RefMark"
                 # If the new label is not one of the required label values
                 else:
-                    # Create a message informing the user that their input value is invalid
-                    message = dedent(f"""
-                        '{value}' is not a valid label.
-
-                        Please use either 'Spot' or 'RefMark'.
-                    """)
-                    self.invalid_label_entry.emit(
+                    QMessageBox.warning(
+                        None,
                         "Invalid Label",
-                        message,
-                        "warning",
+                        f"'{value}' is not a valid label.\n\nPlease use either 'Spot' or 'RefMark'.",
                     )
                     return False
 
