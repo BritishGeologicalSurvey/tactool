@@ -1,10 +1,3 @@
-"""
-Includes the Analysis Point data class,
-functions for parsing TACtool CSV data ready for Analysis Points,
-functions for exporting current Analysis Points into a CSV format,
-and functions for transformation of existing Analysis Points.
-"""
-
 import dataclasses
 from csv import (
     DictReader,

@@ -1,6 +1,3 @@
-"""
-Tests for functions in the transformation module
-"""
 import numpy as np
 from typing import Any
 

@@ -1,6 +1,3 @@
-"""
-The Recoordinate Dialog is used for allowing the user to provide a CSV to be recoordinated.
-"""
 import numpy as np
 
 from PyQt5.QtCore import (
@@ -73,7 +70,7 @@ class RecoordinateDialog(QDialog, LoggerMixin):
         self.input_csv_filepath_label = QLineEdit("")
         self.input_csv_filepath_label.setDisabled(True)
 
-        self.recoordinate_button = QPushButton("Import and Re-coordinate")
+        self.recoordinate_button = QPushButton("Import and Recoordinate")
         self.cancel_button = QPushButton("Cancel", self)
 
         # Arrange the main layout

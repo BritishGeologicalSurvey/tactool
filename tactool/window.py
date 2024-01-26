@@ -108,7 +108,7 @@ class Window(QMainWindow, LoggerMixin):
         self.import_tactool_csv_button = self.menu_bar_file.addAction("Import TACtool CSV")
         self.export_tactool_csv_button = self.menu_bar_file.addAction("Export TACtool CSV")
         self.menu_bar_file.addSeparator()
-        self.recoordinate_sem_csv_button = self.menu_bar_file.addAction("Import and Re-coordinate SEM CSV")
+        self.recoordinate_sem_csv_button = self.menu_bar_file.addAction("Import and Recoordinate SEM CSV")
         # Create the tools drop down
         self.menu_bar_tools = self.menu_bar.addMenu("&Tools")
         self.ghost_point_button = self.menu_bar_tools.addAction("Ghost Point")
@@ -884,11 +884,11 @@ class Window(QMainWindow, LoggerMixin):
                 # Enable main window widgets
                 self.toggle_main_input_widgets(True)
         else:
-            self.logger.error("Missing 3 references points for re-coordination")
+            self.logger.error("Missing 3 references points for recoordination")
             QMessageBox.warning(
                 None,
                 "Missing Reference Points",
-                "3 Reference points are required to perform re-coordination"
+                "3 Reference points are required to perform recoordination"
             )
 
 

@@ -1,11 +1,3 @@
-"""
-Integration tests to confirm that classes interact correctly.
-
-It tests the connection of signals and slots by emitting signals to trigger changes and simulating button clicks.
-Analysis Points are added and removed by emitting corresponding click signals.
-
-tactool fixtures start a running QApplication for the context of the test.
-"""
 import pytest
 from PyQt5.QtWidgets import QGraphicsRectItem
 

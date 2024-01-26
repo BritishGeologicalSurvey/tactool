@@ -1,6 +1,3 @@
-"""
-Definitions for test fixtures used within other tests.
-"""
 import pytest
 from PyQt5.QtCore import (
     Qt,

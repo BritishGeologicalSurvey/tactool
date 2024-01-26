@@ -1,8 +1,3 @@
-"""
-Tests for classes and functions within model.py
-
-qapp fixture starts a running QApplication for the context of the test.
-"""
 import pytest
 
 from tactool.analysis_point import AnalysisPoint

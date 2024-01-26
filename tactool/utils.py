@@ -1,6 +1,3 @@
-"""
-Module for utilities and functions to help with development.
-"""
 import logging
 
 from PyQt5.QtCore import pyqtRemoveInputHook
