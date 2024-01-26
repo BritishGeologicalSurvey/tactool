@@ -22,7 +22,6 @@ TACTool was initially developed within the British Geological Survey by:
 
 The original idea was by Connor Newstead and Matt Horstwood.
 
-
 ## Development
 
 ### Installation
@@ -66,9 +65,7 @@ pre-loaded into the GraphicsView.
 
 ### Class Relationship Diagram
 
-<details>
-    <summary>Mermaid JS Code</summary>
-
+```mermaid
     classDiagram
         direction LR
 
@@ -329,10 +326,7 @@ pre-loaded into the GraphicsView.
         Window <.. SetScaleDialog : set_scale_clicked(scale)
         Window <.. SetScaleDialog : closed_set_scale_dialog()
         Window <.. RecoordinateDialog : closed_recoordinate_dialog()
-
-</details>
-
-![TACtool - Class Relationship Diagram](class_relationship_diagram.png)
+```
 
 ### Testing
 
