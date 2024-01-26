@@ -874,12 +874,14 @@ class Window(QMainWindow, LoggerMixin):
                 recoordinated_point_dicts = self.recoordinate_dialog.recoordinated_point_dicts
                 self.recoordinate_dialog = None
 
-                # Clear the current points
-                self.clear_analysis_points()
-                # Add the recoordinated points as new Analysis Points to the canvas
-                for point_dict in recoordinated_point_dicts:
-                    # We use the window inputs to fill the Analysis Point empty settings
-                    self.add_analysis_point(**point_dict, use_window_inputs=True)
+                # If the user confirmed the recoordination process
+                if len(recoordinated_point_dicts) > 0:
+                    # Clear the current points
+                    self.clear_analysis_points()
+                    # Add the recoordinated points as new Analysis Points to the canvas
+                    for point_dict in recoordinated_point_dicts:
+                        # We use the window inputs to fill the Analysis Point empty settings
+                        self.add_analysis_point(**point_dict, use_window_inputs=True)
 
                 # Enable main window widgets
                 self.toggle_main_input_widgets(True)
