@@ -50,7 +50,7 @@ The following fields can be modified after placing an analysis point. To modify 
 
 ## Analysis Point Metadata and Settings
 
-When creating a new analysis point, any current metadata field values and analysis point settings will be applied to that new analysis point. Therefore analysis point metadata fields and settings should be selected before an analysis point is created.
+When creating a new analysis point, any current metadata field values and analysis point settings will be applied to that new analysis point. Therefore, analysis point metadata fields and settings should be selected before an analysis point is created.
 
 ### Metadata Fields
 
@@ -131,7 +131,7 @@ To access file functionality, press the `File` button in the toolbar, located at
 _Import an image into the application._
 
 - Press the `Import Image` button.
-- Select a image file using the file picker.
+- Select an image file using the file picker.
 
 ### Export Image
 
@@ -162,7 +162,7 @@ _Export the current analysis point data to a TACtool CSV file._
 
 By default, the exported file will be a `CSV` file. However, you can add your own file extension to the filename if you wish to create a different file type, though this is not recommended.
 
-_Note: Upon export, the `sample_name` and `id` columns will be concatenated into a single column labeled `Name`, using the character pattern `_#` to join them._
+_Note: Upon export, the `sample_name` and `id` columns will be concatenated into a single column labelled `Name`, using the character pattern `_#` to join them._
 
 ### Import and Recoordinate SEM CSV
 
@@ -176,6 +176,6 @@ _Import and recoordinate a given SEM CSV file, using the current reference point
 
 _Notes:_
 - _Imported SEM points will retain their existing `Particle ID` values, as they will be used to assign the Analysis Point `id` values._
-- _When SEM points are imported from a CSV file, it is assumed that the origin for their coordinates will be **top right**, but the origin in TACtool is **top left**. To account for this, `SEM` coordinates automatically have their `x` axis inverted according to the currently loaded image, thus making their effective origin **top left**.
+- _When SEM points are imported from a CSV file, it is assumed that the origin for their coordinates will be **top right**, but the origin in TACtool is **top left**. To account for this, `SEM` coordinates automatically have their `x` axis inverted according to the currently loaded image, thus making their effective origin **top left**._
 - _When the SEM points are imported using this method, they will adopt any of the current Analysis Point settings applied in the TACtool window._
 - _If there are more than `3` analysis points with the label `RefMark` in TACtool, the recoordination process will only use the first `3` reference points from the Analysis Points Table Data._
