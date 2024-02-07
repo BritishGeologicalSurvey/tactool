@@ -176,5 +176,6 @@ _Import and recoordinate a given SEM CSV file, using the current reference point
 
 _Notes:_
 - _Imported SEM points will retain their existing `Particle ID` values, as they will be used to assign the Analysis Point `id` values._
+- _When SEM points are imported from a CSV file, it is assumed that the origin for their coordinates will be **top right**, but the origin in TACtool is **top left**. To account for this, `SEM` coordinates automatically have their `x` axis inverted according to the currently loaded image, thus making their effective origin **top left**.
 - _When the SEM points are imported using this method, they will adopt any of the current Analysis Point settings applied in the TACtool window._
 - _If there are more than `3` analysis points with the label `RefMark` in TACtool, the recoordination process will only use the first `3` reference points from the Analysis Points Table Data._
