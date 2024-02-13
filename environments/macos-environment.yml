@@ -21,17 +21,17 @@ dependencies:
   - libzlib=1.2.13=h8a1eda9_5
   - llvm-openmp=17.0.6=hb6ac08f_0
   - ncurses=6.4=hcec6c5f_0
-  - numpy=1.26.4=py312he3a82b2_0
+  - numpy=1.26.4=py311hc43a94b_0
   - openblas=0.3.26=openmp_h6794695_0
   - openssl=3.2.1=hd75f5a5_0
   - pip=24.0=pyhd8ed1ab_0
-  - python=3.12.1=h9f0c242_1_cpython
-  - python_abi=3.12=4_cp312
+  - python=3.11.7=h9f0c242_1_cpython
+  - python_abi=3.11=4_cp311
   - readline=8.2=hca72f7f_0
-  - setuptools=69.0.3=pyhd8ed1ab_0
+  - setuptools=68.2.2=py311hecd8cb5_0
   - tk=8.6.13=h1abcd95_1
   - tzdata=2023d=h04d1e81_0
-  - wheel=0.42.0=pyhd8ed1ab_0
+  - wheel=0.41.2=py311hecd8cb5_0
   - xz=5.4.5=h6c40b1e_0
   - pip:
       - altgraph==0.17.4

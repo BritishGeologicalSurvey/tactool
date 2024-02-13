@@ -24,21 +24,21 @@ dependencies:
   - m2w64-gmp=6.1.0=2
   - m2w64-libwinpthread-git=5.0.0.4634.697f757=2
   - msys2-conda-epoch=20160418=1
-  - numpy=1.26.4=py312h8753938_0
+  - numpy=1.26.4=py311h0b4df5a_0
   - openblas=0.3.26=pthreads_h3721920_0
   - openmp=5.0.0=vc14_1
   - openssl=3.2.1=hcfcfb64_0
   - pip=24.0=pyhd8ed1ab_0
-  - python=3.12.1=h2628c8c_1_cpython
-  - python_abi=3.12=4_cp312
-  - setuptools=69.0.3=pyhd8ed1ab_0
+  - python=3.11.7=h2628c8c_1_cpython
+  - python_abi=3.11=4_cp311
+  - setuptools=68.2.2=py311haa95532_0
   - tk=8.6.13=h5226925_1
   - tzdata=2023d=h04d1e81_0
   - ucrt=10.0.22621.0=h57928b3_0
   - vc=14.2=h21ff451_1
   - vc14_runtime=14.38.33130=h82b7239_18
   - vs2015_runtime=14.38.33130=hcb4865c_18
-  - wheel=0.42.0=pyhd8ed1ab_0
+  - wheel=0.41.2=py311haa95532_0
   - xz=5.4.5=h8cc25b3_0
   - pip:
       - altgraph==0.17.4
