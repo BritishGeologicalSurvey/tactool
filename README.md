@@ -40,6 +40,8 @@ conda env create -f environments/macos-environment.yml
 conda activate tactool-macos
 ```
 
+_Note: Both environments have been generated using `environments/unversioned-environment.yml`._
+
 ### Running the Program
 
 To run the program, first you need to setup your Python path.
