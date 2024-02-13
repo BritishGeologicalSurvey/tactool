@@ -1,9 +1,6 @@
-"""
-The Graphics View is the user interface element in charge of image interaction.
-It can load and save images and is responsible for capturing mouse events.
-"""
-
 import math
+
+from typing import Optional
 
 from PyQt5.QtCore import (
     pyqtSignal,
@@ -26,10 +23,12 @@ from PyQt5.QtWidgets import (
     QGraphicsView,
 )
 
+from tactool.analysis_point import AnalysisPoint
 from tactool.graphics_scene import GraphicsScene
+from tactool.utils import LoggerMixin
 
 
-class GraphicsView(QGraphicsView):
+class GraphicsView(QGraphicsView, LoggerMixin):
     """
     PyQt QGraphicsView with convenience functions for modifications.
     Also includes functions for user interaction with the Graphics View.
@@ -42,6 +41,9 @@ class GraphicsView(QGraphicsView):
     # Tracks the users mouse movement on the Graphics View whilst in scaling mode
     scale_move_event = pyqtSignal(float)
 
+    # Tracks the position for a ghost analysis point
+    move_ghost_point = pyqtSignal(int, int)
+
 
     def __init__(self) -> None:
         super().__init__()
@@ -50,11 +52,13 @@ class GraphicsView(QGraphicsView):
         self._empty = True
         # This stores the current image of the PyQt Graphics View as a PyQt Pixmap Item
         self._image = QGraphicsPixmapItem()
+        self.disable_analysis_points = False
         self.navigation_mode = False
         # Setting scaling variables
-        self.set_scale_mode = False
+        self.scaling_mode = False
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
+        self.ghost_point: Optional[AnalysisPoint] = None
 
         # Create the Graphics Scene which is displayed in the Graphics View
         self.graphics_scene = GraphicsScene()
@@ -66,7 +70,7 @@ class GraphicsView(QGraphicsView):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
-        Function to handle mouse clicking interaction events with the Graphics View.
+        Handler for mouse clicking interaction events with the Graphics View.
 
         Since we are only adding functionality to mousePressEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
@@ -76,7 +80,7 @@ class GraphicsView(QGraphicsView):
         if self._image.isUnderMouse():
             clicked_point = self.mapToScene(event.pos()).toPoint()
 
-            if self.set_scale_mode:
+            if self.scaling_mode:
                 # If there is no current start point of a scaling line
                 if self.scale_start_point.isNull():
                     # Set the start point of the scaling line to be the clicked point
@@ -91,7 +95,7 @@ class GraphicsView(QGraphicsView):
                     # Call the Graphics Scene function to draw the point
                     self.graphics_scene.draw_scale_point(clicked_point.x(), clicked_point.y())
 
-            elif not self.navigation_mode:
+            elif not self.navigation_mode and not self.disable_analysis_points:
                 clicked_button = event.button()
 
                 if clicked_button == Qt.LeftButton:
@@ -104,27 +108,40 @@ class GraphicsView(QGraphicsView):
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         """
-        Function to handle mouse movement interaction events with the Graphics View.
+        Handler for mouse movement interaction events with the Graphics View.
 
         Since we are only adding functionality to mouseMoveEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
         all other event occurences.
         """
-        if self.set_scale_mode:
+        event_position = self.mapToScene(event.pos()).toPoint()
+
+        # Check to ensure a ghost point is not left behind when it shouldn't exist
+        if (self.disable_analysis_points and self.ghost_point is not None) or not self._image.isUnderMouse():
+            self.remove_ghost_point()
+
+        if self.scaling_mode:
             # If there is a current start point but not an end point of a scaling line
             if not self.scale_start_point.isNull() and self.scale_end_point.isNull():
                 # Emit a signal that the mouse has been moved
                 # Passing the start point of the scaling line and the coordinates of the mouse
-                start, end = self.scale_start_point, self.mapToScene(event.pos()).toPoint()
+                start, end = self.scale_start_point, event_position
                 pixel_distance = round(math.sqrt((start.y() - end.y())**2 + (start.x() - end.x())**2), 2)
                 self.graphics_scene.draw_scale_line(start, end)
                 self.scale_move_event.emit(pixel_distance)
+
+        # Check if ghost points should be active
+        if not self.disable_analysis_points:
+            # If the cursor is on the image and navigation mode is not enabled
+            if self._image.isUnderMouse() and not self.navigation_mode:
+                # Add a new ghost point
+                self.move_ghost_point.emit(event_position.x(), event_position.y())
         super().mouseMoveEvent(event)
 
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """
-        Function to handle mouse scroll wheel interaction events with the Graphics View.
+        Handler for mouse scroll wheel interaction events with the Graphics View.
 
         The function does not pass the event back to the parent class PyQt QGraphicsView
         because the default wheelEvent triggers the scrolling of the Graphics View.
@@ -159,7 +176,7 @@ class GraphicsView(QGraphicsView):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """
-        Function to handle keyboard press events.
+        Handler for keyboard press events.
 
         Since we are only adding functionality to keyPressEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
@@ -172,12 +189,13 @@ class GraphicsView(QGraphicsView):
                 # Enable navigation mode
                 self.navigation_mode = True
                 self.setDragMode(QGraphicsView.ScrollHandDrag)
+                self.remove_ghost_point()
         super().keyPressEvent(event)
 
 
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
         """
-        Function to handle keyboard release events.
+        Handler for keyboard release events.
 
         Since we are only adding functionality to keyReleaseEvent, we pass the event to the
         parent PyQt class, QGraphicsView, at the end of the function to handle
@@ -193,7 +211,7 @@ class GraphicsView(QGraphicsView):
 
     def configure_frame(self) -> None:
         """
-        Function to configure the settings of the Graphics View.
+        Configure the settings of the Graphics View.
         """
         # Sets the Graphics View to anchor it's centre to the current position of the mouse
         # This applies when zooming into the image
@@ -210,8 +228,9 @@ class GraphicsView(QGraphicsView):
 
     def load_image(self, filepath: str) -> None:
         """
-        Fuction to load an image from a given path into the Graphics View as a PyQt Pixmap.
+        Load an image from a given path into the Graphics View as a PyQt Pixmap.
         """
+        self.logger.info("Loading image: %s", filepath)
         # Load the image into a PyQt Pixmap
         pixmap = QPixmap(filepath)
         # Reset the zoom value
@@ -231,8 +250,9 @@ class GraphicsView(QGraphicsView):
 
     def save_image(self, filepath: str) -> None:
         """
-        Function to get the current Graphics Scene state and save it to a given file.
+        Get the current Graphics Scene state and save it to a given file.
         """
+        self.logger.info("Saving current graphics state to: %s", filepath)
         # If you get the size of the Graphics Scene rather than the Graphics View,
         # then the saved image includes points which go over the border of the imported image
         rect = self.sceneRect().toRect()
@@ -252,9 +272,9 @@ class GraphicsView(QGraphicsView):
 
     def show_entire_image(self) -> None:
         """
-        Function to show the entirety of the current image in the Graphics View.
+        Show the entirety of the current image in the Graphics View.
         """
-        # Get a rectf of the current image
+        # Get a QRectF of the current image
         rect = QRectF(self._image.pixmap().rect())
         # If a rectf object was successfully created
         if not rect.isNull():
@@ -280,26 +300,36 @@ class GraphicsView(QGraphicsView):
 
     def toggle_scaling_mode(self) -> None:
         """
-        Function to toggle the scaling mode Graphics Scene settings.
+        Toggle the scaling mode Graphics Scene settings.
         """
-        self.set_scale_mode = not self.set_scale_mode
-        self.graphics_scene.toggle_transparent_window(self._image)
+        self.scaling_mode = not self.scaling_mode
 
-        # If the program is currently in Scaling mode
-        if self.set_scale_mode:
+        if self.scaling_mode:
+            self.logger.debug("Activating scaling mode")
             # Set the Graphics View cursor to a crosshair
             self.setCursor(Qt.CrossCursor)
-        # Else when the program is not currently in Scaling mode
         else:
-            # Reset the scaling mode attributes to normal
-            self.graphics_scene.remove_scale_items()
-            self.reset_scale_line_points()
+            self.logger.debug("Deactivating scaling mode")
+            self.reset_scaling_elements()
             self.setCursor(Qt.ArrowCursor)
 
 
-    def reset_scale_line_points(self) -> None:
+    def reset_scaling_elements(self) -> None:
         """
-        Function to reset the scaling line points to be blank QPointF objects.
+        Reset the scaling elements back to their default values.
         """
+        self.logger.debug("Reset scaling elements")
         self.scale_start_point = QPointF()
         self.scale_end_point = QPointF()
+        self.graphics_scene.remove_scale_items()
+
+
+    def remove_ghost_point(self) -> None:
+        """
+        Remove the current ghost point if it exists.
+        """
+        if self.ghost_point is not None:
+            ghost_point_id = self.ghost_point.id
+            self.graphics_scene.remove_analysis_point(self.ghost_point, log=False)
+            self.ghost_point = None
+            self.logger.info("Deleted Ghost Point: %s", ghost_point_id)

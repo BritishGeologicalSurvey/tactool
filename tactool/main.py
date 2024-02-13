@@ -1,27 +1,39 @@
-"""
-Main TACtool application class definition.
-"""
-
 import argparse
+import logging
 import sys
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
+
+from tactool.graphics_scene import GraphicsScene
+from tactool.graphics_view import GraphicsView
+from tactool.recoordinate_dialog import RecoordinateDialog
+from tactool.set_scale_dialog import SetScaleDialog
+from tactool.table_model import TableModel
+from tactool.table_view import TableView
+from tactool.utils import LoggerMixin
 from tactool.window import Window
 
 
-class TACtool(QApplication):
+class TACtool(QApplication, LoggerMixin):
     """
     PyQt QApplication class with references to high-level components.
+    Includes some convenience property methods to aid with testing.
     """
     def __init__(
         self,
         args,
         developer_mode: bool = False,
+        debug_mode: bool = False,
         testing_mode: bool = False,
     ) -> None:
         super().__init__(args)
+
+        if debug_mode:
+            LoggerMixin._set_logger_levels(logging.DEBUG)
+
+        self.logger.info("Initialising TACtool application")
         self.testing_mode = testing_mode
         self.window = Window(self.testing_mode)
 
@@ -39,15 +51,41 @@ class TACtool(QApplication):
 
     def developer_mode(self) -> None:
         """
-        Function to start the program in developer mode.
+        Start the program in developer mode.
         """
         # Preload an image into the program
         path = "test/data/test_cl_montage.png"
+        self.logger.debug("Starting developer mode with image: %s", path)
         self.window.image_filepath = path
         self.window.setWindowTitle(f"TACtool: {self.window.image_filepath}")
-        self.window.graphics_view.load_image(path)
+        self.graphics_view.load_image(path)
         # This shows the entirety of a preloaded image in the Graphics View during initialisation
-        self.window.graphics_view.setTransform(QtGui.QTransform())
+        self.graphics_view.setTransform(QtGui.QTransform())
+
+
+    @property
+    def graphics_view(self) -> GraphicsView:
+        return self.window.graphics_view
+
+    @property
+    def graphics_scene(self) -> GraphicsScene:
+        return self.window.graphics_scene
+
+    @property
+    def table_model(self) -> TableModel:
+        return self.window.table_model
+
+    @property
+    def table_view(self) -> TableView:
+        return self.window.table_view
+
+    @property
+    def set_scale_dialog(self) -> SetScaleDialog:
+        return self.window.set_scale_dialog
+
+    @property
+    def recoordinate_dialog(self) -> RecoordinateDialog:
+        return self.window.recoordinate_dialog
 
 
 if __name__ == "__main__":
@@ -58,6 +96,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Developer mode",
     )
+    parser.add_argument(
+        "--debug",
+        default=False,
+        action="store_true",
+        help="Debug mode",
+    )
     args = parser.parse_args()
 
-    tactool_application = TACtool(sys.argv, args.dev)
+    tactool_application = TACtool(sys.argv, developer_mode=args.dev, debug_mode=args.debug)

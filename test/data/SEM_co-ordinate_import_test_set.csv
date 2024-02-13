@@ -1,0 +1,9 @@
+Particle ID,Mineral Classification,Laser Ablation Centre X,Laser Ablation Centre Y,Effective Diameter m,Feret Max Diameter m,Feret Min Diameter m,F (N),Cl (N)
+A,Fiducial,91.576,67.762,,,,,
+B,Fiducial,86.01,55.893,,,,,
+C,Fiducial,98.138,49.417,,,,,
+509,Apatite,96.764747,49.303754,56.85,70.99,52.98,,1.51
+577,Apatite,97.520798,55.785059,104.12,160.72,81.76,,1.32
+662,Apatite,93.746436,60.03264,49.1,59.89,42.98,,2.63
+705,Apatite,91.770031,62.312733,41.5,58.29,33.49,,
+759,Apatite,92.415936,67.080603,44.62,63.02,37.54,,0.69
