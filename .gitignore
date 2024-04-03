@@ -2,3 +2,5 @@ __pycache__
 build
 dist
 .pytest_cache
+_LOCAL_LEO
+*.spec

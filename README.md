@@ -22,7 +22,6 @@ TACTool was initially developed within the British Geological Survey by:
 
 The original idea was by Connor Newstead and Matt Horstwood.
 
-
 ## Development
 
 ### Installation
@@ -40,6 +39,8 @@ conda activate tactool-windows
 conda env create -f environments/macos-environment.yml
 conda activate tactool-macos
 ```
+
+_Note: Both environments have been generated using `environments/unversioned-environment.yml`._
 
 ### Running the Program
 
@@ -66,9 +67,7 @@ pre-loaded into the GraphicsView.
 
 ### Class Relationship Diagram
 
-<details>
-    <summary>Mermaid JS Code</summary>
-
+```mermaid
     classDiagram
         direction LR
 
@@ -76,59 +75,84 @@ pre-loaded into the GraphicsView.
             QApplication
             Manages preloaded modes of the application
             ---
-            +Window
-            +developer_mode: bool
             +testing_mode: bool
+            +window: Window
+            +graphics_view: GraphicsView
+            +graphics_scene: GraphicsScene
+            +table_model: TableModel
+            +table_view: TableView
+            +set_scale_dialog: Optional[SetScaleDialog]
+            +recoordinate_dialog: Optional[RecoordinateDialog]
 
             developer_mode()
         }
 
         class Window {
             QMainWindow
-            User Interface with data preprocessing and data flow
+            Main User Interface with data flow
             ---
             +testing_mode: bool
             +default_settings: dict[str, Any]
-            +image_filepath: str
-            +csv_filepath: str
+            +image_filepath: Optional[str]
+            +csv_filepath: Optional[str]
             +point_colour: str
-            +status_bar_messages: dict[str, dict[str, Any]]
             +graphics_view: GraphicsView
             +graphics_scene: GraphicsScene
             +table_model: TableModel
             +table_view: TableView
-            +set_scale_dialog: SetScaleDialog
+            +set_scale_dialog: Optional[SetScaleDialog]
+            +recoordinate_dialog: Optional[RecoordinateDialog]
+            +menu_bar: QMenuBar
+            +menu_bar_file: QMenu
+            +import_image_button: QAction
+            +export_image_button: QAction
+            +import_tactool_csv_button: QAction
+            +export_tactool_csv_button: QAction
+            +recoordinate_sem_csv_button: QAction
+            +menu_bar_tools: QMenu
+            +ghost_point_button: QAction
+            +status_bar: QStatusBar
+            +sample_name_input: QLineEdit
+            +mount_name_input: QLineEdit
+            +material_input: QLineEdit
+            +label_input: QComboBox
+            +colour_button: QPushButton
+            +diameter_input: QSpinBox
+            +scale_value_input: QLineEdit
+            +set_scale_button: QPushButton
+            +clear_points_button: QPushButton
+            +reset_ids_button: QPushButton
+            +reset_settings_button: QPushButton
+            +status_bar_messages: dict[str, dict[str, Any]]
             +main_input_widgets: list[QWidget]
+            +dialogs: list[QDialog]
 
             +setup_ui_elements()
-            +set_colour_button_style()
             +connect_signals_and_slots()
+            +set_colour_button_style()
             +create_status_bar_messages()
             +toggle_status_bar_messages()
             +import_image_get_path()
             +export_image_get_path()
             +import_tactool_csv_get_path()
             +load_tactool_csv_data(filepath)
-            +process_tactool_csv(filepath)
-            +parse_row_data(item, default_values)
             +export_tactool_csv_get_path()
             +validate_current_data(validate_image)
-            +add_analysis_point(x, y, label, diameter, scale, colour, notes, apid, sample_name, mount_name, material, from_click)
+            +add_analysis_point(x, y, apid, label, diameter, scale, colour, sample_name, mount_name, material, notes, use_windows_inputs, ghost)
+            +add_ghost_point(x, y)
             +remove_analysis_point(x, y, apid)
-            +reload_analysis_points()
-            +reset_analysis_points()
+            +reload_analysis_points(index, transform)
             +clear_analysis_points()
-            +update_analysis_points()
-            +set_point_colour()
-            +toggle_scaling_mode()
-            +toggle_main_input_widgets(enable)
-            +clear_scale_clicked()
-            +set_scale(scale)
+            +get_point_colour()
+            +set_point_colour(colour)
             +get_point_settings(analysis_point, clicked_column_index)
             +reset_settings()
-            +update_point_settings(sample_name, mount_name, material, label, diameter, scale, colour)
-            +data_error_message(error)
-            +show_message(title, message, type)
+            +update_point_settings(label, diameter, scale, colour, sample_name, mount_name, material)
+            +toggle_main_input_widgets(enable)
+            +set_scale(scale)
+            +toggle_scaling_mode()
+            +toggle_recoordinate_dialog()
+            +qmessagebox_error(error)
             +closeEvent(event)
         }
 
@@ -136,76 +160,9 @@ pre-loaded into the GraphicsView.
             QTableView
             Manage the display of TableModel data
             ---
-            +set_column_sizes()
+            +format_columns()
             +mousePressEvent(event)
             +signal: selected_analysis_point(analysis_point, column)
-        }
-
-        class GraphicsView{
-            QGraphicsView
-            Manage user interaction and visual display of GraphicsScene
-            ---
-            +_zoom: int
-            +_empty: bool
-            +_image: QGraphicsPixmapItem
-            +navigation_mode: bool
-            +set_scale_mode: bool
-            +scale_start_point: QPointF
-            +scale_end_point: QPointF
-            +graphics_scene: GraphicsScene
-
-            +mousePressEvent(event)
-            +mouseMoveEvent(event)
-            +wheelEvent(event)
-            +keyPressEvent(event)
-            +keyReleaseEvent(event)
-            +configure_frame()
-            +load_image(filepath)
-            +save_image(filepath)
-            +show_entire_image()
-            +toggle_scaling_mode()
-            +reset_scale_line_points()
-            +signal: left_click(x, y)
-            +signal: right_click(x, y)
-            +signal: scale_move_event(pixel_distance)
-        }
-
-        class SetScaleDialog{
-            QDialog
-            Allows the user to interactively calculate a scale
-            ---
-            +testing_mode: bool
-            +pixel_input_default: str
-
-            +setup_ui_elements()
-            +connect_signals_and_slots()
-            +update_scale()
-            +scale_move_event_handler(pixel_distance)
-            +set_scale()
-            +closeEvent(event)
-            signal: clear_scale()
-            signal: set_scale_clicked(scale)
-            signal: closed_set_scale_dialog()
-        }
-
-        class GraphicsScene{
-            QGraphicsScene
-            Manage items painted on image
-            ---
-            +_maximum_point_id: int
-            +scaling_rect: QGraphicsRectItem
-            +scaling_group: QGraphicsItemGroup
-            +scaling_line: QGraphicsLineItem
-            +table_model: TableModel
-
-            +add_analysis_point(x, y, label, diameter, scale, colour, notes, apid, sample_name, mount_name, material)
-            +remove_analysis_point(x, y, apid)
-            +get_ellipse_at(x, y)
-            +next_point_id()
-            +toggle_transparent_window(graphics_view_image)
-            +draw_scale_line(start_point, end_point)
-            +draw_scale_point(x, y)
-            +remove_scale_items()
         }
 
         class TableModel{
@@ -215,6 +172,10 @@ pre-loaded into the GraphicsView.
             +headers: list[str]
             +_data: list[list[Any]]
             +editable_columns: list[int]
+            +public_headers: list[str]
+            +analysis_points: list[AnalysisPoint]
+            +reference_points: list[AnalysisPoint]
+            +next_point_id: int
 
             +headerData(section, orientation, role)
             +columnCount(*args)
@@ -226,12 +187,6 @@ pre-loaded into the GraphicsView.
             +remove_point(target_id)
             +get_point_by_ellipse(target_ellipse)
             +get_point_by_apid(target_id)
-            +reference_points()
-            +analysis_points()
-            +export_csv(filepath)
-            +convert_export_headers()
-            +convert_export_point()
-            signal: invalid_label_entry(title, message, type)
             signal: updated_analysis_point(index)
         }
 
@@ -239,9 +194,9 @@ pre-loaded into the GraphicsView.
             Create AnalysisPoint data
             ---
             +id: int
+            +label: str
             +x: int
             +y: int
-            +label: str
             +diameter: int
             +scale: float
             +colour: str
@@ -257,25 +212,123 @@ pre-loaded into the GraphicsView.
             +aslist()
         }
 
+        class GraphicsView{
+            QGraphicsView
+            Manage user interaction and visual display of GraphicsScene
+            ---
+            +_zoom: int
+            +_empty: bool
+            +_image: QGraphicsPixmapItem
+            +disable_analysis_points: bool
+            +navigation_mode: bool
+            +scaling_mode: bool
+            +scale_start_point: QPointF
+            +scale_end_point: QPointF
+            +graphics_scene: GraphicsScene
+
+            +mousePressEvent(event)
+            +mouseMoveEvent(event)
+            +wheelEvent(event)
+            +keyPressEvent(event)
+            +keyReleaseEvent(event)
+            +configure_frame()
+            +load_image(filepath)
+            +save_image(filepath)
+            +show_entire_image()
+            +toggle_scaling_mode()
+            +reset_scaling_elements()
+            +remove_ghost_point()
+            +signal: left_click(x, y)
+            +signal: right_click(x, y)
+            +signal: scale_move_event(pixel_distance)
+            +signal: move_ghost_point(x, y)
+        }
+
+        class GraphicsScene{
+            QGraphicsScene
+            Manage items painted on image
+            ---
+            +scaling_group: QGraphicsItemGroup
+            +scaling_line: QGraphicsLineItem
+            +transparent_window: QGraphicsRectItem
+
+            +add_analysis_point(x, y, apid, label, diameter, colour, scale, ghost)
+            +remove_analysis_point(ap)
+            +move_analysis_point(ap, x_change, y_change)
+            +get_ellipse_at(x, y)
+            +toggle_transparent_window(graphics_view_image)
+            +draw_scale_line(start_point, end_point)
+            +draw_scale_point(x, y)
+            +remove_scale_items()
+        }
+
+        class SetScaleDialog{
+            QDialog
+            Allows the user to interactively calculate a scale
+            ---
+            +testing_mode: bool
+            +pixel_input_default: str
+            +set_scale_button: QPushButton
+            +clear_scale_button: QPushButton
+            +cancel_button: QPushButton
+            +distance_input: QSpinBox
+            +pixel_input: QLineEdit
+            +scale_value: QLineEdit
+
+            +setup_ui_elements()
+            +connect_signals_and_slots()
+            +update_scale()
+            +scale_move_event_handler(pixel_distance)
+            +set_scale()
+            +clear_scale()
+            +closeEvent(event)
+            signal: clear_scale_clicked()
+            signal: set_scale_clicked(scale)
+            signal: closed_set_scale_dialog()
+        }
+
+        class RecoordinateDialog{
+            QDialog
+            Allows the user to recoordinate an SEM CSV file
+            ---
+            +testing_mode: bool
+            +ref_points: list[AnalysisPoint]
+            +image_size: QSize
+            +recoordinated_point_dicts: list[dict[str, str | int | float]]
+            +input_csv_button: QPushButton
+            +input_csv_filepath_label: QLineEdit
+            +recoordinate_button: QPushButton
+            +cancel_button: QPushButton
+
+            +setup_ui_elements()
+            +connect_signals_and_slots()
+            +get_input_csv()
+            +import_and_recoordinate_sem_csv()
+            +recoordinate_sem_points(point_dicts)
+            +closeEvent(event)
+            signal: closed_recoordinate_dialog()
+        }
+
         TACtool *-- Window
         Window *-- GraphicsView
         Window *-- TableView
         Window *-- SetScaleDialog
-        GraphicsView *-- GraphicsScene
-        GraphicsScene *-- TableModel
+        Window *-- RecoordinateDialog
+        TableView *-- TableModel
         TableModel *-- AnalysisPoint
+        GraphicsView *-- GraphicsScene
 
         Window <.. TableView : selected_analysis_point(analysis_point, column)
-        Window <.. SetScaleDialog : clear_scale()
-        Window <.. SetScaleDialog : set_scale_clicked(scale)
-        Window <.. SetScaleDialog : closed_set_scale_dialog()
+        Window <.. TableModel : updated_analysis_point(index)
         Window <.. GraphicsView : left_click(x, y)
         Window <.. GraphicsView : right_click(x, y)
         Window <.. GraphicsView : scale_move_event(pixel_distance)
-
-</details>
-
-![TACtool - Class Relationship Diagram](class_relationship_diagram.png)
+        Window <.. GraphicsView : move_ghost_point(x, y)
+        Window <.. SetScaleDialog : clear_scale_clicked()
+        Window <.. SetScaleDialog : set_scale_clicked(scale)
+        Window <.. SetScaleDialog : closed_set_scale_dialog()
+        Window <.. RecoordinateDialog : closed_recoordinate_dialog()
+```
 
 ### Testing
 
@@ -284,25 +337,6 @@ Ensure you have setup your Python path. Then you can run the tests with:
 ```bash
 pytest -vv test/
 ```
-
-#### List of Tests
-
-**test_integration.py**
-- test_add_and_remove_points
-- test_clear_points
-- test_reset_id_values
-- test_reset_settings
-- test_toggle_scaling_mode
-- test_set_scale
-- test_export_image
-- test_import_tactool_csv
-- test_export_tactool_csv
-- test_reference_point_hint
-- test_scale_hint
-
-**test_model.py**
-- test_analysis_point_public_attributes_match
-- test_model
 
 ### Create a standalone executable using PyInstaller
 

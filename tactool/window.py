@@ -1,19 +1,14 @@
-"""
-The Window manages the user interface layout and interaction with
-buttons and input boxes.
-"""
-
-import logging
-
-from csv import DictReader
-from textwrap import dedent
-from typing import Optional
+from typing import (
+    Callable,
+    Optional,
+)
 
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QColorDialog,
     QComboBox,
+    QDialog,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -27,27 +22,27 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from tactool.graphics_view import GraphicsView
-from tactool.set_scale_dialog import SetScaleDialog
-from tactool.table_model import AnalysisPoint
-from tactool.table_view import TableView
-
-logger = logging.getLogger("tactool")
-logger.setLevel(logging.DEBUG)
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s %(name)s %(message)s",
+from tactool.analysis_point import (
+    AnalysisPoint,
+    export_tactool_csv,
+    parse_tactool_csv,
+    reset_id,
 )
+from tactool.graphics_view import GraphicsView
+from tactool.recoordinate_dialog import RecoordinateDialog
+from tactool.set_scale_dialog import SetScaleDialog
+from tactool.table_model import TableModel
+from tactool.table_view import TableView
+from tactool.utils import LoggerMixin
 
 
-class Window(QMainWindow):
+class Window(QMainWindow, LoggerMixin):
     """
     PyQt QMainWindow class which displays the application's interface and
     manages user interaction with it.
     """
     def __init__(self, testing_mode: bool) -> None:
         super().__init__()
-        logger.info("Initialising TACtool application")
         self.testing_mode = testing_mode
 
         self.default_settings = {
@@ -66,20 +61,21 @@ class Window(QMainWindow):
         # point_colour is stored as a class vairable because it requires formatting
         # this variable is the formatted version ready to use for other functions
         self.point_colour: str = self.default_settings["colour"]
-        self.status_bar_messages = self.create_status_bar_messages()
 
         # Setup the User Interface
         self.setWindowTitle("TACtool")
         self.setMinimumSize(750, 650)
         self.graphics_view = GraphicsView()
         self.graphics_scene = self.graphics_view.graphics_scene
-        self.table_model = self.graphics_view.graphics_scene.table_model
+        self.table_model = TableModel()
         self.table_view = TableView(self.table_model)
         self.set_scale_dialog: Optional[SetScaleDialog] = None
+        self.recoordinate_dialog: Optional[RecoordinateDialog] = None
         self.setup_ui_elements()
         self.connect_signals_and_slots()
+        self.status_bar_messages = self.create_status_bar_messages()
         self.toggle_status_bar_messages()
-        self.main_input_widgets = [
+        self.main_input_widgets: list[QWidget] = [
             self.menu_bar_file,
             self.sample_name_input,
             self.mount_name_input,
@@ -87,6 +83,7 @@ class Window(QMainWindow):
             self.label_input,
             self.colour_button,
             self.diameter_input,
+            self.set_scale_button,
             self.reset_ids_button,
             self.reset_settings_button,
             self.clear_points_button,
@@ -96,18 +93,25 @@ class Window(QMainWindow):
 
     def setup_ui_elements(self) -> None:
         """
-        Function to setup the User Interface elements.
+        Setup the User Interface elements.
         """
+        self.logger.debug("Setting up UI elements")
         # Create the menu bar
         self.menu_bar = self.menuBar()
         # Create the file drop down
         self.menu_bar_file = self.menu_bar.addMenu("&File")
         # Add buttons to the file drop down
-        self.menu_bar_file_import_image = self.menu_bar_file.addAction("Import Image")
-        self.menu_bar_file_export_image = self.menu_bar_file.addAction("Export Image")
+        self.import_image_button = self.menu_bar_file.addAction("Import Image")
+        self.export_image_button = self.menu_bar_file.addAction("Export Image")
         self.menu_bar_file.addSeparator()
-        self.file_menu_bar_import_tactool_csv = self.menu_bar_file.addAction("Import TACtool CSV")
-        self.file_menu_bar_export_tactool_csv = self.menu_bar_file.addAction("Export TACtool CSV")
+        self.import_tactool_csv_button = self.menu_bar_file.addAction("Import TACtool CSV")
+        self.export_tactool_csv_button = self.menu_bar_file.addAction("Export TACtool CSV")
+        self.menu_bar_file.addSeparator()
+        self.recoordinate_sem_csv_button = self.menu_bar_file.addAction("Import and Recoordinate SEM CSV")
+        # Create the tools drop down
+        self.menu_bar_tools = self.menu_bar.addMenu("&Tools")
+        self.ghost_point_button = self.menu_bar_tools.addAction("Ghost Point")
+        self.ghost_point_button.setCheckable(True)
 
         # Create the status bar
         self.status_bar = QStatusBar(self)
@@ -149,13 +153,6 @@ class Window(QMainWindow):
         self.clear_points_button = QPushButton("Clear Points", self)
         self.reset_ids_button = QPushButton("Reset IDs", self)
         self.reset_settings_button = QPushButton("Reset Settings", self)
-
-        # Iterate through each header in the PyQt Table Model
-        for idx, column in enumerate(self.graphics_view.graphics_scene.table_model.headers):
-            # Hide any columns which start with an "_" in the PyQt Table View
-            # These columns store the PyQt Graphics elements corresponding to the Analysis Points
-            if column.startswith("_"):
-                self.table_view.hideColumn(idx)
 
         # Arrange the layout of the user interface
         sidebar = QVBoxLayout()
@@ -203,9 +200,51 @@ class Window(QMainWindow):
         self.setCentralWidget(central_widget)
 
 
+    def connect_signals_and_slots(self) -> None:
+        """
+        Connect signals and slots to User Interface interactions.
+        """
+        self.logger.debug("Connecting signals and slots")
+        # Connect menu bar clicks to handlers
+        self.import_image_button.triggered.connect(self.import_image_get_path)
+        self.export_image_button.triggered.connect(self.export_image_get_path)
+        self.import_tactool_csv_button.triggered.connect(self.import_tactool_csv_get_path)
+        self.export_tactool_csv_button.triggered.connect(self.export_tactool_csv_get_path)
+        self.recoordinate_sem_csv_button.triggered.connect(self.toggle_recoordinate_dialog)
+        self.ghost_point_button.triggered.connect(self.graphics_view.remove_ghost_point)
+
+        # Connect button clicks to handlers
+        self.clear_points_button.clicked.connect(self.clear_analysis_points)
+        self.reset_ids_button.clicked.connect(lambda: self.reload_analysis_points(transform=reset_id))
+        self.reset_settings_button.clicked.connect(self.reset_settings)
+        self.colour_button.clicked.connect(self.get_point_colour)
+        self.set_scale_button.clicked.connect(self.toggle_scaling_mode)
+
+        # Connect Graphics View interactions to handlers
+        self.graphics_view.left_click.connect(self.add_analysis_point)
+        self.graphics_view.right_click.connect(self.remove_analysis_point)
+        self.graphics_view.move_ghost_point.connect(self.add_ghost_point)
+
+        # Connect Table interaction clicks to handlers
+        self.table_view.selected_analysis_point.connect(self.get_point_settings)
+        self.table_model.updated_analysis_points.connect(self.reload_analysis_points)
+
+
+    @property
+    def dialogs(self) -> list[QDialog]:
+        """
+        Return a list of the current dialog attributes.
+        """
+        dialogs = [
+            self.set_scale_dialog,
+            self.recoordinate_dialog,
+        ]
+        return dialogs
+
+
     def set_colour_button_style(self) -> None:
         """
-        Function to set the CSS stylesheet of the Colour Button in the User Interface.
+        Set the CSS stylesheet of the Colour Button in the User Interface.
         """
         colour_button_stylesheet = """
             QToolTip {
@@ -219,36 +258,9 @@ class Window(QMainWindow):
         self.colour_button.setStyleSheet(colour_button_stylesheet)
 
 
-    def connect_signals_and_slots(self) -> None:
+    def create_status_bar_messages(self) -> dict[str, dict[str, None | QLabel | Callable[[], tuple[bool, str]]]]:
         """
-        Function for connecting signals and slots of User Interface interactions.
-        """
-        # Connect menu bar clicks to handlers
-        self.menu_bar_file_import_image.triggered.connect(self.import_image_get_path)
-        self.menu_bar_file_export_image.triggered.connect(self.export_image_get_path)
-        self.file_menu_bar_import_tactool_csv.triggered.connect(self.import_tactool_csv_get_path)
-        self.file_menu_bar_export_tactool_csv.triggered.connect(self.export_tactool_csv_get_path)
-
-        # Connect button clicks to handlers
-        self.clear_points_button.clicked.connect(self.clear_analysis_points)
-        self.reset_ids_button.clicked.connect(self.reset_analysis_points)
-        self.reset_settings_button.clicked.connect(self.reset_settings)
-        self.colour_button.clicked.connect(self.set_point_colour)
-        self.set_scale_button.clicked.connect(self.toggle_scaling_mode)
-
-        # Connect Graphics View interactinos to handlers
-        self.graphics_view.left_click.connect(self.add_analysis_point)
-        self.graphics_view.right_click.connect(self.remove_analysis_point)
-
-        # Connect Table interaction clicks to handlers
-        self.table_view.selected_analysis_point.connect(self.get_point_settings)
-        self.table_model.invalid_label_entry.connect(self.show_message)
-        self.table_model.updated_analysis_points.connect(self.update_analysis_points)
-
-
-    def create_status_bar_messages(self):
-        """
-        Function to create the status bar message functions.
+        Create the status bar message functions.
         """
         # Each of these functions contains the condition for the status message and the message itself
         # These must be functions so that the conditional statement is dynamic
@@ -282,8 +294,9 @@ class Window(QMainWindow):
 
     def toggle_status_bar_messages(self) -> None:
         """
-        Function to toggle all of the status bar messages.
+        Toggle all of the status bar messages.
         """
+        self.logger.debug("Toggling %s status bar messages", len(self.status_bar_messages))
         for status_name in self.status_bar_messages:
             # Get the status, condition result and message from the dictionary
             status = self.status_bar_messages[status_name]["status"]
@@ -311,179 +324,131 @@ class Window(QMainWindow):
 
     def import_image_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog, allowing the user to visually select an image file to import.
+        Create a PyQt File Dialog, allowing the user to visually select an image file to import.
         """
         pyqt_open_dialog = QFileDialog.getOpenFileName(
-            self,
-            "Import Image",
+            parent=self,
+            directory="Import Image",
             filter=self.default_settings["image_format"],
         )
-        path = pyqt_open_dialog[0]
-        if path:
+        filepath = pyqt_open_dialog[0]
+        if filepath:
             try:
-                self.graphics_view.load_image(path)
-                self.image_filepath = path
+                self.graphics_view.load_image(filepath)
+                self.image_filepath = filepath
                 self.setWindowTitle(f"TACtool: {self.image_filepath}")
             except Exception as error:
-                self.data_error_message(error)
+                self.qmessagebox_error(error)
 
 
     def export_image_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog, allowing the user to visually select a directory to export an image file.
+        Create a PyQt File Dialog, allowing the user to visually select a directory to export an image file.
         """
         if self.validate_current_data(validate_image=True):
-            filepath = self.image_filepath if self.image_filepath else ""
+            current_filepath = self.image_filepath if self.image_filepath else ""
             pyqt_save_dialog = QFileDialog.getSaveFileName(
-                self,
-                "Export Image",
-                filepath,
-                self.default_settings["image_format"],
+                parent=self,
+                caption="Export Image",
+                directory=current_filepath,
+                filter=self.default_settings["image_format"],
             )
-            path = pyqt_save_dialog[0]
-            if path:
+            filepath = pyqt_save_dialog[0]
+            if filepath:
                 try:
-                    self.graphics_view.save_image(path)
+                    self.graphics_view.save_image(filepath)
                 except Exception as error:
-                    self.data_error_message(error)
+                    self.qmessagebox_error(error)
 
 
     def import_tactool_csv_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog, allowing the user to visually select a TACtool CSV file to import.
+        Create a PyQt File Dialog, allowing the user to visually select a TACtool CSV file to import.
         """
         pyqt_open_dialog = QFileDialog.getOpenFileName(
-            self,
-            "Import TACtool CSV",
+            parent=self,
+            caption="Import TACtool CSV",
             filter=self.default_settings["csv_format"],
         )
-        path = pyqt_open_dialog[0]
-        if path:
+        filepath = pyqt_open_dialog[0]
+        if filepath:
             try:
-                self.load_tactool_csv_data(path)
-                self.csv_filepath = path
+                self.load_tactool_csv_data(filepath)
+                self.csv_filepath = filepath
             except Exception as error:
-                self.data_error_message(error)
+                self.qmessagebox_error(error)
 
 
     def load_tactool_csv_data(self, filepath: str) -> None:
         """
-        Get all the analysis points from a csv and display them in model and scene.
+        Load the Analysis Point data from a given CSV file and add it into the program.
         """
         try:
-            self.process_tactool_csv(filepath)
+            self.logger.info("Loading TACtool CSV file: %s", filepath)
+            analysis_points = parse_tactool_csv(filepath, self.default_settings)
+            self.clear_analysis_points()
+            self.reset_settings()
+            # Track if any of the points extend the image boundary
+            extends_boundary = False
+            image_size = self.graphics_view._image.pixmap().size()
+            for analysis_point in analysis_points:
+                self.add_analysis_point(**analysis_point, use_window_inputs=False)
+                ap_x = analysis_point["x"]
+                ap_y = analysis_point["y"]
+                if ap_x > image_size.width() or ap_x < 0 or ap_y > image_size.height() or ap_y < 0:
+                    extends_boundary = True
+            self.table_view.scrollToTop()
+
+            # Create a message informing the user that the points extend the image boundary
+            if extends_boundary:
+                message = "At least 1 of the imported analysis points goes beyond the current image boundary"
+                self.logger.warning(message)
+                QMessageBox.warning(None, "Imported Points Warning", message)
+
         # A KeyError and UnicodeError usually occur with an incorrectly formatted CSV file
         except (KeyError, UnicodeError):
             # Show a message to the user informing them of which headers should be in the CSV file
-            public_headers = [header for header in self.table_model.headers
-                              if not header.startswith("_")]
-            message = dedent(f"""
-                There was an error when loading data from CSV file: {filepath.split("/")[-1]}.
-
-                Must use csv with header {public_headers}.
-            """)
-            self.show_message("Error loading data", message, "warning")
-
-
-    def process_tactool_csv(self, filepath: str) -> None:
-        """
-        Function to process the data in a given TACtool CSV file
-        and create the required Analysis Points.
-        """
-        # Clear existing points and settings first
-        self.clear_analysis_points()
-        self.reset_settings()
-
-        default_values = {
-            "Name": 0,
-            "X": 0,
-            "Y": 0,
-            "diameter": self.default_settings["diameter"],
-            "scale": float(self.default_settings["scale"]),
-            "colour": self.default_settings["colour"],
-        }
-
-        with open(filepath) as csv_file:
-            reader = DictReader(csv_file)
-            # Iterate through each line in the CSV file
-            for id, item in enumerate(reader):
-
-                # Split the id and sample_name value from the Name column
-                if "_#" in item["Name"]:
-                    item["sample_name"], item["Name"] = item["Name"].rsplit("_#", maxsplit=1)
-
-                # The default ID value is incremented with the row number
-                default_values["Name"] = id + 1
-                # If there is a Z column which is requried for the laser, then remove it
-                try:
-                    item.pop("Z")
-                except KeyError:
-                    pass
-
-                item = self.parse_row_data(item, default_values)
-
-                # Rename specific fields to match function arguments
-                header_changes = {
-                    "Name": "apid",
-                    "X": "x",
-                    "Y": "y",
-                    "Type": "label",
-                }
-                for old_header, new_header in zip(header_changes, list(header_changes.values())):
-                    item[new_header] = item.pop(old_header)
-                self.add_analysis_point(**item, from_click=False)
-        self.table_view.scrollToTop()
-
-
-    def parse_row_data(self, item: dict, default_values: dict) -> dict:
-        """
-        Function to parse the data of an Analysis Point row item in a CSV file.
-        """
-        # Define the field names and their type conversions in Python
-        fields = ["Name", "X", "Y", "diameter", "scale", "colour"]
-        pre_processes = [int, int, int, int, float, None]
-
-        # Iterate through each field, it's type conversion and it's default value
-        for field, pre_process in zip(fields, pre_processes):
-            try:
-                # If a value has been given
-                if item[field]:
-                    # If the value requires preprocessing
-                    if pre_process:
-                        item[field] = pre_process(item[field])
-                # Else when no value is given
-                else:
-                    item[field] = default_values[field]
-            # In the event of a KeyError, throw away the value which caused the error
-            except KeyError:
-                item[field] = default_values[field]
-        return item
+            required_headers = [
+                "    " + val
+                for val in ["Name", "Type", "X", "Y", "diameter", "scale", "colour", "mount_name", "material", "notes"]
+            ]
+            message = "\n".join([
+                "There was an error when loading data from CSV file:",
+                "   " + filepath.split('/')[-1] + "\n",
+                "Plese use a CSV file with the following headers:",
+                *required_headers,
+            ])
+            QMessageBox.warning(None, "Error Loading Data", message)
 
 
     def export_tactool_csv_get_path(self) -> None:
         """
-        Function to create a PyQt File Dialog,
-        allowing the user to visually select a directory to save a TACtool CSV file.
+        Create a PyQt File Dialog allowing the user to visually select a directory to save a TACtool CSV file.
         """
         if self.validate_current_data():
-            filepath = self.csv_filepath if self.csv_filepath else ""
+            current_filepath = self.csv_filepath if self.csv_filepath else ""
             pyqt_save_dialog = QFileDialog.getSaveFileName(
-                self,
-                "Export as TACtool CSV",
-                filepath,
-                self.default_settings["csv_format"],
+                parent=self,
+                caption="Export as TACtool CSV",
+                directory=current_filepath,
+                filter=self.default_settings["csv_format"],
             )
-            path = pyqt_save_dialog[0]
-            if path:
+            filepath = pyqt_save_dialog[0]
+            if filepath:
                 try:
-                    self.table_model.export_csv(path)
+                    self.logger.info("Exporting Analysis Points to: %s", filepath)
+                    export_tactool_csv(
+                        filepath=filepath,
+                        headers=self.table_model.public_headers,
+                        analysis_points=self.table_model.analysis_points,
+                    )
                 except Exception as error:
-                    self.data_error_message(error)
+                    self.qmessagebox_error(error)
 
 
     def validate_current_data(self, validate_image: bool = False) -> bool:
         """
-        Function to check if the current data of the Analysis Points is valid.
+        Check if the current data of the Analysis Points is valid.
         Used when exporting data to a file.
         Each validation step contains a return statement which is used
         when the validation fails, thus preventing the remaining validation.
@@ -492,38 +457,28 @@ class Window(QMainWindow):
         if validate_image:
             # If there is currently no image in the PyQt Graphics View
             if self.graphics_view._empty:
-                message = dedent("""
-                    Image not found.
-
-                    There is no image to save.
-                """)
-                # This is an information dialog, meaning it can only return True
-                if self.show_message("Warning", message, "warning"):
-                    return False
+                QMessageBox.warning(None, "Image Not Found", "There is no image to save.")
+                return False
 
         # If there are less than 3 reference points
-        if self.status_bar_messages["ref_points"]["status"]:
+        if len(self.table_model.reference_points) < 3:
             default_label = self.default_settings["label"]
-            message = dedent(f"""
-                Missing reference points.
-
-                There must be at least 3 points labelled '{default_label}'.
-
-                Do you still want to continue?
-            """)
-            # If the user presses Cancel
-            if not self.show_message("Warning", message, "question"):
+            choice = QMessageBox.question(
+                None,
+                "Missing Reference Points",
+                f"There must be at least 3 points labelled '{default_label}.\n\nDo you still want to continue?",
+            )
+            if choice == QMessageBox.No:
                 return False
 
         # If the scale value has not been changed
         if self.scale_value_input.text() == self.default_settings["scale"]:
-            message = dedent("""
-                A scale value has not been set.
-
-                Do you still want to continue?
-            """)
-            # If the user presses Cancel
-            if not self.show_message("Warning", message, "question"):
+            choice = QMessageBox.question(
+                None,
+                "No Scale Set",
+                "A scale value has not been set.\n\nDo you still want to continue?",
+            )
+            if choice == QMessageBox.No:
                 return False
 
         # If all checks are passed then continue
@@ -534,83 +489,182 @@ class Window(QMainWindow):
         self,
         x: int,
         y: int,
-        label: str = None,
-        diameter: int = None,
-        scale: float = None,
-        colour: str = None,
-        notes: str = "",
-        apid: int = None,
+        apid: Optional[int] = None,
+        label: Optional[str] = None,
+        diameter: Optional[int] = None,
+        scale: Optional[float] = None,
+        colour: Optional[str] = None,
         sample_name: str = "",
         mount_name: str = "",
         material: str = "",
-        from_click: bool = True,
+        notes: str = "",
+        use_window_inputs: bool = True,
+        ghost: bool = False,
     ) -> None:
         """
         Add an Analysis Point to the PyQt Graphics Scene.
         The main ways a user can do this is by clicking on the Graphics Scene, or by importing a TACtool CSV file.
 
         If the Analysis Point has been created from a click, get the values from the window settings.
-        Otherwise, from_click is set to False and the Analysis Point settings are retrieved from the CSV columns.
+        Otherwise, use_window_inputs is set to False and the Analysis Point settings are retrieved from
+        the given input values where possible.
+
+        The ghost option is used to determine if the AnalysisPoint is a transparent hint used on the
+        GraphicsView/GraphicsScene, or a genuine Analysis Point.
         """
-        if from_click:
-            # Get the required input values from the window input settings
-            # Coordinates and the Point ID are taken from the arguments, notes defaults to None
-            label = self.label_input.currentText()
-            diameter = self.diameter_input.value()
-            colour = self.point_colour
-            scale = float(self.scale_value_input.text())
+        # If it is meant to be a ghost point but ghost points are disabled, just return and end the process
+        if ghost and not self.ghost_point_button.isChecked():
+            return
+
+        # Assign attributes
+        if use_window_inputs:
+            # Get the required input values from the window input settings if they are not given
+            # We only do this for the settings fields, not the metadata, because the settings are required
+            # but the metadata is optional
+            if label is None:
+                label = self.label_input.currentText()
+            if diameter is None:
+                diameter = self.diameter_input.value()
+            if scale is None:
+                scale = float(self.scale_value_input.text())
+            if colour is None:
+                colour = self.point_colour
             sample_name = self.sample_name_input.text()
             mount_name = self.mount_name_input.text()
             material = self.material_input.text()
+        # If no analysis point ID is given, assign it the next ID available
+        if not apid:
+            apid = self.table_model.next_point_id
 
-        analysis_point = self.graphics_scene.add_analysis_point(
+        # Get the graphics items for the analysis point
+        outer_ellipse, inner_ellipse, label_text_item = self.graphics_scene.add_analysis_point(
             x=x,
             y=y,
+            apid=apid,
+            label=label,
+            diameter=diameter,
+            colour=colour,
+            scale=scale,
+            ghost=ghost,
+        )
+
+        # Place the new point data into an Analysis Point object
+        analysis_point = AnalysisPoint(
+            x=x,
+            y=y,
+            id=apid,
             label=label,
             diameter=diameter,
             scale=scale,
             colour=colour,
-            notes=notes,
-            apid=apid,
             sample_name=sample_name,
             mount_name=mount_name,
             material=material,
+            notes=notes,
+            _outer_ellipse=outer_ellipse,
+            _inner_ellipse=inner_ellipse,
+            _label_text_item=label_text_item,
         )
-        logger.debug("Created Analysis Point: %s", analysis_point)
 
-        # Update the status bar messages and PyQt Table View
-        self.toggle_status_bar_messages()
-        self.table_view.model().layoutChanged.emit()
+        if ghost:
+            point_type = "Ghost"
+            self.graphics_view.ghost_point = analysis_point
+        else:
+            self.graphics_view.remove_ghost_point()
+            point_type = "Analysis"
+            self.table_model.add_point(analysis_point)
+            # Update the status bar messages and PyQt Table View
+            self.toggle_status_bar_messages()
+            self.table_view.model().layoutChanged.emit()
+
+        self.logger.debug("Created %s Point: %s", point_type, analysis_point)
+        self.logger.info("Created %s Point with ID: %s", point_type, analysis_point.id)
 
 
-    def remove_analysis_point(self, x: int = None, y: int = None, apid: int = None) -> None:
+    def add_ghost_point(self, x: int, y: int) -> None:
         """
-        Function to remove an Analysis Point from the PyQt Graphics Scene.
+        Add a ghost point or move the existing ghost point.
+        """
+        # If a ghost point doesn't exist
+        if self.graphics_view.ghost_point is None:
+            self.add_analysis_point(x=x, y=y, use_window_inputs=True, ghost=True)
+        else:
+            # Calculate movement change
+            x_change = x - self.graphics_view.ghost_point.x
+            y_change = y - self.graphics_view.ghost_point.y
+            # Update metadata coordinates
+            self.graphics_view.ghost_point.x = x
+            self.graphics_view.ghost_point.y = y
+            self.graphics_scene.move_analysis_point(
+                ap=self.graphics_view.ghost_point,
+                x_change=x_change,
+                y_change=y_change,
+            )
+
+
+    def remove_analysis_point(
+        self,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        apid: Optional[int] = None,
+    ) -> None:
+        """
+        Remove an Analysis Point from the PyQt Graphics Scene and Table Model.
         The Point is specified using it's coordinates or it's ID value.
         """
-        deletion_result = self.graphics_scene.remove_analysis_point(x=x, y=y, apid=apid)
-        # If the deletion returned a value, it is the Analysis Point ID and so is outputted
-        if deletion_result:
-            logger.debug("Deleted Analysis Point: %s", deletion_result)
+        # If a ghost point exists, it must be deleted before deleting the genuine AnalysisPoint
+        # Because when getting a point by ellipse, the ghost point becomes the selected point for deletion otherwise
+        if self.graphics_view.ghost_point is not None:
+            self.graphics_view.remove_ghost_point()
 
-        # Update the status bar messages and PyQt Table View
-        self.toggle_status_bar_messages()
-        self.table_view.model().layoutChanged.emit()
+        analysis_point = None
+        # If a target ID is provided, get the Analysis Point using it's ID
+        if apid:
+            analysis_point = self.table_model.get_point_by_apid(apid)
+
+        # Else when the user right clicks on the Graphics View to remove an Analysis Point
+        elif x and y:
+            # Get the ellipse and check it exists
+            ellipse = self.graphics_scene.get_ellipse_at(x, y)
+            if ellipse:
+                # Get the corresponding Analysis Point object of the ellipse
+                analysis_point = self.table_model.get_point_by_ellipse(ellipse)
+
+        if analysis_point is not None:
+            self.table_model.remove_point(analysis_point.id)
+            self.graphics_scene.remove_analysis_point(analysis_point)
+            # Update the status bar messages and PyQt TableView
+            self.toggle_status_bar_messages()
+            self.table_view.model().layoutChanged.emit()
+
+            self.logger.info("Deleted Analysis Point: %s", analysis_point.id)
+
+        # Re-add the ghost point
+        self.graphics_view.move_ghost_point.emit(x, y)
 
 
-    def reload_analysis_points(self) -> None:
+    def reload_analysis_points(
+        self,
+        index: Optional[QModelIndex] = None,
+        transform: Optional[Callable[[AnalysisPoint], AnalysisPoint]] = None,
+    ) -> None:
         """
-        Function to reload all of the existing Analysis Points.
+        Reload all of the existing Analysis Points.
+        Takes an index which indicates if the TableView should be automatically scrolled to a specific point.
+        Also takes a transform function to transform the existing Analysis Points before replacing them.
         """
+        self.logger.debug("Reloading Analysis Points with transform: %s", transform)
         # Save the existing Points before clearing them
         current_analysis_points = self.table_model.analysis_points
         self.clear_analysis_points()
         # Iterate through each previously existing Point and recreate it
         for analysis_point in current_analysis_points:
+            if transform is not None:
+                analysis_point = transform(analysis_point)
             self.add_analysis_point(
+                x=analysis_point.x,
+                y=analysis_point.y,
                 apid=analysis_point.id,
-                x=analysis_point.x,
-                y=analysis_point.y,
                 label=analysis_point.label,
                 diameter=analysis_point.diameter,
                 scale=analysis_point.scale,
@@ -619,64 +673,28 @@ class Window(QMainWindow):
                 mount_name=analysis_point.mount_name,
                 material=analysis_point.material,
                 notes=analysis_point.notes,
-                from_click=False
+                use_window_inputs=False,
             )
 
-
-    def reset_analysis_points(self) -> None:
-        """
-        Function to reset the ID values of all existing Analysis Points.
-        """
-        # Save the existing Points before clearing them
-        current_analysis_points = self.table_model.analysis_points
-        self.clear_analysis_points()
-        self.graphics_scene._maximum_point_id = 0
-        # Iterate through each previously existing Point and recreate it without the existing ID
-        # This forces it to automatically increment from 0
-        for analysis_point in current_analysis_points:
-            self.add_analysis_point(
-                x=analysis_point.x,
-                y=analysis_point.y,
-                label=analysis_point.label,
-                diameter=analysis_point.diameter,
-                scale=analysis_point.scale,
-                colour=analysis_point.colour,
-                sample_name=analysis_point.sample_name,
-                mount_name=analysis_point.mount_name,
-                material=analysis_point.material,
-                notes=analysis_point.notes,
-                from_click=False
-            )
-
-
-    def clear_analysis_points(self) -> None:
-        """
-        Function to delete all existing Analysis Points.
-        """
-        # Iterate through existing Analysis Points and delete them
-        for point in self.table_model.analysis_points:
-            self.remove_analysis_point(apid=point.id)
-
-        # Reset the maximum Analysis Point ID value
-        self.graphics_scene._maximum_point_id = 0
-
-
-    def update_analysis_points(self, index: QModelIndex = None) -> None:
-        """
-        Function to reload the Analysis Points currently in the application and optionally scroll to a given index.
-        """
-        self.reload_analysis_points()
         # Index is given when the user edits a cell in the PyQt Table View
         # It represents the index of the modified cell
-        if index:
+        if index is not None:
             # When the Analysis Points are reloaded, the scroll position in the PyQt Table View resets
             # Therefore, we scroll back to where the user was previously scrolled
             self.table_view.scrollTo(index)
 
 
-    def set_point_colour(self) -> None:
+    def clear_analysis_points(self) -> None:
         """
-        Function to update the selected colour in the user interface.
+        Clear all existing Analysis Points.
+        """
+        for point in self.table_model.analysis_points:
+            self.remove_analysis_point(apid=point.id)
+
+
+    def get_point_colour(self) -> None:
+        """
+        Get a new colour from the user through a QColorDialog.
         """
         # Create a PyQt Colour Dialog to select a colour
         colour = QColorDialog.getColor()
@@ -684,125 +702,75 @@ class Window(QMainWindow):
             # Update the colour of the button and the value
             # colour is a QColor class
             hex_colour = colour.name()
-            self.point_colour = hex_colour
-            self.set_colour_button_style()
+            self.set_point_colour(hex_colour)
 
 
-    def toggle_scaling_mode(self) -> None:
+    def set_point_colour(self, colour: str) -> None:
         """
-        Function to toggle the program's scaling mode functionality.
+        Set the currently selected colour as the given colour.
+        Also updates the stylesheet for the GUI colour button to reflect the change.
         """
-        # Toggle the scaling mode for the Graphics View
-        self.graphics_view.toggle_scaling_mode()
-
-        # If the program is not in scaling mode
-        if self.set_scale_dialog is None:
-            # Create the Set Scale Dialog box
-            self.set_scale_dialog = SetScaleDialog(self.testing_mode)
-            # Disable main window input widgets
-            self.toggle_main_input_widgets(False)
-            # Move the Set Scale Dialog box to be at the top left corner of the main window
-            main_window_pos = self.pos()
-            self.set_scale_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
-
-            # Connect the Set Scale dialog buttons
-            self.set_scale_dialog.set_scale_clicked.connect(self.set_scale)
-            self.set_scale_dialog.clear_scale.connect(self.clear_scale_clicked)
-            self.set_scale_dialog.closed_set_scale_dialog.connect(self.toggle_scaling_mode)
-            self.graphics_view.scale_move_event.connect(self.set_scale_dialog.scale_move_event_handler)
-
-        # Else when the program is in scaling mode, reset the Set Scaling Dialog value
-        else:
-            self.set_scale_dialog = None
-            # Enable main window widgets
-            self.toggle_main_input_widgets(True)
-
-
-    def toggle_main_input_widgets(self, enable: bool) -> None:
-        """
-        Toggle each of the input widgets in the main window to be enabled or disabled.
-        """
-        for widget in self.main_input_widgets:
-            widget.setEnabled(enable)
-
-
-    def clear_scale_clicked(self) -> None:
-        """
-        Function to clear the scaling mode when the Clear button is clicked in the Set Scale dialog box.
-        """
-        self.graphics_scene.remove_scale_items()
-        self.graphics_view.reset_scale_line_points()
-        self.set_scale_dialog.pixel_input.setText(self.set_scale_dialog.pixel_input_default)
-        self.set_scale_dialog.distance_input.setValue(0)
-
-
-    def set_scale(self, scale: float) -> None:
-        """
-        Function to set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
-        """
-        self.scale_value_input.setText(str(scale))
-        self.toggle_status_bar_messages()
+        self.point_colour = colour
+        self.set_colour_button_style()
 
 
     def get_point_settings(self, analysis_point: AnalysisPoint, clicked_column_index: int) -> None:
         """
-        Function to get the settings of an Analysis Point which has been selected in the PyQt Table View.
+        Get the settings of an Analysis Point which has been selected in the PyQt Table View.
         These settings are then updated to be the current settings.
         """
-        logger.debug("Selected Analysis Point: %s", analysis_point)
+        self.logger.info("Selected Analysis Point with ID: %s", analysis_point.id)
         # If the column of the cell the user clicked is the id
         if clicked_column_index == self.table_model.headers.index("id"):
             # Update the Analysis Point settings to be the same as the Point settings of the Point selected in the table
             self.update_point_settings(
-                sample_name=analysis_point.sample_name,
-                mount_name=analysis_point.mount_name,
-                material=analysis_point.material,
                 label=analysis_point.label,
                 diameter=analysis_point.diameter,
                 scale=analysis_point.scale,
                 colour=analysis_point.colour,
+                sample_name=analysis_point.sample_name,
+                mount_name=analysis_point.mount_name,
+                material=analysis_point.material,
             )
 
 
     def reset_settings(self) -> None:
         """
-        Function to reset input fields and general Analysis Point settings to default.
+        Reset input fields and general Analysis Point settings to default.
         """
         self.update_point_settings(
-            sample_name=self.default_settings["metadata"],
-            mount_name=self.default_settings["metadata"],
-            material=self.default_settings["metadata"],
             label=self.default_settings["label"],
             diameter=self.default_settings["diameter"],
             scale=self.default_settings["scale"],
             colour=self.default_settings["colour"],
+            sample_name=self.default_settings["metadata"],
+            mount_name=self.default_settings["metadata"],
+            material=self.default_settings["metadata"],
         )
 
 
     def update_point_settings(
         self,
-        sample_name: str = None,
-        mount_name: str = None,
-        material: str = None,
-        label: str = None,
-        diameter: int = None,
-        scale: str | float = None,
-        colour: str = None,
+        label: Optional[str] = None,
+        diameter: Optional[int] = None,
+        scale: Optional[str | float] = None,
+        colour: Optional[str] = None,
+        sample_name: Optional[str] = None,
+        mount_name: Optional[str] = None,
+        material: Optional[str] = None,
     ) -> None:
         """
-        Function to update the Analysis Point settings to be the given settings.
+        Update the Analysis Point settings to be the given settings.
         If a value is given for a field, then the value and any corresponding
         User Interface elements are updated.
         """
-
-        if sample_name is not None:
-            self.sample_name_input.setText(sample_name)
-
-        if mount_name is not None:
-            self.mount_name_input.setText(mount_name)
-
-        if material is not None:
-            self.material_input.setText(material)
+        self.logger.debug(
+            (
+                "Updating Analysis Point settings: label='%s' diamter='%s', scale='%s', colour='%s', "
+                "sample_name='%s', mount_name='%s', material='%s'"
+            ),
+            label, diameter, scale, colour, sample_name, mount_name, material
+        )
 
         if label is not None:
             self.label_input.setCurrentText(label)
@@ -815,53 +783,129 @@ class Window(QMainWindow):
             self.toggle_status_bar_messages()
 
         if colour is not None:
-            self.point_colour = colour
-            self.set_colour_button_style()
+            self.set_point_colour(colour)
+
+        if sample_name is not None:
+            self.sample_name_input.setText(sample_name)
+
+        if mount_name is not None:
+            self.mount_name_input.setText(mount_name)
+
+        if material is not None:
+            self.material_input.setText(material)
 
 
-    def data_error_message(self, error: Exception) -> None:
+    def toggle_main_input_widgets(self, enable: bool) -> None:
         """
-        Function to show an error message to the user in the event that
+        Toggle each of the input widgets in the main window to be enabled or disabled.
+        """
+        self.logger.debug("Toggling main widgets to state: %s", enable)
+        for widget in self.main_input_widgets:
+            widget.setEnabled(enable)
+        self.graphics_scene.toggle_transparent_window(self.graphics_view._image)
+        self.graphics_view.disable_analysis_points = not enable
+        # Ensure no ghost points are left behind
+        self.graphics_view.remove_ghost_point()
+
+
+    def set_scale(self, scale: float) -> None:
+        """
+        Set the scale of the program given when the Set scale button is clicked in the Set Scale dialog box.
+        """
+        self.scale_value_input.setText(str(scale))
+        self.toggle_status_bar_messages()
+
+
+    def toggle_scaling_mode(self) -> None:
+        """
+        Toggle the program's scaling mode functionality.
+        """
+        # Toggle the scaling mode for the Graphics View
+        self.graphics_view.toggle_scaling_mode()
+
+        # If the program is not in scaling mode
+        if self.set_scale_dialog is None:
+            self.set_scale_dialog = SetScaleDialog(self.testing_mode)
+            self.toggle_main_input_widgets(False)
+            # Move the Dialog box to be at the top left corner of the main window
+            main_window_pos = self.pos()
+            self.set_scale_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
+
+            # Connect the Set Scale dialog buttons
+            self.set_scale_dialog.set_scale_clicked.connect(self.set_scale)
+            self.set_scale_dialog.clear_scale_clicked.connect(self.graphics_view.reset_scaling_elements)
+            self.set_scale_dialog.closed_set_scale_dialog.connect(self.toggle_scaling_mode)
+            self.graphics_view.scale_move_event.connect(self.set_scale_dialog.scale_move_event_handler)
+
+        # Else when the program is in scaling mode, reset the Set Scaling Dialog value
+        else:
+            self.set_scale_dialog = None
+            # Enable main window widgets
+            self.toggle_main_input_widgets(True)
+
+
+    def toggle_recoordinate_dialog(self) -> None:
+        """
+        Toggle the recoordination dialog window.
+        """
+        # If there are 3 reference points which can be used for recoordination
+        if len(self.table_model.reference_points) >= 3:
+            # If the program is not in recoordination mode
+            if self.recoordinate_dialog is None:
+                # Create the Recoordinate Dialog box
+                self.recoordinate_dialog = RecoordinateDialog(
+                    testing_mode=self.testing_mode,
+                    ref_points=self.table_model.reference_points,
+                    image_size=self.graphics_view._image.pixmap().size(),
+                )
+                # Disable main window input widgets
+                self.toggle_main_input_widgets(False)
+                # Move the Dialog box to be at the top left corner of the main window
+                main_window_pos = self.pos()
+                self.recoordinate_dialog.move(main_window_pos.x() + 50, main_window_pos.y() + 50)
+
+                # Connect the Recoordinate dialog buttons
+                self.recoordinate_dialog.closed_recoordinate_dialog.connect(self.toggle_recoordinate_dialog)
+
+            # Else when the program is in recoordination mode, end the recoordination process
+            else:
+                # Keep the recoordinated points and close the dialog
+                recoordinated_point_dicts = self.recoordinate_dialog.recoordinated_point_dicts
+                self.recoordinate_dialog = None
+
+                # If the user confirmed the recoordination process
+                if len(recoordinated_point_dicts) > 0:
+                    # Clear the current points
+                    self.clear_analysis_points()
+                    # Add the recoordinated points as new Analysis Points to the canvas
+                    for point_dict in recoordinated_point_dicts:
+                        # We use the window inputs to fill the Analysis Point empty settings
+                        self.add_analysis_point(**point_dict, use_window_inputs=True)
+
+                # Enable main window widgets
+                self.toggle_main_input_widgets(True)
+        else:
+            self.logger.error("Missing 3 references points for recoordination")
+            QMessageBox.warning(
+                None,
+                "Missing Reference Points",
+                "3 Reference points are required to perform recoordination"
+            )
+
+
+    def qmessagebox_error(self, error: Exception) -> None:
+        """
+        Show an error message to the user in the event that
         an error occurs when loading in data.
         """
-        self.show_message(
-            "Error loading data",
-            f"An unexpected error occured: {error}",
-            "warning",
-        )
-
-
-    def show_message(self, title: str, message: str, type: str) -> bool:
-        """
-        Function to show a given message to the user in a PyQt QMessageBox.
-        """
-        # Creating the PyQt Message box and formatting it
-        widget = QMessageBox()
-        widget.setWindowTitle(title)
-        widget.setText(message)
-        widget.setStandardButtons(QMessageBox.Ok)
-
-        # Setting the type of message
-        if type == "warning":
-            widget.setIcon(QMessageBox.Warning)
-        elif type == "information":
-            widget.setIcon(QMessageBox.Information)
-        elif type == "question":
-            widget.setIcon(QMessageBox.Question)
-            widget.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-
-        # Show the message box
-        message_box = widget.exec_()
-        # If the user presses the Cancel button on the message box
-        if message_box == QMessageBox.Cancel:
-            return False
-        return True
+        QMessageBox.warning(None, "Error Loading Data", f"An unexpected error occured: {error}")
 
 
     def closeEvent(self, event=None) -> None:
         """
         Function which is run by PyQt when the application is closed.
         """
-        # If the Set Scale dialog box is open then close it
-        if self.set_scale_dialog is not None:
-            self.set_scale_dialog.close()
+        # Close any open dialogs
+        for dialog in self.dialogs:
+            if dialog is not None:
+                dialog.close()

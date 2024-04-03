@@ -1,14 +1,3 @@
-"""
-The Analysis Point class stores Analysis Point data.
-
-The Table Model acts as a central storage for Analysis Points
-and Graphics Scene items.
-"""
-
-import dataclasses
-from csv import writer
-from pathlib import Path
-from textwrap import dedent
 from typing import (
     Any,
     Optional,
@@ -22,84 +11,17 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtWidgets import (
     QGraphicsEllipseItem,
-    QGraphicsTextItem,
+    QMessageBox,
 )
 
-
-@dataclasses.dataclass
-class AnalysisPoint:
-    """
-    Container class for encapsulating Analysis point data.
-    """
-    # Define the class variables for the Analysis Points
-    id: int
-    label: str
-    x: int
-    y: int
-    diameter: int
-    scale: float
-    colour: str
-    sample_name: str
-    mount_name: str
-    material: str
-    notes: str
-    _outer_ellipse: QGraphicsEllipseItem
-    _inner_ellipse: QGraphicsEllipseItem
-    _label_text_item: QGraphicsTextItem
+from tactool.analysis_point import AnalysisPoint
+from tactool.utils import LoggerMixin
 
 
-    @classmethod
-    def field_names(cls) -> list[str]:
-        """
-        Function to get the field names of the class object.
-        """
-        return [field.name for field in dataclasses.fields(cls)]
-
-
-    def aslist(self) -> list[
-        int,
-        int,
-        int,
-        str,
-        int,
-        float,
-        str,
-        str,
-        str,
-        str,
-        str,
-        QGraphicsEllipseItem,
-        QGraphicsEllipseItem,
-        QGraphicsTextItem,
-    ]:
-        """
-        Function to get the attributes of an Analysis Point object as a list.
-        """
-        attributes_list = [
-            self.id,
-            self.label,
-            self.x,
-            self.y,
-            self.diameter,
-            self.scale,
-            self.colour,
-            self.sample_name,
-            self.mount_name,
-            self.material,
-            self.notes,
-            self._outer_ellipse,
-            self._inner_ellipse,
-            self._label_text_item
-        ]
-        return attributes_list
-
-
-class TableModel(QAbstractTableModel):
+class TableModel(QAbstractTableModel, LoggerMixin):
     """
     PyQt QAbstractTableModel for storing AnalysisPoints.
     """
-    # Tracks if a new edited input in the PyQt Table Model is invalid
-    invalid_label_entry = pyqtSignal(str, str, str)
     # Tracks if a new edited input in the PyQt Table Model is accepted
     updated_analysis_points = pyqtSignal(QModelIndex)
 
@@ -120,7 +42,7 @@ class TableModel(QAbstractTableModel):
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int) -> str:
         """
-        Function to set and return the header values from the QAbstractTableModel.
+        Set and return the header values from the QAbstractTableModel.
         """
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
@@ -131,24 +53,26 @@ class TableModel(QAbstractTableModel):
 
     def columnCount(self, *args) -> int:
         """
-        Function to return the number of columns in the QAbstractTableModel.
+        Return the number of columns in the QAbstractTableModel.
+        Internal method for PyQt.
         """
         return len(self.headers)
 
 
     def rowCount(self, *args) -> int:
         """
-        Function to return the number of rows in the QAbstractTableModel.
+        Return the number of rows in the QAbstractTableModel.
+        Internal method for PyQt.
         """
         return len(self._data)
 
 
     def data(self, index: QModelIndex, role: int) -> Optional[str]:
         """
-        Function to format the data to be displayed in the QAbstractTableModel.
+        Format the data to be displayed in the QAbstractTableModel.
         It is called when displaying values in the cells, also called when editing (doubleclick).
+        Internal method for PyQt.
         """
-
         if role == Qt.DisplayRole or role == Qt.EditRole:
             row = index.row()
             col = index.column()
@@ -161,8 +85,9 @@ class TableModel(QAbstractTableModel):
 
     def setData(self, index: QModelIndex, value: str, role: Qt.ItemDataRole = Qt.EditRole) -> bool:
         """
-        Function to update the value in a cell of the QAbstractTableModel.
+        Update the value in a cell of the QAbstractTableModel.
         It is called when editing a value in an editable cell.
+        Internal method for PyQt.
         """
         if index.isValid():
             row = index.row()
@@ -177,16 +102,10 @@ class TableModel(QAbstractTableModel):
                     value = "RefMark"
                 # If the new label is not one of the required label values
                 else:
-                    # Create a message informing the user that their input value is invalid
-                    message = dedent(f"""
-                        '{value}' is not a valid label.
-
-                        Please use either 'Spot' or 'RefMark'.
-                    """)
-                    self.invalid_label_entry.emit(
+                    QMessageBox.warning(
+                        None,
                         "Invalid Label",
-                        message,
-                        "warning",
+                        f"'{value}' is not a valid label.\n\nPlease use either 'Spot' or 'RefMark'.",
                     )
                     return False
 
@@ -201,46 +120,47 @@ class TableModel(QAbstractTableModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         """
-        Function to set the flags of the cells within the QAbstractTableModel.
+        Set the flags of the cells within the QAbstractTableModel.
+        Internal method for PyQt.
         """
-        # If the given column should be an editable column, set it to be editable
         # Set all columns to be selectable and enabled
+        default_flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        # If the given column should be an editable column, set it to be editable
         if index.column() in self.editable_columns:
-            return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+            return default_flags | Qt.ItemIsEditable
         else:
-            return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+            return default_flags
 
 
     def add_point(self, analysis_point: AnalysisPoint) -> None:
         """
-        Function to add an Analysis Point object as a row.
+        Add an Analysis Point object as a row.
         """
         self._data.append(analysis_point.aslist())
 
 
     def remove_point(self, target_id: int) -> None:
         """
-        Function to remove an Analysis Point object using it's ID value.
+        Remove an Analysis Point object using it's ID value.
         """
         for index, analysis_point in enumerate(self.analysis_points):
-            # If the target ID is equal to the current ID, remove it from the table
             if target_id == analysis_point.id:
                 self._data.pop(index)
+                break
 
 
     def get_point_by_ellipse(self, target_ellipse: QGraphicsEllipseItem) -> AnalysisPoint:
         """
-        Function to get the data of an Analysis Point object.
+        Get the data of an Analysis Point object using its ellipse object.
         """
         for analysis_point in self.analysis_points:
-            # If the target ellipse is equal to either the current outer or inner ellipse
             if target_ellipse in [analysis_point._outer_ellipse, analysis_point._inner_ellipse]:
                 return analysis_point
 
 
     def get_point_by_apid(self, target_id: int) -> AnalysisPoint:
         """
-        Function to get an Analysis Point using its ID value.
+        Get an Analysis Point using its ID value.
         """
         for analysis_point in self.analysis_points:
             if int(target_id) == analysis_point.id:
@@ -248,76 +168,40 @@ class TableModel(QAbstractTableModel):
 
 
     @property
-    def reference_points(self) -> list[AnalysisPoint]:
+    def public_headers(self) -> list[str]:
         """
-        Function to return Analysis Points which are a RefMark point.
+        Return just the public headers.
         """
-        # Using list comprehension to get Analysis Points if their label attribute is equal to RefMark
-        label_index = AnalysisPoint.field_names().index("label")
-        return [AnalysisPoint(*item) for item in self._data if item[label_index] == "RefMark"]
+        return [header for header in self.headers if not header.startswith("_")]
 
 
     @property
     def analysis_points(self) -> list[AnalysisPoint]:
         """
-        Function to return all of the Analysis Points.
+        Return all of the Analysis Points.
         """
-        # Using list comprehension to get all Analysis Points and unpack their values into Analysis Point objects
         return [AnalysisPoint(*item) for item in self._data]
 
 
-    def export_csv(self, filepath: Path) -> None:
+    @property
+    def reference_points(self) -> list[AnalysisPoint]:
         """
-        Get all the existing Analysis Points and write them to as a CSV file.
+        Return Analysis Points which are RefMarks point.
         """
-        # Do not save the last 3 columns as they contain PyQt graphics data
-        with open(filepath, "w", newline="") as csvfile:
-            csvwriter = writer(csvfile)
-            # Modify and write the header data
-            new_headers = self.convert_export_headers()
-            csvwriter.writerow(new_headers)
-            # Iterate through each existing analysis point and write it's data
-            for analysis_point in self.analysis_points:
-                csv_row = self.convert_export_point(analysis_point)
-                csvwriter.writerow(csv_row)
+        label_index = AnalysisPoint.field_names().index("label")
+        return [AnalysisPoint(*item) for item in self._data if item[label_index] == "RefMark"]
 
 
-    def convert_export_headers(self) -> list[str]:
+    @property
+    def next_point_id(self) -> int:
         """
-        Function to convert the header data formatting for a CSV export.
+        Return the current maximum Analysis Point ID value + 1.
         """
-        header_conversions = {
-            "id": "Name",
-            "label": "Type",
-            "x": "X",
-            "y": "Y",
-        }
-        headers = self.headers[:len(self.headers) - 3]
-        for old_header, new_header in zip(header_conversions, header_conversions.values()):
-            headers[headers.index(old_header)] = new_header
-        # Remove the sample_name field
-        headers.pop(headers.index("sample_name"))
-
-        # Insert a new Z column after the Y column for the laser formatting
-        z_index = headers.index("Y") + 1
-        headers.insert(z_index, "Z")
-        return headers
-
-
-    def convert_export_point(self, analysis_point: AnalysisPoint) -> list:
-        """
-        Function to convert an Analysis Point formatting for a CSV export.
-        """
-        headers = self.headers[:len(self.headers) - 3]
-        id_idx, sample_name_idx = headers.index("id"), headers.index("sample_name")
-        analysis_point_row = analysis_point.aslist()[:len(self.headers) - 3]
-
-        # Concat the sample_name and id into 1 column
-        # Also pads zeros on id column value
-        analysis_point_row[id_idx] = f"{analysis_point.sample_name}_#{analysis_point.id:03d}"
-        analysis_point_row.pop(sample_name_idx)
-
-        # Insert a new Z column after the Y column for the laser formatting
-        z_index = headers.index("y") + 1
-        analysis_point_row.insert(z_index, 0)
-        return analysis_point_row
+        ids = [
+            analysis_point.id
+            for analysis_point in self.analysis_points
+        ]
+        if len(ids) == 0:
+            return 1
+        else:
+            return max(ids) + 1
