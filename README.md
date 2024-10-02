@@ -24,6 +24,10 @@ The original idea was by Connor Newstead and Matt Horstwood.
 
 ## Development
 
+### Community Contributions
+
+If you would like to give feedback, ask questions, submit a bug report, or make a contribution to TACtool, you are welcome to submit an issue to the repository [here](https://github.com/BritishGeologicalSurvey/tactool/issues).
+
 ### Installation
 
 Check out the repository and install dependencies using Anaconda.
