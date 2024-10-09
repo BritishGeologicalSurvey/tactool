@@ -11,11 +11,11 @@ authors:
   - name: Leo Rudczenko
     orcid: 0009-0005-8941-1387
     affiliation: 1
-  - name: Connor Newstead^[Now at XX]
-    orcid: XX
+  - name: Connor Newstead^[Now at University of Surrey]
+    orcid: 0009-0006-2349-7461
     affiliation: 1
   - name: Matthew Horstwood
-    orcid: XX
+    orcid: 0000-0003-4200-8193
     affiliation: 1
   - name: John Stevenson
     orcid: 0000-0002-2245-1334
