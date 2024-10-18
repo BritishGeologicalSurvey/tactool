@@ -52,9 +52,17 @@ TACtool (Targeting And Coordination tool) enables users to annotate laser ablati
 
 The intuitive and accessible front-end design of TACtool allows users with a lack of computational experience to easily record their annotations, especially because the software can be downloaded as a compiled program, mitigating the need to setup complex development environments. This simplicity continues throughout the workflow within TACtool, as users can import an image file onto a canvas, before clicking directly onto that image to add their ROI and respective annotations. The coordinates and metadata for each ROI can be exported to a plain text Comma-Separated Values (CSV) file, ready to be uploaded directly to a laser ablation system.
 
+The community surrounding TACtool has been growing since it's initial release, as shown by the download metrics from GitHub (\autoref{fig:figure_1}). Many recent changes to the software originate from community feedback, including bug fixes, the addition of the transparent ghost point for easier ROI identification (v1.3.0), and a MacOS version of the software to accommodate a new user base (v1.2.0). This feedback came from GitHub issues and discussions at LA-ICP-MS conferences.
+
+![TACtool download metrics as of 2024/10/18. Executable downloads are provided by GitHub releases and their statistics via the GitHub API.
+\label{fig:figure_1}](release_downloads_tactool.png)
+
 Although TACtool was initially created for geological samples, it has possible applications for many other fields recording ablation sites, such as material science. This wider use is promoted by the fact that TACtool is open source and free to use, making it excellent for any community requiring its use, and enabling individuals to contribute to further features and adapting it for their own specific needs. TACtool offers a laser ablation annotation and coordinate system solution to any community requiring use at no cost and with maximum accessibility in mind, increasing laboratory efficiency, and reproducibility.
 
 We hope that TACtool will save time, lab resources, and money across a variety of fields utilising laser ablation, whilst increasing reproducibility and traceability of their work.
+
+# Acknowledgements
+
 
 
 # References
