@@ -164,7 +164,7 @@ By default, the exported file will be a `CSV` file. However, you can add your ow
 
 _Note: Upon export, the `sample_name` and `id` columns will be concatenated into a single column labelled `Name`, using the character pattern `_#` to join them._
 
-A guide for importing the resulting CSV into the ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
+A guide for importing the resulting CSV into the ESI laser control software can be found [here](ESI-import-TACtool-instructions.md).
 
 ### Import and Recoordinate SEM CSV
 
