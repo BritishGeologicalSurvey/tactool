@@ -11,7 +11,9 @@ You can download the **TACtool** application here:
 
 On Windows, save it somewhere you'll remember, then just double-click the icon to run it (no installation necessary).
 
-Instructions for using the application can be found [here](https://github.com/BritishGeologicalSurvey/tactool/blob/main/docs/instructions.md).
+Instructions for using the application can be found [here](docs/instructions.md).
+
+A guide for importing the resulting CSV into the ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
 
 ![Screenshot of the TACtool app with a black and white test image and labelled points.](docs/img/app-screenshot-test_cl_montage.png)
 
