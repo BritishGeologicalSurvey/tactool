@@ -2,14 +2,22 @@
 
 > A graphical tool for selecting points for analysis on an SEM image
 
-## Download
+## Getting started
 
 You can download the **TACtool** application here:
 
 - [Windows](https://github.com/BritishGeologicalSurvey/tactool/releases/latest/download/windows-tactool.exe)
 - [MacOS](https://github.com/BritishGeologicalSurvey/tactool/releases/latest/download/macos-tactool.zip)
 
-Instructions for using the application can be found [here](https://github.com/BritishGeologicalSurvey/tactool/blob/main/instructions.md).
+On Windows, save it somewhere you'll remember, then just double-click the icon to run it (no installation necessary).
+
+Instructions for using the application can be found [here](docs/instructions.md).
+
+TACtool outputs a CSV file which contains your analysis points and their metadata. This can then be used to setup an analysis run on your micro-analysis system.
+
+A guide for importing the resulting CSV into ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
+
+![Screenshot of the TACtool app with a black and white test image and labelled points.](docs/img/app-screenshot-test_cl_montage.png)
 
 ## Original Contributors
 
@@ -29,6 +37,8 @@ The original idea was by Connor Newstead and Matt Horstwood.
 If you would like to give feedback, ask questions, submit a bug report, or make a contribution to TACtool, you are welcome to submit an issue to the repository [here](https://github.com/BritishGeologicalSurvey/tactool/issues).
 
 ### Installation
+
+> Note: this is only if you want to run the tool from the source code. If you just want to use the app, see "[Getting started](#getting-started)" above.
 
 Check out the repository and install dependencies using Anaconda.
 
