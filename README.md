@@ -13,7 +13,9 @@ On Windows, save it somewhere you'll remember, then just double-click the icon t
 
 Instructions for using the application can be found [here](docs/instructions.md).
 
-A guide for importing the resulting CSV into the ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
+TACtool outputs a CSV file which contains your analysis points and their metadata. This can then be used to setup an analysis run on your micro-analysis system.
+
+A guide for importing the resulting CSV into ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
 
 ![Screenshot of the TACtool app with a black and white test image and labelled points.](docs/img/app-screenshot-test_cl_montage.png)
 
