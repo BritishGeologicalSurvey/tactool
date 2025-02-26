@@ -1,5 +1,5 @@
 ---
-title: 'TACtool...'
+title: 'TACtool: A GUI tool for targeting and co-ordinating analysis locations spatially'
 tags:
   - Python
   - Laser ablation
@@ -12,9 +12,9 @@ authors:
     corresponding: true
     orcid: 0009-0005-8941-1387
     affiliation: 1
-  - name: Connor Newstead^[Now at The University of Surrey, UK]
+  - name: Connor Newstead
     orcid: 0009-0006-2349-7461
-    affiliation: 1
+    affiliation: "1, 2"
   - name: Matthew Horstwood
     orcid: 0000-0003-4200-8193
     affiliation: 1
@@ -24,6 +24,8 @@ authors:
 affiliations:
   - name: British Geological Survey, Keyworth, Nottingham, UK.
     index: 1
+  - name: University of Surrey, Surrey, UK.
+    index: 2
 date: XX
 bibliography: paper.bib
 ---
