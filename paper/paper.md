@@ -44,7 +44,8 @@ There exists tools for the annotation of geological samples and integration with
 |uScope Navigator [@uScopeNavigator]|Capable of image processing such as gamma, contrast and bilateral smoothing filters in addition to ROI annotation. May not be compatible with all laser ablation systems.|Requires a paid license/ comes with their microscope systems.|
 |MIPAR [@MIPAR]|Capable of analysing SEM images and creating annotations with locations recorded.|Requires a paid license.|
 |PIBC [@PIBC]|A plugin for QGIS which provides tools to import SEM images and associated metadata.|Free and open source.|
-: \label{tab:table1}
+
+Table: \label{tab:table1}
 
 Many of the existing paid software solutions are efficient, but the fact that they are paid for restricts their use within the community, both financially and through dependency on manufacturer systems in the case of proprietary software. Moreover, ImageJ is free and provides a range of customization options, but the complexity of this customization requires specialist time investment, making it difficult for those with less computational experience. This leaves a niche for a simple, accessible, and free to use solution, which enables efficient laser ablation workflows. In this body of work, we introduce our software, TACtool, as a contribution to this niche.
 
