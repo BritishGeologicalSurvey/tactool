@@ -9,9 +9,10 @@ tags:
   - Coordination
 authors:
   - name: Leo Rudczenko
+    corresponding: true
     orcid: 0009-0005-8941-1387
     affiliation: 1
-  - name: Connor Newstead^[Now at University of Surrey]
+  - name: Connor Newstead^[Now at The University of Surrey, UK]
     orcid: 0009-0006-2349-7461
     affiliation: 1
   - name: Matthew Horstwood
