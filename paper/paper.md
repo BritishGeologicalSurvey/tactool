@@ -1,5 +1,5 @@
 ---
-title: 'TACtool: A GUI tool for targeting and co-ordinating analysis locations spatially'
+title: 'TACtool: A GUI spatial targeting and co-ordination tool for sample annotation applied to laser ablation'
 tags:
   - Python
   - Laser ablation
