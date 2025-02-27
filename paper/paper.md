@@ -40,7 +40,7 @@ There exists tools for the annotation of geological samples and integration with
 
 |Software|Description|Access|
 |---|---|---|
-|GeoStar μGIS TM [@Geostar]|Manual and automatic sample point selection. Image importation from any source such as SEM. Integration with ICP-MS systems and automatic instrument control.|Proprietary software package written for use in RESOlution instruments and requires a paid license.|
+|GeoStar μGIS TM [@GeoStar]|Manual and automatic sample point selection. Image importation from any source such as SEM. Integration with ICP-MS systems and automatic instrument control.|Proprietary software package written for use in RESOlution instruments and requires a paid license.|
 |ImageJ (FIJI) [@ImageJ]|Many available plugins and features allow customization of the software to perform a variety of tasks.|Free and open source.|
 |Quartz PCI [@QuartzPCI]|PCI allows for SEM image annotation and measurement of features.|Requires a paid license.|
 |uScope Navigator [@uScopeNavigator]|Capable of image processing such as gamma, contrast and bilateral smoothing filters in addition to ROI annotation. May not be compatible with all laser ablation systems.|Requires a paid license/ comes with their microscope systems.|
