@@ -1,5 +1,5 @@
 ---
-title: 'TACtool: A targeting and co-ordination tool for sample annotation and traceability applied to scanning electron microscopy and laser ablation ICP-MS'
+title: 'TACtool: A targeting and co-ordination tool for sample annotation and traceability applied to LA-ICP-MS'
 tags:
   - Python
   - Laser ablation
