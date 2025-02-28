@@ -1,5 +1,5 @@
 ---
-title: 'TACtool: A GUI spatial targeting and co-ordination tool for sample annotation applied to laser ablation'
+title: 'TACtool: A spatially resolved targeting and co-ordination tool for sample annotation, data correlation, and traceability applied to scanning electron microscopy and laser ablation ICP-MS'
 tags:
   - Python
   - Laser ablation
