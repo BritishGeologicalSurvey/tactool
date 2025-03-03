@@ -1,6 +1,6 @@
 # TACtool
 
-> TACtool: A GUI spatial targeting and co-ordination tool for sample annotation applied to laser ablation
+> TACtool: A targeting and co-ordination tool for spatial sampling and data traceability applied to scanning electron microscopy and laser ablation ICP-MS
 
 TACtool (Targeting And Coordination tool) is a desktop GUI tool designed to allow users to annotate laser ablation analysis locations onto high resolution SEM images. TACtool automatically calculates coordinates of annotations and provides the tools to export them into a CSV file format, which can then be uploaded to laser ablation systems. This ensures efficient and accurate re-coordination of target locations relative to the spatial context resolved in the SEM image. This automatic process saves time and resources, whilst improving reproducibility and traceability throughout a lab's workflow.
 
