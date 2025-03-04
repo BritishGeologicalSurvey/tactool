@@ -68,6 +68,6 @@ TACtool offers a laser ablation annotation and coordinate system solution to any
 
 # Acknowledgements
 
-
+This work was supported by the British Geological Survey via NERC national capability. For the purpose of open access, the author has applied a Creative Commons Attribution (CC BY) licence to any Author Accepted Manuscript version arising.
 
 # References
