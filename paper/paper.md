@@ -12,7 +12,7 @@ authors:
     corresponding: true
     orcid: 0009-0005-8941-1387
     affiliation: 1
-  - name: Connor Newstead
+  - name: Connor. J. Newstead
     orcid: 0009-0006-2349-7461
     affiliation: "1, 2"
   - name: Matthew Horstwood
