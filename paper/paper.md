@@ -26,7 +26,7 @@ affiliations:
     index: 1
   - name: University of Surrey, Surrey, UK.
     index: 2
-date: XX
+date: 5 September 2025
 bibliography: paper.bib
 ---
 
@@ -59,7 +59,7 @@ The intuitive and accessible front-end design of TACtool allows users with a lac
 
 The community surrounding TACtool has been growing since it's initial release, as shown by the download metrics from GitHub (\autoref{fig:figure_1}). Many recent changes to the software originate from community feedback, including bug fixes, the addition of the transparent ghost point for easier ROI identification (v1.3.0), and a MacOS version of the software to accommodate a new user base (v1.2.0). This feedback came from GitHub issues and discussions at LA-ICP-MS conferences.
 
-![TACtool download metrics as of 2024/10/18. Executable downloads are provided by GitHub releases and their statistics via the GitHub API.
+![TACtool download metrics as of 2025/09/05. Executable downloads are provided by GitHub releases and their statistics via the GitHub API.
 \label{fig:figure_1}](release_downloads_tactool.png)
 
 Although TACtool was initially created for geological samples, it has possible applications for many other fields requiring spatial coordination and re-cordination of disparate, spatially correlated data sets. The use cases of TACtool are scale independent and as a standalone user environment, TACtool is platform agnostic with outputs that can be used with any downstream instrumentation able to use the output information. This wider use is promoted by the fact that TACtool is open source and free to use, making it excellent for any community requiring its use, and enabling individuals to contribute to further features and adapting it for their own specific needs.
