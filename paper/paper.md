@@ -49,7 +49,7 @@ There exists tools for the annotation of geological samples and integration with
 
 Table: \label{tab:table1}
 
-Many of the existing paid software solutions are efficient, but the fact that they are paid for restricts their use within the community, both financially and through dependency on manufacturer systems in the case of proprietary software. Moreover, ImageJ is free and provides a range of customization options, but the complexity of this customization requires specialist time investment, making it difficult for those with less computational experience. This leaves a niche for a simple, accessible, and free to use solution, which enables efficient laser ablation workflows. In this body of work, we introduce our software, TACtool, as a contribution to this niche.
+Many of the existing paid software solutions are efficient, but the fact that they are paid for restricts their use within the community, both financially and through dependency on manufacturer systems in the case of proprietary software. Moreover, ImageJ and PIBC are free and provide a range of customization options, but the complexity of this customization requires specialist time investment, making it difficult for those with less computational experience. This leaves a niche for a simple, accessible, and free to use solution, which enables efficient laser ablation workflows. In this body of work, we introduce our software, TACtool, as a contribution to this niche.
 
 # Statement of Need
 
