@@ -40,7 +40,7 @@ TACtool (Targeting And Coordination tool) is a PyQt based desktop application wh
 
 The intuitive and accessible front-end design of TACtool allows users with a lack of computational experience to easily record their annotations. The software can be downloaded as a compiled program, mitigating the need to setup complex development environments. This simplicity continues throughout the workflow within TACtool. Users can import an image file onto a canvas, before clicking directly onto that image to add their ROI and respective annotations. The coordinates and metadata for each ROI can be exported to a plain text Comma-Separated Values (CSV) file, ready to be uploaded directly to a laser ablation system.
 
-# Software Design
+# State of the Field
 
 There exists tools for the annotation of geological samples and integration with laser ablation systems, however they all have varying functionality, accessibility and ease of use (\autoref{tab:table1}).
 
@@ -56,6 +56,10 @@ There exists tools for the annotation of geological samples and integration with
 Table: \label{tab:table1}
 
 Many of the existing paid software solutions are efficient, but the fact that they are paid for restricts their use within the community, both financially and through dependency on manufacturer systems in the case of proprietary software. Moreover, ImageJ and PIBC are free and provide a range of customization options, but the complexity of this customization requires specialist time investment, making it difficult for those with less computational experience. This leaves a niche for a simple, accessible, and free to use solution, which enables efficient laser ablation workflows. In this body of work, we believe our software, TACtool, is a contribution to this niche. TACtool was designed to be an accessible standalone application, built to solve a single problem in a user-friendly interface. No setup is required, as the application can be downloaded as a compiled program, ready to use with any instrument. Being free and open source means that TACtool is open to everybody with no restrictions.
+
+# Software Design
+
+When designing and building TACtool, there were 3 main goals we aimed for. Firstly, we wanted to produce a front-end application that is lightweight and easy to use, whilst still providing useful traceability. To fulfil this, we have included a very limited number of settings which allow some customisation and sample metadata entry. TACtool can then export the ROI and associated metadata to a simple CSV file, in a format which is recognised by laser ablation systems. Secondly, Python and the PyQt library was chosen to develop the code, as Python is widely used in the scientific community, and the underlying Qt library is widely used to build graphical user interfaces. Using what is already widely known allows others in the community to more easily contribute to the TACtool code. Thirdly, TACtool was to be distributed as a single executable, with no setup required by the end user. We used GitHub Actions to achieve this by setting up an automated pipeline which takes the latest version of the code and compiles it. We are then able to provide a single download button in the README document, making it as simple as possible for end users to get started.
 
 # Research Impact Statement
 
