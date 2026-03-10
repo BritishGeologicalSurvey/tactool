@@ -1,9 +1,9 @@
 name: Create Distributable Files
 
 on:
-  release:
-    types:
-      - released
+  push:
+    paths:
+      - '.github/workflows/main.yml'
 
 jobs:
   build:
@@ -23,9 +23,15 @@ jobs:
     - name: Activate Anaconda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        environment-file: environments/${{ matrix.os }}-environment.yml
-        python-version: 3.11
+        python-version: 3.14
         auto-activate-base: false
+
+    - name: Build Environment
+      shell: bash -l {0}
+      run: |
+        conda create -n tactool python=3.14
+        conda activate tactool
+        pip install -e .[pyinstaller]
 
     - name: Build with PyInstaller
       shell: bash -l {0}
@@ -37,18 +43,8 @@ jobs:
         cd dist
         zip -r tactool.${{ matrix.asset_file_ext }} tactool.${{ matrix.app_file_ext }}
 
-    - name: Get Release Info
-      id: get_release
-      uses: bruceadams/get-release@v1.3.2
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-
-    - name: Add Asset to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: dist/tactool.${{ matrix.asset_file_ext }}
-        asset_name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
-        asset_content_type: application
+        name: ${{ matrix.os }}-tactool.${{ matrix.asset_file_ext }}
+        path: dist/tactool.${{ matrix.asset_file_ext }}

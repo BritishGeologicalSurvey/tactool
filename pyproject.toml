@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tactool"]
+
+[project]
+name = "tactool"
+description = "TACtool: A targeting and co-ordination tool for spatial sampling and data traceability applied to scanning electron microscopy and laser ablation ICP-MS"
+version = "1.4.0.dev0"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+keywords = ["FIXME"]
+requires-python = ">=3.11"
+dynamic = ["readme"]
+dependencies = [
+    "numpy",
+    "pyqt5",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+authors = [
+    {name="John FIXME", email="FIXME@example.com"},
+]
+
+[project.urls]
+repository = "https://github.com/BritishGeologicalSurvey/tactool/"
+
+[project.optional-dependencies]
+test = ["pytest", "flake8"]
+pyinstaller = ["pyinstaller"]
+
+[project.scripts]
+tactool = "tactool.main:main"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type="text/markdown"}
