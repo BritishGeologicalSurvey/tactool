@@ -17,25 +17,26 @@ jobs:
             app_file_ext: "app"
             asset_file_ext: "zip"
     runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
     - uses: actions/checkout@v3
 
     - name: Activate Anaconda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.13
         miniconda-version: latest
+        activate-environment: tactool
         auto-activate-base: false
 
     - name: Build Environment
-      shell: bash -l {0}
       run: |
         conda create -n tactool python=3.13
         conda activate tactool
-        pip install ".[pyinstaller]"
+        pip install -e ".[pyinstaller]"
 
     - name: Build with PyInstaller
-      shell: bash -l {0}
       run: pyinstaller --name="tactool" --windowed --paths=. --onefile tactool/main.py
 
     - name: ZIP Application
