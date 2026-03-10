@@ -43,14 +43,14 @@ If you would like to give feedback, ask questions, submit a bug report, or make 
 > Note: this is only if you want to run the tool from the source code. If you just want to use the app, see "[Getting started](#getting-started)" above.
 
 Clone the repository, create a virtual environment, e.g. with `conda`, and activate it.
-Then install the package with `pip` in editable mode for development with the optinal
+Then install the package with `pip` in editable mode for development with the optional
 dependencies for testing.
 
 ```
 conda create -n tactool python=3.14
 conda activate tactool
 cd tactool
-python3 -m pip install -e .[test]
+python3 -m pip install -e ".[test]"
 ```
 
 ### Running the Program
