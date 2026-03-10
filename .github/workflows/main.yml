@@ -24,6 +24,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         python-version: 3.14
+        miniconda-version: latest
         auto-activate-base: false
 
     - name: Build Environment
