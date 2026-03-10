@@ -32,7 +32,7 @@ jobs:
       run: |
         conda create -n tactool python=3.13
         conda activate tactool
-        pip install -e ".[pyinstaller]"
+        pip install ".[pyinstaller]"
 
     - name: Build with PyInstaller
       shell: bash -l {0}

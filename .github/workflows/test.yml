@@ -28,7 +28,7 @@ jobs:
       run: |
         conda create -n tactool python=3.13
         conda activate tactool
-        pip install -e ".[test]"
+        pip install ".[test]"
 
     - name: Lint
       shell: bash -l {0}
