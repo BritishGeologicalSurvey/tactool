@@ -13,6 +13,9 @@ jobs:
       matrix:
         os: [windows, macos]
     runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
     - uses: actions/checkout@v3
 
@@ -24,19 +27,15 @@ jobs:
         auto-activate-base: false
 
     - name: Build Environment
-      shell: bash -l {0}
       run: |
         conda create -n tactool python=3.13
         conda activate tactool
         pip install -e ".[test]"
-        flake8 --version
 
     - name: Lint
-      shell: bash -l {0}
       run: flake8
 
     - name: Test
-      shell: bash -l {0}
       run: |
         export PYTHONPATH=.
         pytest -vvs test/
