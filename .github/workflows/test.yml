@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '**.py'
-      - 'environments/*.yml'
+      - 'pyproject.toml'
       - '.github/workflows/test.yml'
 
 jobs:
