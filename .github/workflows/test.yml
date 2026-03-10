@@ -33,9 +33,12 @@ jobs:
         pip install -e ".[test]"
 
     - name: Lint
-      run: flake8
+      run: |
+        conda activate tactool
+        flake8
 
     - name: Test
       run: |
+        conda activate tactool
         export PYTHONPATH=.
         pytest -vvs test/
