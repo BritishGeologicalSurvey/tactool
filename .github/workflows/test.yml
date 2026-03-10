@@ -11,7 +11,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [windows]#, macos]
+        os: [windows, macos]
     runs-on: ${{ matrix.os }}-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,7 +28,7 @@ jobs:
       run: |
         conda create -n tactool python=3.13
         conda activate tactool
-        pip install -e .[test]
+        pip install -e ".[test]"
 
     - name: Lint
       shell: bash -l {0}
