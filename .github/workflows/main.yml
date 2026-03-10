@@ -13,9 +13,9 @@ jobs:
           - os: windows
             app_file_ext: "exe"
             asset_file_ext: "exe"
-          - os: macos
-            app_file_ext: "app"
-            asset_file_ext: "zip"
+          # - os: macos
+          #   app_file_ext: "app"
+          #   asset_file_ext: "zip"
     runs-on: ${{ matrix.os }}-latest
     steps:
     - uses: actions/checkout@v3
