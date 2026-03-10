@@ -28,7 +28,8 @@ jobs:
       run: |
         conda create -n tactool python=3.13
         conda activate tactool
-        pip install ".[test]"
+        pip install -e ".[test]"
+        flake8 --version
 
     - name: Lint
       shell: bash -l {0}
