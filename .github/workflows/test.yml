@@ -19,14 +19,14 @@ jobs:
     - name: Activate Anaconda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.14
+        python-version: 3.13
         miniconda-version: latest
         auto-activate-base: false
 
     - name: Build Environment
       shell: bash -l {0}
       run: |
-        conda create -n tactool python=3.14
+        conda create -n tactool python=3.13
         conda activate tactool
         pip install -e .[test]
 
