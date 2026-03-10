@@ -22,8 +22,7 @@ jobs:
     - name: Activate Anaconda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.13
-        miniconda-version: latest
+        activate-environment: tactool
         auto-activate-base: false
 
     - name: Build Environment
@@ -34,11 +33,9 @@ jobs:
 
     - name: Lint
       run: |
-        conda activate tactool
         flake8
 
     - name: Test
       run: |
-        conda activate tactool
         export PYTHONPATH=.
         pytest -vvs test/

@@ -88,7 +88,7 @@ class TACtool(QApplication, LoggerMixin):
         return self.window.recoordinate_dialog
 
 
-def main():
+def main() -> TACtool:
     parser = argparse.ArgumentParser(description="Application for annotating images with analysis points.")
     parser.add_argument(
         "--dev",
@@ -105,6 +105,7 @@ def main():
     args = parser.parse_args()
 
     tactool_application = TACtool(sys.argv, developer_mode=args.dev, debug_mode=args.debug)
+    return tactool_application
 
 
 if __name__ == "__main__":
