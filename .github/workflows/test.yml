@@ -33,8 +33,7 @@ jobs:
         pip install -e ".[test]"
 
     - name: Lint
-      run: |
-        flake8
+      run: flake8
 
     - name: Test
       run: |
