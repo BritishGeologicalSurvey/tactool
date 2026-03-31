@@ -38,44 +38,28 @@ The original idea was by Connor Newstead and Matt Horstwood.
 
 If you would like to give feedback, ask questions, submit a bug report, or make a contribution to TACtool, you are welcome to submit an issue to the repository [here](https://github.com/BritishGeologicalSurvey/tactool/issues).
 
-### Installation
+### Developer Installation
 
 > Note: this is only if you want to run the tool from the source code. If you just want to use the app, see "[Getting started](#getting-started)" above.
 
-Check out the repository and install dependencies using Anaconda.
+Clone the repository, create a virtual environment, e.g. with `conda`, and activate it.
+Then install the package with `pip` in editable mode for development with the optional
+dependencies for testing.
 
-#### Windows
-```bash
-conda env create -f environments/windows-environment.yml
-conda activate tactool-windows
 ```
-
-#### MacOS
-```bash
-conda env create -f environments/macos-environment.yml
-conda activate tactool-macos
+conda create -n tactool python=3.14
+conda activate tactool
+cd tactool
+python3 -m pip install -e ".[test]"
 ```
-
-_Note: Both environments have been generated using `environments/unversioned-environment.yml`._
 
 ### Running the Program
 
-To run the program, first you need to setup your Python path.
+To run the program, activate the environment and run the `tactool --dev` command.
 
-#### Windows
-```bash
-$env:PYTHONPATH="."
 ```
-
-#### MacOS
-```bash
-export PYTHONPATH=.
-```
-
-Then you can run the program with:
-
-```bash
-python tactool/main.py --dev
+conda activate tactool
+tactool --dev
 ```
 
 The `--dev` flag starts the application in developer mode, with a test image
