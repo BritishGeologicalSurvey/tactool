@@ -9,10 +9,10 @@ include = ["tactool"]
 [project]
 name = "tactool"
 description = "TACtool: A targeting and co-ordination tool for spatial sampling and data traceability applied to scanning electron microscopy and laser ablation ICP-MS"
-version = "1.4.0.dev0"
+version = "1.3.1"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-keywords = ["FIXME"]
+keywords = ["targeting", "co-ordination", "spatial", "traceability", "scanning", "electron", "microscopy", "sem", "laser", "ablation", "icp-ms", "gui"]
 requires-python = ">=3.11"
 dynamic = ["readme"]
 dependencies = [
@@ -27,7 +27,10 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 authors = [
-    {name="John FIXME", email="FIXME@example.com"},
+    {name="Leo Rudczenko", email="leorud@bgs.ac.uk"},
+    {name="John Stevenson", email="jostev@bgs.ac.uk"},
+    {name="Connor Newstead", email="connor.newstead@npl.co.uk"},
+    {name="Matthew Horstwood", email="msah@bgs.ac.uk"},
 ]
 
 [project.urls]
