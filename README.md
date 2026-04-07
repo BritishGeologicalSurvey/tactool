@@ -15,7 +15,7 @@ On Windows, save it somewhere you'll remember, then just double-click the icon t
 
 Instructions for using the application can be found [here](docs/instructions.md).
 
-TACtool outputs a CSV file which contains your analysis points and their metadata. This can then be used to setup an analysis run on your micro-analysis system.
+TACtool outputs a CSV file which contains your analysis points and their metadata. The coordinate units are pixels of the chosen image, where a laser ablation tool can then re-coordinate these using your reference points with a translation matrix and reference markers. This can then be used to setup an analysis run on your micro-analysis system.
 
 A guide for importing the resulting CSV into ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
 
