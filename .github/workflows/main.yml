@@ -21,10 +21,10 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846  # v3
 
     - name: Activate Anaconda Environment
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@11ae174708d1ae769b9457e7d6ed64d606c99af1  # v2
       with:
         miniconda-version: latest
         activate-environment: tactool
@@ -47,12 +47,12 @@ jobs:
 
     - name: Get Release Info
       id: get_release
-      uses: bruceadams/get-release@v1.3.2
+      uses: bruceadams/get-release@74c3d60f5a28f358ccf241a00c9021ea16f0569f  # v1.3.2
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
     - name: Add Asset to Release
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@48c0418f0e48b7aaf6b7752feec35df6f212beaa  # v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
