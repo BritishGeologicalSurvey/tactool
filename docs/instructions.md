@@ -5,6 +5,10 @@
 With your analysis point settings already defined, you can `Left Click` anywhere on the currently loaded image to place an analysis point at that location.
 Analysis points will be displayed in your selected `colour`, along with their assigned `id` value and selected `label`.
 
+The coordinates of analysis points are stored as `x` and `y` values, where the units are pixels of the loaded image. The import tool of the laser ablation software later in the workflow then uses these along with its own coordinates for these reference points, through the use of a translation matrix, to cross-coordinate the two data sets.
+
+In practice, in the absence of predetermined markers, it is often easier to use specific features on the specimen image itself which can be accurately identified in the next coordination system. The accuracy of the re-coordination depends on how accurately the reference points can be identified between the two systems.
+
 ### Removing Analysis Points
 
 You can `Right Click` anywhere within an existing analysis point circle to remove the analysis point. If you have multiple analysis point stacked on top of one another, the last analysis point placed will be the analysis point at the top of the stack. Therefore, when using `Right Click` on a stack of analysis point, the analysis point at the top of the stack will be removed first.
@@ -13,18 +17,18 @@ You can `Right Click` anywhere within an existing analysis point circle to remov
 
 You can `Left Click` on the `id` value of an existing analysis point within the table data. Doing so will set all analysis point settings to the be the same as the settings of the selected and existing analysis point.
 
-## Analysis Points Table Data
+## Analysis Point Data
 
 ### Displayed Data
 
 Data which is displayed within the table at the bottom of the window displays the list of analysis point currently on the image. This data includes the following:
-- `id`
+- `id` - _Required_
     - The id value assigned to the analysis point. This is automatically incremented when new analysis points are added.
-- `label`
+- `label` - _Required_
     - The label assigned to the analysis point. Either `RefMark` or `Spot`.
-- `x`
+- `x` - _Required_
     - The x coordinate location of the analysis point on the image.
-- `y`
+- `y` - _Required_
     - The y coordinate location of the analysis point on the image.
 - `diameter`
     - The diameter of the analysis point measured in `µm`.
@@ -40,6 +44,8 @@ Data which is displayed within the table at the bottom of the window displays th
     - The material assigned to the analysis point.
 - `notes`
     - Any notes assigned to the analysis point.
+
+Any fields marked with _Required_ are the main columns which TACtool uses to function, and are the columns intended to be used by a laser ablation tool. All other columns are there to provide an easier user experience, metadata entry, and traceability. Therefore, these other columns are optional but intend to improve your workflow.
 
 The following fields can be modified after placing an analysis point. To modify these values, `Left Click` twice on the cell containing the value you would like to modify. Once you have inputted your new value, press `Enter` to confirm the change.
 - `label`
@@ -80,6 +86,8 @@ To set the scale, complete the following steps:
 - The image on the main window will become slightly grey. This means you can now draw a line across the image. Start by clicking once to create the start of the line and clicking again to create the end of the line. Pressing the `Clear` button will remove any current lines.
 - Now you can change the estimated distance in microns. To do this, either use the up/down arrows next to the `Distance` input box, or type in your own value. It must be a whole number.
 - Pressing `OK` will confirm the new `scale` and close the _Set Scale_ window.
+
+We suggest setting a scale so that it is easier to understand the size of the image you are working on, and to ensure the diameter value is applied correctly in relation to the image size.
 
 _Note: The `Scale` is measured in `Pixels per µm`_
 
@@ -133,6 +141,8 @@ _Import an image into the application._
 - Press the `Import Image` button.
 - Select an image file using the file picker.
 
+_Note: TACtool does not read any metadata from the chosen image file; it simply loads the image into the view port. The following image file types are accepted: BMP, CUR, GIF, ICO, JFIF, JPEG, JPG, PBM, PGM, PNG, PPM, SVG, TIFF, XBM, XPM._
+
 ### Export Image
 
 _Export the current image with the current analysis points added to it._
@@ -162,7 +172,7 @@ _Export the current analysis point data to a TACtool CSV file._
 
 By default, the exported file will be a `CSV` file. However, you can add your own file extension to the filename if you wish to create a different file type, though this is not recommended.
 
-_Note: Upon export, the `sample_name` and `id` columns will be concatenated into a single column labelled `Name`, using the character pattern `_#` to join them._
+Upon export, the `sample_name` and `id` columns will be concatenated into a single column labelled `Name`, using the character pattern `_#` to join them. Additionally, the `x` and `y` columns will be capitalised. These 3 columns are intended to be used by a laser ablation tool, whilst all other exported data is intended to provide metadata and traceability.
 
 A guide for importing the resulting CSV into the ESI laser control software can be found [here](ESI-import-TACtool-instructions.md).
 

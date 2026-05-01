@@ -2,7 +2,7 @@
 
 > TACtool: A targeting and co-ordination tool for spatial sampling and data traceability applied to scanning electron microscopy and laser ablation ICP-MS
 
-TACtool (Targeting And Coordination tool) is a desktop GUI tool designed to allow users to annotate laser ablation analysis locations onto high resolution SEM images. TACtool automatically calculates coordinates of annotations and provides the tools to export them into a CSV file format, which can then be uploaded to laser ablation systems. This ensures efficient and accurate re-coordination of target locations relative to the spatial context resolved in the SEM image. This automatic process saves time and resources, whilst improving reproducibility and traceability throughout a lab's workflow.
+TACtool (Targeting And Coordination tool) is a desktop GUI tool designed to allow users to annotate laser ablation analysis locations onto high resolution SEM images. TACtool records pixel coordinates of annotations and provides the tools to export them into a CSV file format, which can then be uploaded to ESI laser ablation systems. This ensures efficient and accurate re-coordination of target locations relative to the spatial context resolved in the SEM image. This automatic process saves time and resources, whilst improving reproducibility and traceability throughout a lab's workflow.
 
 ## Getting started
 
@@ -15,7 +15,7 @@ On Windows, save it somewhere you'll remember, then just double-click the icon t
 
 Instructions for using the application can be found [here](docs/instructions.md).
 
-TACtool outputs a CSV file which contains your analysis points and their metadata. This can then be used to setup an analysis run on your micro-analysis system.
+TACtool outputs a CSV file which contains your analysis points and their metadata. The coordinate units are pixels of the chosen image, where a laser ablation tool can then re-coordinate these using your reference points with a translation matrix and reference markers. This can then be used to setup an analysis run on your micro-analysis system.
 
 A guide for importing the resulting CSV into ESI laser control software can be found [here](docs/ESI-import-TACtool-instructions.md).
 
