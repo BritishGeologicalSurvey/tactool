@@ -87,7 +87,7 @@ To set the scale, complete the following steps:
 - Now you can change the estimated distance in microns. To do this, either use the up/down arrows next to the `Distance` input box, or type in your own value. It must be a whole number.
 - Pressing `OK` will confirm the new `scale` and close the _Set Scale_ window.
 
-We suggest setting a scale so that it is easier to understand the size of the image you are working on.
+We suggest setting a scale so that it is easier to understand the size of the image you are working on, and to ensure the diameter value is applied correctly in relation to the image size.
 
 _Note: The `Scale` is measured in `Pixels per µm`_
 
