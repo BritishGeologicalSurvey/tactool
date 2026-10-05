@@ -191,3 +191,11 @@ _Notes:_
 - _When SEM points are imported from a CSV file, it is assumed that the origin for their coordinates will be **top right**, but the origin in TACtool is **top left**. To account for this, `SEM` coordinates automatically have their `x` axis inverted according to the currently loaded image, thus making their effective origin **top left**._
 - _When the SEM points are imported using this method, they will adopt any of the current Analysis Point settings applied in the TACtool window._
 - _If there are more than `3` analysis points with the label `RefMark` in TACtool, the recoordination process will only use the first `3` reference points from the Analysis Points Table Data._
+
+## Toolbar - Tools
+
+To access additional tools, press the `Tools` button in the toolbar, located at the top left of the application.
+
+### Ghost Point
+
+This is a tool which will show a transparent point where your mouse is on the current image. It is intended to help you see where your next analysis point will be placed when you left click.
