@@ -180,6 +180,8 @@ A guide for importing the resulting CSV into the ESI laser control software can 
 
 _Import and recoordinate a given SEM CSV file, using the current reference points in TACtool._
 
+This is useful because the SEM co-ordinates are relative to the SEM sample holder space in the instrument and not to any origin on the image. Re-coordinating the SEM co-ordinates through reference marks in TACtool, allows the addition of points to the SEM list that can then all relate.
+
 - Ensure you currently have 3 analysis points with the label `RefMark` placed in TACtool.
 - Press the `Import and Recoordinate SEM CSV` button.
 - Select an input `CSV` file by clicking on the `Select Input CSV` button and then use the file picker.
