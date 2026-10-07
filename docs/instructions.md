@@ -87,7 +87,7 @@ To set the scale, complete the following steps:
 - Now you can change the estimated distance in microns. To do this, either use the up/down arrows next to the `Distance` input box, or type in your own value. It must be a whole number.
 - Pressing `OK` will confirm the new `scale` and close the _Set Scale_ window.
 
-We suggest setting a scale so that it is easier to understand the size of the image you are working on, and to ensure the diameter value is applied correctly in relation to the image size.
+We suggest setting a scale so that it is easier to understand the size of the image you are working on, and to ensure the diameter value is applied correctly in relation to the image size. You should set the scale once and use the same scale for all of your points to ensure consistency.
 
 _Note: The `Scale` is measured in `Pixels per µm`_
 
@@ -180,6 +180,8 @@ A guide for importing the resulting CSV into the ESI laser control software can 
 
 _Import and recoordinate a given SEM CSV file, using the current reference points in TACtool._
 
+This is useful because the SEM co-ordinates are relative to the SEM sample holder space in the instrument and not to any origin on the image. Re-coordinating the SEM co-ordinates through reference marks in TACtool, allows the addition of points to the SEM list that can then all relate.
+
 - Ensure you currently have 3 analysis points with the label `RefMark` placed in TACtool.
 - Press the `Import and Recoordinate SEM CSV` button.
 - Select an input `CSV` file by clicking on the `Select Input CSV` button and then use the file picker.
@@ -191,3 +193,11 @@ _Notes:_
 - _When SEM points are imported from a CSV file, it is assumed that the origin for their coordinates will be **top right**, but the origin in TACtool is **top left**. To account for this, `SEM` coordinates automatically have their `x` axis inverted according to the currently loaded image, thus making their effective origin **top left**._
 - _When the SEM points are imported using this method, they will adopt any of the current Analysis Point settings applied in the TACtool window._
 - _If there are more than `3` analysis points with the label `RefMark` in TACtool, the recoordination process will only use the first `3` reference points from the Analysis Points Table Data._
+
+## Toolbar - Tools
+
+To access additional tools, press the `Tools` button in the toolbar, located at the top left of the application.
+
+### Ghost Point
+
+This is a tool which will show a transparent point where your mouse is on the current image. It is intended to help you see where your next analysis point will be placed when you left click.
