@@ -200,4 +200,4 @@ To access additional tools, press the `Tools` button in the toolbar, located at 
 
 ### Ghost Point
 
-This is a tool which will show a transparent point where your mouse is on the current image. It is intended to help you see where your next analysis point will be placed when you left click.
+When the Ghost Point setting is enabled, a semi-transparent preview of the next point follows the mouse.  It is intended to show users the size of the analysis point circle so that they can place the point appropriately.
