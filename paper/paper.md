@@ -21,6 +21,9 @@ authors:
   - name: John Stevenson
     orcid: 0000-0002-2245-1334
     affiliation: 1
+  - name: Declan Valters
+    orcid: 0000-0002-4562-3944
+    affiliation: 1
 affiliations:
   - name: British Geological Survey, Keyworth, Nottingham, UK.
     index: 1
